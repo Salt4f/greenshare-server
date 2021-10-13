@@ -28,7 +28,19 @@ pipeline {
             steps {
                 script {
                     dockerImage.inside {
-                        sh 'node --version'
+                        sh 'npm test'
+                    }
+                }
+            }
+            post {
+                failure {
+                    script {
+                        if (env.GIT_BRANCH == 'origin/master') {
+                            sh "docker rmi $dockerRepo:$BUILD_NUMBER"
+                        }
+                        else {    
+                            sh "docker rmi $dockerRepo:$BUILD_NUMBER-dev"
+                        }
                     }
                 }
             }
