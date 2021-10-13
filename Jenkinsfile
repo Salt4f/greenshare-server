@@ -10,7 +10,6 @@ pipeline {
     }
     agent any
     stages {
-        
         stage('Build') {
             steps {
                 script {
@@ -85,6 +84,16 @@ pipeline {
                 }
             }
         }
-        
+    }
+    post {
+        failure {
+            script {
+                if (env.GIT_BRANCH == 'origin/master') {
+                    mail to: 'raul.plesa@gmail.com, sergio.c7070@gmail.com, guillem.casassas.gurb@gmail.com',
+                        subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+                        body: "Something is wrong with ${env.BUILD_URL}"
+                }
+            }
+        }
     }
 }
