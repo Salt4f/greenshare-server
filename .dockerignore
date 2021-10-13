@@ -2,3 +2,4 @@ Jenkinsfile
 .gitignore
 .git/
 *.md
+node_modules/
