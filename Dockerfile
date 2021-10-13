@@ -9,4 +9,4 @@ RUN mv /app/node_modules /node_modules
 
 ADD . /app
 
-CMD ["node", "index.js"]
+CMD ["node", "app.js"]
