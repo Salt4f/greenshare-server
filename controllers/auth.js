@@ -1,6 +1,7 @@
 const { StatusCodes } = require('http-status-codes');
 const { BadRequestError, UnauthenticatedError } = require('../errors');
 const axios = require('axios');
+const pool = require('../db/connect');
 
 const register = async (req, res) => {
     // password from req is already hashed
@@ -17,12 +18,20 @@ const register = async (req, res) => {
         .then(function (response) {
             // user successfully registered
             if (response.status == '200') {
-                // store data to our DB (everything except pw) with the info
-                // from req.body
+                // store data to our DB (everything except pw)
+                // mariaDB structure
+                try {
+                    // sqlQuery: pretty self-explanatory
+                    const sqlQuery = '';
+                    // .query: we'll input the values of the sqlQuery
+                    const result = await pool.query(sqlQuery, '');
+                } catch (error) {
+                    throw error;
+                }
 
                 // send response to frontend
                 res.status(StatusCodes.CREATED).json({
-                    // falta configurar la respuesta (username, token)
+                    // still needs to handler the response (username, token)
                 });
             }
             // error registering user
