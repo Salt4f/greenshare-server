@@ -17,7 +17,7 @@ const register = async (req, res) => {
     })
         .then(function (response) {
             // user successfully registered
-            if (response.status == '200') {
+            if (response.status == StatusCodes.OK) {
                 // store data to our DB (everything except pw)
                 // mariaDB structure
                 try {
@@ -35,7 +35,7 @@ const register = async (req, res) => {
                 });
             }
             // error registering user
-            else if (response.status == '401') {
+            else if (response.status == StatusCodes.BAD_REQUEST) {
                 res.status(StatusCodes.BAD_REQUEST);
             }
         })
@@ -60,12 +60,12 @@ const login = async (req, res) => {
     })
         .then(function (response) {
             // user successfully logged in
-            if (response.status == '200') {
+            if (response.status == StatusCodes.OK) {
                 // send response to frontend (token)
                 res.status(StatusCodes.OK).json({ token: response.data.token });
             }
             // error registering user
-            else if (response.status == '401') {
+            else if (response.status == StatusCodes.UNAUTHORIZED) {
                 res.status(StatusCodes.UNAUTHORIZED);
             }
         })
