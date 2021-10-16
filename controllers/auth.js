@@ -1,17 +1,32 @@
-const { StatusCodes } = require('http-status-codes');
-const { BadRequestError, UnauthenticatedError } = require('../errors');
-const { registerRequest, loginRequest } = require('../requests/stubs/user-service'); // remove '/stubs' for prod
-const { createUser } = require('../db/users');
-const { request } = require('express');
+const {
+    StatusCodes
+} = require('http-status-codes');
+const {
+    BadRequestError,
+    UnauthenticatedError
+} = require('../errors');
+const {
+    registerRequest,
+    loginRequest
+} = require('../requests/stubs/user-service'); // remove '/stubs' for prod
+const {
+    createUser
+} = require('../db/users');
+const {
+    request
+} = require('express');
 
 const register = (req, res) => {
-
-    const { email, password, nickname } = req.body;
+    const {
+        email,
+        password,
+        nickname
+    } = req.body;
 
     registerRequest(email, password, nickname)
-        .then(function (response) {
+        .then((response) => {
             if (response.status == StatusCodes.OK) {
-                createUser(email, password, nickname)
+                createUser(response.data.id, email, nickname)
                     .then(() => {
                         console.log('Successfully created user, sending response...');
                         res.status(StatusCodes.CREATED).json({
@@ -21,30 +36,35 @@ const register = (req, res) => {
                     })
                     .catch(error => {
                         console.log("Couldn't create user, sending bad response");
+                        console.log(`ERROR: ${error}`);
+                        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                            error: `Couldn't save user in database`
+                        });
                     });
-            }
-            else {
-                res.status(StatusCodes.BAD_REQUEST);
+            } else {
+                res.status(StatusCodes.BAD_REQUEST).send();
             }
         })
-        .catch(function (error) {
+        .catch((error) => {
             console.log(error);
         });
 };
 
 const login = (req, res) => {
 
-    const { email, password } = req.body;
+    const {
+        email,
+        password
+    } = req.body;
 
     loginRequest(email, password)
         .then(function (response) {
             if (response.status == StatusCodes.OK) {
                 res.status(StatusCodes.OK).json({
                     id: response.data.id,
-                    token: response.data.token 
+                    token: response.data.token
                 });
-            }
-            else {
+            } else {
                 res.status(StatusCodes.UNAUTHORIZED);
             }
         })
@@ -53,4 +73,7 @@ const login = (req, res) => {
         });
 };
 
-module.exports = { register, login };
+module.exports = {
+    register,
+    login
+};

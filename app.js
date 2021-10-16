@@ -14,7 +14,7 @@ app.use(express.json());
 app.use('/api/auth', auth);
 // example of auth middleware:  app.use('/api/posts/', authenticateUser, jobsRouter);
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 13000;
 
 const start = async () => {
     try {

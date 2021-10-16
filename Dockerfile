@@ -10,4 +10,6 @@ RUN mv /app/node_modules /node_modules
 
 ADD . /app
 
+EXPOSE 13000
+
 CMD ["node", "app.js"]

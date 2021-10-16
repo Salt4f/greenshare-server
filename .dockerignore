@@ -3,3 +3,5 @@ Jenkinsfile
 .git/
 *.md
 node_modules/
+mariadb/
+docker-compose.yml
