@@ -1,14 +1,14 @@
 const express = require('express');
 const app = express();
 
-app.use(express.json());
-
-// Routers
 const auth = require('./routes/auth.js');
+const notFoundMiddleware = require('./middlewares/not-found');
+const authenticateUser = require('./middlewares/authentication');
 
-// Error handlers
-const notFoundMiddleware = require('./middleware/not-found');
-const errorHandlerMiddleware = require('./middleware/error-handler');
+// Middlewares
+app.use(express.json());
+app.use(notFoundMiddleware);
+//app.use(errorHandlerMiddleware);
 
 // Routes
 app.use('/api/auth', auth);
