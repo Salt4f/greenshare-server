@@ -7,7 +7,7 @@ const authenticateUser = require('./middlewares/authentication');
 
 // Middlewares
 app.use(express.json());
-app.use(notFoundMiddleware);
+//app.use(notFoundMiddleware);
 //app.use(errorHandlerMiddleware);
 
 // Routes
@@ -18,7 +18,6 @@ const port = process.env.PORT || 3000;
 
 const start = async () => {
     try {
-        //await connectDB(process.env.MONGO_URI);
         app.listen(port, () =>
             console.log(`Server is listening on port ${port}...`)
         );

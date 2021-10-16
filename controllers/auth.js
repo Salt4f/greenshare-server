@@ -1,41 +1,29 @@
 const { StatusCodes } = require('http-status-codes');
 const { BadRequestError, UnauthenticatedError } = require('../errors');
-const axios = require('axios');
-const pool = require('../db/connect');
+const { registerRequest, loginRequest } = require('../requests/stubs/user-service'); // remove '/stubs' for prod
+const { createUser } = require('../db/users');
+const { request } = require('express');
 
-const register = async (req, res) => {
-    // password from req is already hashed
-    const { email, password } = req.body;
-    // send data to the user service to register user in their DB
-    axios({
-        // maybe we'll need to change the method
-        method: 'get',
-        url: '',
-        responseType: 'json',
-        // we are sending the email and pw from the request to the UserService
-        data: { email, password },
-    })
+const register = (req, res) => {
+
+    const { email, password, nickname } = req.body;
+
+    registerRequest(email, password, nickname)
         .then(function (response) {
-            // user successfully registered
             if (response.status == StatusCodes.OK) {
-                // store data to our DB (everything except pw)
-                // mariaDB structure
-                try {
-                    // sqlQuery: pretty self-explanatory
-                    const sqlQuery = '';
-                    // .query: we'll input the values of the sqlQuery
-                    const result = await pool.query(sqlQuery, '');
-                } catch (error) {
-                    throw error;
-                }
-
-                // send response to frontend
-                res.status(StatusCodes.CREATED).json({
-                    // still needs to handler the response (username, token)
-                });
+                createUser(email, password, nickname)
+                    .then(() => {
+                        console.log('Successfully created user, sending response...');
+                        res.status(StatusCodes.CREATED).json({
+                            id: response.data.id,
+                            token: response.data.token
+                        });
+                    })
+                    .catch(error => {
+                        console.log("Couldn't create user, sending bad response");
+                    });
             }
-            // error registering user
-            else if (response.status == StatusCodes.BAD_REQUEST) {
+            else {
                 res.status(StatusCodes.BAD_REQUEST);
             }
         })
@@ -44,28 +32,19 @@ const register = async (req, res) => {
         });
 };
 
-const login = async (req, res) => {
-    // password from req is already hashed
+const login = (req, res) => {
+
     const { email, password } = req.body;
 
-    axios({
-        // maybe we'll need to change the method
-        method: 'get',
-        url: '',
-        responseType: 'json',
-        data: {
-            email,
-            password,
-        },
-    })
+    loginRequest(email, password)
         .then(function (response) {
-            // user successfully logged in
             if (response.status == StatusCodes.OK) {
-                // send response to frontend (token)
-                res.status(StatusCodes.OK).json({ token: response.data.token });
+                res.status(StatusCodes.OK).json({
+                    id: response.data.id,
+                    token: response.data.token 
+                });
             }
-            // error registering user
-            else if (response.status == StatusCodes.UNAUTHORIZED) {
+            else {
                 res.status(StatusCodes.UNAUTHORIZED);
             }
         })
