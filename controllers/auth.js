@@ -11,7 +11,7 @@ const {
 const { createUser } = require('../db/users');
 const { request } = require('express');
 
-const register = (req, res) => {
+const register = async (req, res) => {
     const { email, password, nickname } = req.body;
 
     if (
@@ -23,68 +23,60 @@ const register = (req, res) => {
         nickname === undefined
     ) {
         res.status(StatusCodes.BAD_REQUEST).json({
-            error: `wrong parameters`,
+            error: `Wrong parameters`,
         });
-    } else {
-        registerRequest(email, password, nickname)
-            .then((response) => {
-                if (response.status == StatusCodes.OK) {
-                    createUser(response.data.id, email, nickname)
-                        .then(() => {
-                            console.log(
-                                'Successfully created user, sending response...'
-                            );
-                            res.status(StatusCodes.CREATED).json({
-                                id: response.data.id,
-                                token: response.data.token,
-                            });
-                        })
-                        .catch((error) => {
-                            console.log(
-                                "Couldn't create user, sending bad response"
-                            );
-                            console.log(`ERROR: ${error}`);
-                            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                                error: `couldn't create user`,
-                            });
-                        });
-                } else {
-                    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                        error: `user service error`,
-                    });
-                }
-            })
-            .catch((error) => {
-                console.log(error);
+
+        return;
+    }
+    try {
+        const response = await registerRequest(email, password, nickname);
+        if (response.status == StatusCodes.OK) {
+            await createUser(response.data.id, email, nickname);
+            console.log('Successfully created user, sending response...');
+            res.status(StatusCodes.CREATED).json({
+                id: response.data.id,
+                token: response.data.token,
             });
+        } else {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                error: `User service error`,
+            });
+        }
+    } catch (e) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: `Internal server error`,
+        });
     }
 };
 
-const login = (req, res) => {
+const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password || email === undefined || password === undefined) {
         res.status(StatusCodes.BAD_REQUEST).json({
-            error: `wrong parameters`,
+            error: `Wrong parameters`,
+        });
+
+        return;
+    }
+    try {
+        const response = await loginRequest(email, password);
+        if (response.status == StatusCodes.OK) {
+            console.log('Successfully logged in, sending response...');
+            res.status(StatusCodes.OK).json({
+                id: response.data.id,
+                token: response.data.token,
+            });
+        } else {
+            res.status(StatusCodes.UNAUTHORIZED).json({
+                error: `Invalid credentials`,
+            });
+        }
+    } catch (e) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: `Internal server error`,
         });
     }
-
-    loginRequest(email, password)
-        .then(function (response) {
-            if (response.status == StatusCodes.OK) {
-                res.status(StatusCodes.OK).json({
-                    id: response.data.id,
-                    token: response.data.token,
-                });
-            } else {
-                res.status(StatusCodes.UNAUTHORIZED).json({
-                    error: `invalid credentials`,
-                });
-            }
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
 };
 
 module.exports = {

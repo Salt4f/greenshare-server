@@ -1,20 +1,21 @@
-var pool;
+var pool = require('./connect');
 
 const createUser = async (id, email, nickname) => {
-    if (pool === undefined) {
-        console.log('first query');
-        pool = await require('./connect');
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        const res = await conn.query(
+            `INSERT INTO Users(id, email, nickname) VALUES (?, ?, ?)`,
+            [id, email, nickname]
+        );
+        console.log(`Successfully created user: ${res}`);
+    } catch (e) {
+        throw new Error(e);
+    } finally {
+        if (conn) conn.end();
     }
-
-    return pool.getConnection()
-        .then(conn => {
-            return conn.query(`INSERT INTO Users(id, email, nickname) VALUES (?, ?, ?)`, [id, email, nickname]);
-        })
-        .then(res => {
-            console.log(`Successfully created user: ${res}`);
-        });
-}
+};
 
 module.exports = {
-    createUser
+    createUser,
 };
