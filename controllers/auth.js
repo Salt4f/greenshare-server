@@ -4,10 +4,7 @@ const {
     UnauthenticatedError,
     InternalServerError,
 } = require('../errors');
-const {
-    registerRequest,
-    loginRequest,
-} = require('../requests/stubs/user-service'); // remove '/stubs' for prod
+const { registerRequest, loginRequest } = require('../requests/user-service');
 const { createUser } = require('../db/users');
 const { request } = require('express');
 const validate = require('../utils/data-validation');

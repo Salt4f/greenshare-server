@@ -20,15 +20,19 @@ const registerRequest = async (email, password, nickname) => {
 };
 
 const loginRequest = async (email, password) => {
-    return axios({
-        method: 'get',
-        url: 'users.greensharebcn.com/login',
-        responseType: 'json',
-        data: {
-            email,
-            password,
-        },
-    });
+    try {
+        const response = await axios({
+            method: 'get',
+            url: 'users.greensharebcn.com/login',
+            responseType: 'json',
+            data: {
+                email,
+                password,
+            },
+        });
+    } catch (e) {
+        throw new Error(e);
+    }
 };
 
 module.exports = {
