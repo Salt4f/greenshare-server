@@ -10,22 +10,19 @@ const {
 } = require('../requests/stubs/user-service'); // remove '/stubs' for prod
 const { createUser } = require('../db/users');
 const { request } = require('express');
+const validate = require('../utils/data-validation');
 
 const register = async (req, res) => {
     const { email, password, nickname } = req.body;
 
     if (
-        !email ||
-        !password ||
-        !nickname ||
-        email === undefined ||
-        password === undefined ||
-        nickname === undefined
+        !validate.email(email) ||
+        !validate.nickname(nickname) ||
+        !validate.password(password)
     ) {
         res.status(StatusCodes.BAD_REQUEST).json({
             error: `Wrong parameters`,
         });
-
         return;
     }
     try {
@@ -52,7 +49,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password || email === undefined || password === undefined) {
+    if (!validate.email(email) || !validate.password(password)) {
         res.status(StatusCodes.BAD_REQUEST).json({
             error: `Wrong parameters`,
         });
