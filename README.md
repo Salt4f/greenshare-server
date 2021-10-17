@@ -1,2 +1,3 @@
 # GreenShare Server
-GreenShare Backend Server repository
+
+GreenShare Backend Server repository.
