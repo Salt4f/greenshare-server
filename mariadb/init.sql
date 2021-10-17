@@ -5,21 +5,23 @@ CREATE TABLE Users (
     dni VARCHAR(63),
     birthDate DATE,
     fullName VARCHAR(127),
-    profilePicture VARCHAR(2083),
+    profilePicture LONGBLOB,
     aboutMe VARCHAR(255),
     banned BOOLEAN
-)
+);
 
 CREATE TABLE Preferences (
-    userID INT FOREIGN KEY REFERENCES Users(id),
+    userID INT PRIMARY KEY,
     mobileNotification BOOLEAN,
     emailNotification BOOLEAN,
-    locale VARCHAR(31)
-)
+    locale VARCHAR(31),
+    FOREIGN KEY (userID) REFERENCES Users(id) ON DELETE CASCADE
+);
 
 CREATE TABLE BlockedUser (
-    userOriginID INT FOREIGN KEY REFERENCES Users(id),
-    userTargetID INT FOREIGN KEY REFERENCES Users(id),
-    PRIMARY KEY (userOriginID, userTargetID)
-)
-
+    userOriginID INT,
+    userTargetID INT,
+    PRIMARY KEY (userOriginID, userTargetID),
+    FOREIGN KEY (userOriginID) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (userTargetID) REFERENCES Users(id) ON DELETE CASCADE
+);
