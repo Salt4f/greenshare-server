@@ -12,13 +12,21 @@ const validate = require('../utils/data-validation');
 const register = async (req, res) => {
     const { email, password, nickname } = req.body;
 
-    if (
-        !validate.email(email) ||
-        !validate.nickname(nickname) ||
-        !validate.password(password)
-    ) {
+    if (!validate.email(email)) {
         res.status(StatusCodes.BAD_REQUEST).json({
-            error: `Wrong parameters`,
+            error: `Wrong parameters: invalid or missing email`,
+        });
+        return;
+    }
+    if (!validate.nickname(nickname)) {
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: `Wrong parameters: invalid or missing nickname`,
+        });
+        return;
+    }
+    if (!validate.password(password)) {
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: `Wrong parameters: invalid or missing password`,
         });
         return;
     }
@@ -46,11 +54,16 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     const { email, password } = req.body;
 
-    if (!validate.email(email) || !validate.password(password)) {
+    if (!validate.email(email)) {
         res.status(StatusCodes.BAD_REQUEST).json({
-            error: `Wrong parameters`,
+            error: `Wrong parameters: invalid or missing email`,
         });
-
+        return;
+    }
+    if (!validate.password(password)) {
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: `Wrong parameters: invalid or missing password`,
+        });
         return;
     }
     try {
