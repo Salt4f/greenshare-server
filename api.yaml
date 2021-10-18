@@ -1,0 +1,126 @@
+openapi: 3.0.0
+info:
+    title: GreenShare
+    contact: {}
+    version: '1.0'
+servers:
+    - url: http://greensharebcn.com/api
+      variables: {}
+paths:
+    /auth/register:
+        post:
+            tags:
+                - Auth
+            summary: Register User
+            operationId: RegisterUser
+            parameters: []
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RegisterUserRequest'
+                        example:
+                            email: jordi@upc.com
+                            password: secret123
+                            nickname: jordi
+                required: true
+            responses:
+                '200':
+                    description: ''
+                    headers: {}
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RegisterUserRequest'
+                '400':
+                    description: Wrong parameters
+                    content:
+                        application/json:
+                            schema: {}
+                            example:
+                                email:
+                                password:
+                                nickname:
+                '500':
+                    description: Couldn't create user
+                    content:
+                        application/json:
+                            schema: {}
+            deprecated: false
+    /auth/login:
+        post:
+            tags:
+                - Auth
+            summary: Login User
+            operationId: LoginUser
+            parameters: []
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/LoginUserRequest'
+                        example:
+                            email: john@greenshare.com
+                            password: secret123
+                required: true
+            responses:
+                '200':
+                    description: ''
+                    headers: {}
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/LoginUserRequest'
+                '400':
+                    description: Wrong parameters
+                    content:
+                        application/json:
+                            schema: {}
+                            example:
+                                email: thisisnotanemail.com
+                                password: thisisnotthecorrectpassword
+                '401':
+                    description: Unauthorized
+                    content:
+                        application/json:
+                            schema: {}
+            deprecated: false
+components:
+    schemas:
+        RegisterUserRequest:
+            title: RegisterUserRequest
+            required:
+                - email
+                - password
+                - nickname
+            type: object
+            properties:
+                email:
+                    type: string
+                password:
+                    type: string
+                nickname:
+                    type: string
+            example:
+                email: jordi@upc.com
+                password: secret123
+                nickname: jordi
+        LoginUserRequest:
+            title: LoginUserRequest
+            required:
+                - email
+                - password
+            type: object
+            properties:
+                email:
+                    type: string
+                password:
+                    type: string
+            example:
+                email: john@greenshare.com
+                password: secret123
+tags:
+    - name: Auth
+      description: 'Authorization section for login and register user'
