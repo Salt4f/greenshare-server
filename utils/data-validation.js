@@ -51,6 +51,8 @@ function DNI(dni) {
 
 function password(password) {
     if (password === undefined || !password) return false;
+
+    return true;
 }
 
 function underAge(birthday) {
