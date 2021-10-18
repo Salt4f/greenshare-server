@@ -47,4 +47,15 @@ describe('data-validation', function () {
             assert.equal(validate.nickname('greenshare'), true);
         });
     });
+    describe('#password(password)', function () {
+        it('should return false when the value is undefined', function () {
+            assert.equal(validate.password(undefined), false);
+        });
+        it('should return false when the value is empty', function () {
+            assert.equal(validate.password(''), false);
+        });
+        it('should return true when the password is valid', function () {
+            assert.equal(validate.nickname('a#r30ac!apoAWASag'), true);
+        });
+    });
 });
