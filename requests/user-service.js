@@ -5,12 +5,12 @@ const registerRequest = async (email, password, nickname) => {
     try {
         const response = await axios({
             method: 'post',
-            url: 'users.greensharebcn.com/users',
+            url: 'http://users.vgafib.org/users/',
             responseType: 'json',
             data: {
-                email,
-                password,
-                nickname,
+                email: email,
+                password: password,
+                nickName: nickname,
             },
         });
         return response;
@@ -23,11 +23,11 @@ const loginRequest = async (email, password) => {
     try {
         const response = await axios({
             method: 'get',
-            url: 'users.greensharebcn.com/login',
+            url: 'http://users.vgafib.org/login/',
             responseType: 'json',
             data: {
-                email,
-                password,
+                email: email,
+                password: password,
             },
         });
     } catch (e) {
