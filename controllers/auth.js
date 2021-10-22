@@ -4,7 +4,11 @@ const {
     UnauthenticatedError,
     InternalServerError,
 } = require('../errors');
-const { registerRequest, loginRequest } = require('../requests/user-service');
+const {
+    registerRequest,
+    loginRequest,
+    tokenValidationRequest,
+} = require('../requests/user-service');
 const { createUser } = require('../db/users');
 const { request } = require('express');
 const validate = require('../utils/data-validation');
@@ -86,7 +90,39 @@ const login = async (req, res) => {
     }
 };
 
+const tokenValidation = async (req, res) => {
+    const { id, token } = req.body;
+    console.log(`Starting token validation...`);
+    if (!validate.id(id)) {
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: `Wrong parameters: invalid or missing id`,
+        });
+        return;
+    }
+    if (!validate.token(token)) {
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: `Wrong parameters: invalid or missing token`,
+        });
+        return;
+    }
+    try {
+        const response = await tokenValidationRequest(id, token);
+        if (response.status == StatusCodes.CREATED) {
+            console.log('Token validated');
+            res.status(StatusCodes.OK).send();
+        } else {
+            console.log('Token invalid');
+            res.status(StatusCodes.FORBIDDEN).send();
+        }
+    } catch (e) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: `Internal server error`,
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
+    tokenValidation,
 };
