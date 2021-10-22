@@ -36,7 +36,31 @@ const loginRequest = async (email, password) => {
     }
 };
 
+const tokenValidationRequest = async (id, token) => {
+    try {
+        const response = await axios({
+            method: 'post',
+            url: 'http://users.vgafib.org/verify-user/',
+            responseType: 'json',
+            data: {
+                id: id,
+                token: token,
+            },
+        });
+        return response;
+    } catch (e) {
+        console.log(
+            `[WARNING]: Returning false at token validation because caught exception. This should be caused by a 404 response if token is invalid (please response to a 400 in user validation).`
+        );
+        return {
+            status: 400,
+        };
+        throw new Error(e);
+    }
+};
+
 module.exports = {
     registerRequest,
     loginRequest,
+    tokenValidationRequest,
 };
