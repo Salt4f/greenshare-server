@@ -137,6 +137,6 @@ dist
 
 .tern-port
 
-# Mariadb
+# MariaDB
 
 mariadb/dbdata/

@@ -80,7 +80,7 @@ pipeline {
                     remote.user = env.SSH_USER
                     remote.password = env.SSH_PASSWORD
                     remote.allowAnyHosts = true
-                    sshCommand remote: remote, command: "./pes/backend.sh"
+                    sshCommand remote: remote, command: "cd pes && ./backend.sh"
                 }
             }
         }
