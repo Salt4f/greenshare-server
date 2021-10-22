@@ -32,7 +32,7 @@ const register = async (req, res) => {
     }
     try {
         const response = await registerRequest(email, password, nickname);
-        if (response.status == StatusCodes.OK) {
+        if (response.status == StatusCodes.CREATED) {
             await createUser(response.data.id, email, nickname);
             console.log('Successfully created user, sending response...');
             res.status(StatusCodes.CREATED).json({
@@ -68,7 +68,7 @@ const login = async (req, res) => {
     }
     try {
         const response = await loginRequest(email, password);
-        if (response.status == StatusCodes.OK) {
+        if (response.status == StatusCodes.CREATED) {
             console.log('Successfully logged in, sending response...');
             res.status(StatusCodes.OK).json({
                 id: response.data.id,
