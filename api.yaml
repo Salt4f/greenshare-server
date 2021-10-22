@@ -4,7 +4,7 @@ info:
     contact: {}
     version: '1.0'
 servers:
-    - url: http://greensharebcn.com/api
+    - url: http://server.vgafib.org
       variables: {}
 paths:
     /auth/register:
@@ -32,21 +32,24 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/RegisterUserRequest'
+                                $ref: '#/components/schemas/IdToken'
+                            example:
+                                id: 28
+                                token: 'NwinjHHz5LDCYTrfXyhM6WcEYUU2PiNF'
                 '400':
                     description: Wrong parameters
                     content:
                         application/json:
-                            schema: {}
                             example:
-                                email:
-                                password:
-                                nickname:
+                                error: 'Wrong parameters: invalid or missing email'
                 '500':
-                    description: Couldn't create user
+                    description: Couldn't create user. E.g. email already in use
                     content:
                         application/json:
-                            schema: {}
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                            example:
+                                error: 'Internal server error'
             deprecated: false
     /auth/login:
         post:
@@ -72,20 +75,57 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/LoginUserRequest'
+                                $ref: '#/components/schemas/IdToken'
+                            example:
+                                id: 28
+                                token: 'NwinjHHz5LDCYTrfXyhM6WcEYUU2PiNF'
                 '400':
                     description: Wrong parameters
                     content:
                         application/json:
-                            schema: {}
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
                             example:
-                                email: thisisnotanemail.com
-                                password: thisisnotthecorrectpassword
+                                error: 'Wrong parameters: invalid or missing email'
                 '401':
-                    description: Unauthorized
+                    description: Unauthorized because invalid credentials
                     content:
                         application/json:
-                            schema: {}
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                            example:
+                                error: 'Invalid credentials'
+            deprecated: false
+    /auth/validate:
+        post:
+            tags:
+                - Auth
+            summary: Validate token
+            operationId: ValidateToken
+            parameters: []
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TokenValidationRequest'
+                        example:
+                            id: 28
+                            token: 'NwinjHHz5LDCYTrfXyhM6WcEYUU2PiNF'
+                required: true
+            responses:
+                '200':
+                    description: 'Token was successfully validated'
+                '400':
+                    description: Wrong parameters
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                            example:
+                                error: 'Wrong parameters: invalid or missing token'
+                '403':
+                    description: 'Token is not valid'
             deprecated: false
 components:
     schemas:
@@ -121,6 +161,31 @@ components:
             example:
                 email: john@greenshare.com
                 password: secret123
+        TokenValidationRequest:
+            title: TokenValidationRequest
+            required:
+                - id
+                - token
+            type: object
+            properties:
+                id:
+                    type: integer
+                token:
+                    type: string
+        IdToken:
+            title: IdToken
+            type: object
+            properties:
+                id:
+                    type: integer
+                token:
+                    type: string
+        ErrorResponse:
+            title: ErrorResponse
+            type: object
+            properties:
+                error:
+                    type: string
 tags:
     - name: Auth
       description: 'Authorization section for login and register user'

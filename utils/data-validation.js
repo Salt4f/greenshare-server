@@ -55,6 +55,19 @@ function password(password) {
     return true;
 }
 
+function id(id) {
+    if (id === undefined || !id) return false;
+    if (id < 1) return false;
+
+    return true;
+}
+
+function token(token) {
+    if (token === undefined || !token) return false;
+
+    return true;
+}
+
 function underAge(birthday) {
     // it will accept two types of format yyyy-mm-dd and yyyy/mm/dd
     var optimizedBirthday = birthday.replace(/-/g, '/');
@@ -81,4 +94,6 @@ module.exports = {
     DNI,
     password,
     underAge,
+    id,
+    token,
 };
