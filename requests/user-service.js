@@ -22,7 +22,7 @@ const registerRequest = async (email, password, nickname) => {
 const loginRequest = async (email, password) => {
     try {
         const response = await axios({
-            method: 'get',
+            method: 'post',
             url: 'http://users.vgafib.org/login/',
             responseType: 'json',
             data: {
@@ -30,6 +30,7 @@ const loginRequest = async (email, password) => {
                 password: password,
             },
         });
+        return response;
     } catch (e) {
         throw new Error(e);
     }
