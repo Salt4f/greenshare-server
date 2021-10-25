@@ -10,7 +10,7 @@ const registerRequest = async (email, password, nickname) => {
             data: {
                 email: email,
                 password: password,
-                nickName: nickname,
+                nickname: nickname,
             },
         });
         return response;
@@ -49,12 +49,6 @@ const tokenValidationRequest = async (id, token) => {
         });
         return response;
     } catch (e) {
-        console.log(
-            `[WARNING]: Returning false at token validation because caught exception. This should be caused by a 404 response if token is invalid (please response to a 400 in user validation).`
-        );
-        return {
-            status: 400,
-        };
         throw new Error(e);
     }
 };
