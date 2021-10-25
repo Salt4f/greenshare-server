@@ -43,6 +43,10 @@ const register = async (req, res) => {
                 id: response.data.id,
                 token: response.data.token,
             });
+        } else if (response.status == StatusCodes.BAD_REQUEST) {
+            res.status(StatusCodes.BAD_REQUEST).json({
+                error: `Email already registered`,
+            });
         } else {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 error: `User service error`,
@@ -112,7 +116,7 @@ const tokenValidation = async (req, res) => {
             res.status(StatusCodes.OK).send();
         } else {
             console.log('Token invalid');
-            res.status(StatusCodes.FORBIDDEN).send();
+            res.status(StatusCodes.UNAUTHORIZED).send();
         }
     } catch (e) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
