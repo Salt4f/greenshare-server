@@ -1,5 +1,7 @@
 var pool = require('./connect');
 
+const logger = require('../utils/logger');
+
 const createUser = async (id, email, nickname) => {
     let conn;
     try {
@@ -8,10 +10,13 @@ const createUser = async (id, email, nickname) => {
             `INSERT INTO Users(id, email, nickname) VALUES (?, ?, ?)`,
             [id, email, nickname]
         );
-        console.log(`Successfully created user: ${res}`);
+        logger.log(`Successfully created user: ${res}`, 1);
     } catch (e) {
+        logger.log(e.message, 0);
+
         throw new Error(e);
     } finally {
+        logger.log('Ending db connection', 1);
         if (conn) conn.end();
     }
 };

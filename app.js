@@ -4,6 +4,8 @@ const app = express();
 const auth = require('./routes/auth.js');
 const authenticateUser = require('./middlewares/authentication');
 
+const logger = require('./utils/logger');
+
 // Middlewares
 app.use(express.json());
 
@@ -19,6 +21,8 @@ const start = async () => {
             console.log(`Server is listening on port ${port}...`)
         );
     } catch (error) {
+        logger.log(e.message, 0);
+
         console.log(error);
     }
 };
