@@ -12,7 +12,7 @@ const registerRequest = async (email, password, nickname) => {
             data: {
                 email: email,
                 password: password,
-                nickName: nickname,
+                nickname: nickname,
             },
         });
         return response;
@@ -55,6 +55,7 @@ const tokenValidationRequest = async (id, token) => {
         });
         return response;
     } catch (e) {
+<<<<<<< HEAD
         logger.log(e.message, 0);
 
         console.log(
@@ -63,6 +64,9 @@ const tokenValidationRequest = async (id, token) => {
         return {
             status: 400,
         };
+=======
+        throw new Error(e);
+>>>>>>> aea25fdd7137fd2f9df0faf02dde5f72db5786d9
     }
 };
 
