@@ -12,7 +12,7 @@ const createUser = async (id, email, nickname) => {
         );
         logger.log(`Successfully created user: ${res}`, 1);
     } catch (e) {
-        logger.log(e.message, 0);
+        // logger.log(e.message, 0);
 
         throw new Error(e);
     } finally {

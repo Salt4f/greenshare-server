@@ -5,6 +5,7 @@ const logger = require('../utils/logger');
 
 const registerRequest = async (email, password, nickname) => {
     try {
+        logger.log('Sending register request to UserService with axios...', 1);
         const response = await axios({
             method: 'post',
             url: 'http://users.vgafib.org/users/',
@@ -25,6 +26,8 @@ const registerRequest = async (email, password, nickname) => {
 
 const loginRequest = async (email, password) => {
     try {
+        logger.log('Sending login request to UserService with axios...', 1);
+
         const response = await axios({
             method: 'post',
             url: 'http://users.vgafib.org/login/',
@@ -44,6 +47,11 @@ const loginRequest = async (email, password) => {
 
 const tokenValidationRequest = async (id, token) => {
     try {
+        logger.log(
+            'Sending tokenValidation request to UserService with axios...',
+            1
+        );
+
         const response = await axios({
             method: 'post',
             url: 'http://users.vgafib.org/verify-user/',
@@ -55,7 +63,6 @@ const tokenValidationRequest = async (id, token) => {
         });
         return response;
     } catch (e) {
-<<<<<<< HEAD
         logger.log(e.message, 0);
 
         console.log(
@@ -64,9 +71,6 @@ const tokenValidationRequest = async (id, token) => {
         return {
             status: 400,
         };
-=======
-        throw new Error(e);
->>>>>>> aea25fdd7137fd2f9df0faf02dde5f72db5786d9
     }
 };
 

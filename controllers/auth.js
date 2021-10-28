@@ -10,7 +10,6 @@ const {
     tokenValidationRequest,
 } = require('../requests/stubs/user-service');
 const { createUser } = require('../db/users');
-const { request } = require('express');
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
@@ -56,15 +55,16 @@ const register = async (req, res) => {
             'Received register response from UserService, checking...',
             1
         );
-        logger.log(
-            `Received register response from UserService, checking... ${inspect(
-                response,
-                false,
-                null,
-                false
-            )}`,
-            2
-        );
+
+        // logger.log(
+        //     `Received register response from UserService, checking... ${inspect(
+        //         response,
+        //         false,
+        //         null,
+        //         false
+        //     )}`,
+        //     2
+        // );
 
         if (response.status == StatusCodes.CREATED) {
             logger.log(
@@ -93,6 +93,16 @@ const register = async (req, res) => {
         }
     } catch (e) {
         logger.log(e.message, 0);
+
+        // logger.log(
+        //     `Register request error, checking... ${inspect(
+        //         e,
+        //         false,
+        //         null,
+        //         false
+        //     )}`,
+        //     2
+        // );
 
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             error: `Internal server error`,
@@ -151,6 +161,16 @@ const login = async (req, res) => {
     } catch (e) {
         logger.log(e.message, 0);
 
+        // logger.log(
+        //     `Login request error, checking... ${inspect(
+        //         e,
+        //         false,
+        //         null,
+        //         false
+        //     )}`,
+        //     2
+        // );
+
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             error: `Internal server error`,
         });
@@ -187,6 +207,16 @@ const tokenValidation = async (req, res) => {
         const response = await tokenValidationRequest(id, token);
         logger.log(`Received tokenValidationRequest response, checking...`, 1);
 
+        // logger.log(
+        //     `Received login response from UserService, checking... ${inspect(
+        //         response,
+        //         false,
+        //         null,
+        //         false
+        //     )}`,
+        //     2
+        // );
+
         if (response.status == StatusCodes.CREATED) {
             logger.log(`Token successfuly validated, sending response...`, 1);
 
@@ -197,6 +227,16 @@ const tokenValidation = async (req, res) => {
         }
     } catch (e) {
         logger.log(e.message, 0);
+
+        // logger.log(
+        //     `TokenValidation request error, checking... ${inspect(
+        //         e,
+        //         false,
+        //         null,
+        //         false
+        //     )}`,
+        //     2
+        // );
 
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             error: `Internal server error`,
