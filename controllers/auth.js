@@ -192,14 +192,8 @@ const tokenValidation = async (req, res) => {
 
             res.status(StatusCodes.OK).send();
         } else {
-<<<<<<< HEAD
             logger.log(`Invalid token, sending response...`, 1);
-
-            res.status(StatusCodes.FORBIDDEN).send();
-=======
-            console.log('Token invalid');
             res.status(StatusCodes.UNAUTHORIZED).send();
->>>>>>> aea25fdd7137fd2f9df0faf02dde5f72db5786d9
         }
     } catch (e) {
         logger.log(e.message, 0);
