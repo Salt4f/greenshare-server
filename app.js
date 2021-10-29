@@ -4,6 +4,8 @@ const app = express();
 const auth = require('./routes/auth.js');
 const authenticateUser = require('./middlewares/authentication');
 
+require('dotenv').config();
+
 // Middlewares
 app.use(express.json());
 

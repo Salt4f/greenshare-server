@@ -1,6 +1,8 @@
 const { StatusCodes } = require('http-status-codes');
 const axios = require('axios');
 
+require('dotenv').config();
+
 const registerRequest = async (email, password, nickname) => {
     try {
         const response = await axios({
