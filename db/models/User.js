@@ -23,6 +23,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 // };
 
 const User = Sequelize.define(
+    // modelName
     'Users',
     {
         // Model attributes are defined here
@@ -40,10 +41,10 @@ const User = Sequelize.define(
             allowNull: false,
         },
         dni: {
-            type: DataTypes.DATEONLY,
+            type: DataTypes.STRING,
         },
         birthDate: {
-            type: DataTypes.STRING,
+            type: DataTypes.DATEONLY,
         },
         fullName: {
             type: DataTypes.STRING,

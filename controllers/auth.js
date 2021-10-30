@@ -75,14 +75,7 @@ const register = async (req, res) => {
 
             // CREATE USER TO OUR DATABSE
             // await createUser(response.data.id, email, nickname);
-            await db.users.create({
-                email,
-                password,
-                nickname,
-                dni,
-                birthDate,
-                fullName,
-            });
+            await db.users.create(req.body);
 
             logger.log(
                 'Successfully created user, sending response with id and token...',

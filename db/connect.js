@@ -24,6 +24,14 @@ const sequelize = new Sequelize(
         define: {
             underscored: true,
         },
+        dialectOptions: {
+            options: {
+                requestTimeout: process.env.DB_ACQUIRE_TIMEOUT,
+            },
+        },
+        pool: {
+            max: process.env.DB_CONNECTION_LIMIT,
+        },
     }
 );
 
@@ -34,5 +42,7 @@ db.sequelize = sequelize;
 
 // Models / tables
 db.users = require('./models/User')(sequelize, Sequelize);
+
+sequelize.sync({ force: false });
 
 module.exports = db;
