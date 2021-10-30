@@ -6,6 +6,8 @@ const authenticateUser = require('./middlewares/authentication');
 
 const logger = require('./utils/logger');
 
+require('dotenv').config();
+
 // Middlewares
 app.use(express.json());
 

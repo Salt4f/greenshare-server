@@ -3,12 +3,14 @@ const axios = require('axios');
 
 const logger = require('../utils/logger');
 
+require('dotenv').config();
+
 const registerRequest = async (email, password, nickname) => {
     try {
         logger.log('Sending register request to UserService with axios...', 1);
         const response = await axios({
             method: 'post',
-            url: 'http://users.vgafib.org/users/',
+            url: process.env.USERSERVICE_REGISTER_URL,
             responseType: 'json',
             data: {
                 email: email,
@@ -30,7 +32,7 @@ const loginRequest = async (email, password) => {
 
         const response = await axios({
             method: 'post',
-            url: 'http://users.vgafib.org/login/',
+            url: process.env.USERSERVICE_LOGIN_URL,
             responseType: 'json',
             data: {
                 email: email,
@@ -54,7 +56,7 @@ const tokenValidationRequest = async (id, token) => {
 
         const response = await axios({
             method: 'post',
-            url: 'http://users.vgafib.org/verify-user/',
+            url: process.env.USERSERVICE_TOKEN_VALIDATION_URL,
             responseType: 'json',
             data: {
                 id: id,
