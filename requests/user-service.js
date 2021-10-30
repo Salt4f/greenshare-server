@@ -1,11 +1,13 @@
 const { StatusCodes } = require('http-status-codes');
 const axios = require('axios');
 
+require('dotenv').config();
+
 const registerRequest = async (email, password, nickname) => {
     try {
         const response = await axios({
             method: 'post',
-            url: 'http://users.vgafib.org/users/',
+            url: process.env.USERSERVICE_REGISTER_URL,
             responseType: 'json',
             data: {
                 email: email,
@@ -23,7 +25,7 @@ const loginRequest = async (email, password) => {
     try {
         const response = await axios({
             method: 'post',
-            url: 'http://users.vgafib.org/login/',
+            url: process.env.USERSERVICE_LOGIN_URL,
             responseType: 'json',
             data: {
                 email: email,
@@ -40,7 +42,7 @@ const tokenValidationRequest = async (id, token) => {
     try {
         const response = await axios({
             method: 'post',
-            url: 'http://users.vgafib.org/verify-user/',
+            url: process.env.USERSERVICE_TOKEN_VALIDATION_URL,
             responseType: 'json',
             data: {
                 id: id,
