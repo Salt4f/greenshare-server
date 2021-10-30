@@ -31,5 +31,5 @@ module.exports = (sequelize, DataTypes) => {
             timestamps: true,
         }
     );
-    return Users;
+    return Offer;
 };
