@@ -9,7 +9,8 @@ const {
     loginRequest,
     tokenValidationRequest,
 } = require('../requests/stubs/user-service');
-const { createUser } = require('../db/users');
+// const { createUser } = require('../db/models/users');
+const db = require('../db/connect');
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
@@ -17,7 +18,7 @@ const { inspect } = require('util');
 const register = async (req, res) => {
     logger.log('Received register request', 1);
 
-    const { email, password, nickname } = req.body;
+    const { email, password, nickname, dni, birthDate, fullName } = req.body;
 
     /////////////// VALIDATION ///////////////
     logger.log(`Starting validation...`, 1);
@@ -72,7 +73,18 @@ const register = async (req, res) => {
                 1
             );
 
-            await createUser(response.data.id, email, nickname);
+            // CREATE USER TO OUR DATABSE
+            // await createUser(response.data.id, email, nickname);
+            await db.users.create({
+                id: response.data.id,
+                email,
+                password,
+                nickname,
+                dni,
+                birthDate: new Date(birthDate),
+                fullName,
+            });
+
             logger.log(
                 'Successfully created user, sending response with id and token...',
                 1
