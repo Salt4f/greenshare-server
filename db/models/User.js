@@ -1,5 +1,3 @@
-const logger = require('../../utils/logger');
-
 module.exports = (sequelize, DataTypes) => {
     const Users = sequelize.define(
         // modelName
