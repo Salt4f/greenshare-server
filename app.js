@@ -24,8 +24,6 @@ const start = async () => {
         );
     } catch (error) {
         logger.log(e.message, 0);
-
-        console.log(error);
     }
 };
 
