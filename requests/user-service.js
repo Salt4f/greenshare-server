@@ -1,10 +1,13 @@
 const { StatusCodes } = require('http-status-codes');
 const axios = require('axios');
 
+const logger = require('../utils/logger');
+
 require('dotenv').config();
 
 const registerRequest = async (email, password, nickname) => {
     try {
+        logger.log('Sending register request to UserService with axios...', 1);
         const response = await axios({
             method: 'post',
             url: process.env.USERSERVICE_REGISTER_URL,
@@ -17,12 +20,16 @@ const registerRequest = async (email, password, nickname) => {
         });
         return response;
     } catch (e) {
+        logger.log(e.message, 0);
+
         throw new Error(e);
     }
 };
 
 const loginRequest = async (email, password) => {
     try {
+        logger.log('Sending login request to UserService with axios...', 1);
+
         const response = await axios({
             method: 'post',
             url: process.env.USERSERVICE_LOGIN_URL,
@@ -34,12 +41,19 @@ const loginRequest = async (email, password) => {
         });
         return response;
     } catch (e) {
+        logger.log(e.message, 0);
+
         throw new Error(e);
     }
 };
 
 const tokenValidationRequest = async (id, token) => {
     try {
+        logger.log(
+            'Sending tokenValidation request to UserService with axios...',
+            1
+        );
+
         const response = await axios({
             method: 'post',
             url: process.env.USERSERVICE_TOKEN_VALIDATION_URL,
@@ -51,7 +65,14 @@ const tokenValidationRequest = async (id, token) => {
         });
         return response;
     } catch (e) {
-        throw new Error(e);
+        logger.log(e.message, 0);
+
+        console.log(
+            `[WARNING]: Returning false at token validation because caught exception. This should be caused by a 404 response if token is invalid (please response to a 400 in user validation).`
+        );
+        return {
+            status: 400,
+        };
     }
 };
 
