@@ -22,7 +22,8 @@ const sequelize = new Sequelize(
         port: process.env.DB_PORT,
         dialect: process.env.DB_DIALECT,
         define: {
-            underscored: true,
+            underscored: false,
+            timestamps: false,
         },
         dialectOptions: {
             options: {
@@ -30,7 +31,7 @@ const sequelize = new Sequelize(
             },
         },
         pool: {
-            max: process.env.DB_CONNECTION_LIMIT,
+            max: 15,
         },
     }
 );
