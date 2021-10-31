@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
             terminateAt: DataTypes.DATE,
             location: DataTypes.STRING,
             ecoImpact: DataTypes.INTEGER,
-            userId: DataTypes.INTEGER,
+            ownerId: DataTypes.INTEGER,
         },
         {
             // Other model options go here

@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
             location: DataTypes.STRING,
             ecoImpact: DataTypes.INTEGER,
             // falta icon & photos
-            userId: DataTypes.INTEGER,
+            ownerId: DataTypes.INTEGER,
         },
         {
             // Other model options go here

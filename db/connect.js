@@ -35,12 +35,16 @@ db.sequelize = sequelize;
 db.users = require('./models/User')(sequelize, Sequelize);
 db.offers = require('./models/Offer')(sequelize, Sequelize);
 db.requests = require('./models/Request')(sequelize, Sequelize);
+db.acceptedPosts = require('./models/AcceptedPost')(sequelize, Sequelize);
+db.completedPosts = require('./models/CompletedPost')(sequelize, Sequelize);
 
 // Relations
-db.offers.belongsTo(db.users);
-db.requests.belongsTo(db.users);
-db.users.hasMany(db.offers);
-db.users.hasMany(db.requests);
+db.offers.belongsTo(db.users, { foreignKey: 'ownerId' });
+db.requests.belongsTo(db.users, { foreignKey: 'ownerId' });
+db.users.hasMany(db.offers, { foreignKey: 'ownerId' });
+db.users.hasMany(db.requests, { foreignKey: 'ownerId' });
+
+db.completedPosts.belongsTo(db.acceptedPosts, { foreignKey: 'acceptedPostId' });
 
 // Sync with the db
 sequelize.sync({ force: false });
