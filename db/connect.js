@@ -1,17 +1,6 @@
-const mariadb = require('mariadb');
 require('dotenv').config();
 
 const { Sequelize } = require('sequelize');
-
-// const pool = mariadb.createPool({
-//     host: process.env.DB_HOST,
-//     port: process.env.DB_PORT,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASSWORD,
-//     database: process.env.DB_DATABASE,
-//     connectionLimit: process.env.DB_CONNECTION_LIMIT,
-//     acquireTimeout: process.env.DB_ACQUIRE_TIMEOUT,
-// });
 
 const sequelize = new Sequelize(
     process.env.DB_DATABASE,
@@ -36,6 +25,7 @@ const sequelize = new Sequelize(
     }
 );
 
+// Connect all the models/tables in the database to a db object
 const db = {};
 
 db.Sequelize = Sequelize;
@@ -43,7 +33,26 @@ db.sequelize = sequelize;
 
 // Models / tables
 db.users = require('./models/User')(sequelize, Sequelize);
+db.offers = require('./models/Offer')(sequelize, Sequelize);
+db.requests = require('./models/Request')(sequelize, Sequelize);
+db.acceptedPosts = require('./models/AcceptedPost')(sequelize, Sequelize);
+db.completedPosts = require('./models/CompletedPost')(sequelize, Sequelize);
+db.tags = require('./models/Tag')(sequelize, Sequelize);
 
+// Relations
+db.offers.belongsTo(db.users, { foreignKey: 'ownerId' });
+db.requests.belongsTo(db.users, { foreignKey: 'ownerId' });
+db.users.hasMany(db.offers, { foreignKey: 'ownerId' });
+db.users.hasMany(db.requests, { foreignKey: 'ownerId' });
+
+db.completedPosts.belongsTo(db.acceptedPosts, { foreignKey: 'acceptedPostId' });
+
+db.tags.belongsToMany(db.offers, { through: 'OfferTags' });
+db.offers.belongsToMany(db.tags, { through: 'OfferTags' });
+db.tags.belongsToMany(db.requests, { through: 'RequestTags' });
+db.requests.belongsToMany(db.tags, { through: 'RequestTags' });
+
+// Sync with the db
 sequelize.sync({ force: false });
 
 module.exports = db;
