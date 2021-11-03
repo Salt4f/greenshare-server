@@ -10,10 +10,15 @@ const authenticateUser = async (req, res, next) => {
         );
         if (response.status == StatusCodes.CREATED) {
             // check id in our db
-            await db.users.findOne({ where: { id: req.body.id } });
-            logger.log(`User successfuly validated, sending response...`, 1);
+            const user = await db.users.findOne({ where: { id: req.body.id } });
+            if (user != null) {
+                logger.log(
+                    `User successfuly validated, sending response...`,
+                    1
+                );
 
-            next();
+                next();
+            }
         } else {
             logger.log(`Invalid token or ownerId, sending response...`, 1);
             throw new Error('UNAUTHORIZED');
