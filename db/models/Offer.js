@@ -25,7 +25,8 @@ module.exports = (sequelize, DataTypes) => {
             terminateAt: DataTypes.DATE,
             location: DataTypes.STRING,
             ecoImpact: DataTypes.INTEGER,
-            // falta icon & photos
+            icon: DataTypes.BLOB,
+            photos: DataTypes.BLOB,
             ownerId: DataTypes.INTEGER,
         },
         {
