@@ -38,11 +38,11 @@ const getRequestById = async (req, res) => {
     res.send('request');
 };
 
-const getOfferByQuery = async (req, res) => {
+const getOffersByQuery = async (req, res) => {
     res.send('offers');
 };
 
-const getRequestByQuery = async (req, res) => {
+const getRequestsByQuery = async (req, res) => {
     res.send('requests');
 };
 
@@ -53,6 +53,6 @@ module.exports = {
     editOffer,
     getOfferById,
     getRequestById,
-    getOfferByQuery,
-    getRequestByQuery,
+    getOffersByQuery,
+    getRequestsByQuery,
 };

@@ -12,11 +12,11 @@ const {
     editOffer,
     getOfferById,
     getRequestById,
-    getOfferByQuery,
-    getRequestByQuery,
+    getOffersByQuery,
+    getRequestsByQuery,
 } = require('../controllers/posts');
 
-router.route('/offers').post(authMiddleware, createOffer).get(getOfferByQuery);
+router.route('/offers').post(authMiddleware, createOffer).get(getOffersByQuery);
 router
     .route('/offers/:offerId')
     .put(authMiddleware, editOffer)
@@ -25,7 +25,7 @@ router
 router
     .route('/requests')
     .post(authMiddleware, createRequest)
-    .get(getRequestByQuery);
+    .get(getRequestsByQuery);
 router
     .route('/requests/:requestId')
     .put(authMiddleware, editRequest)
