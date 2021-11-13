@@ -11,7 +11,36 @@ const logger = require('../utils/logger');
 const { inspect } = require('util');
 
 const createOffer = async (req, res) => {
-    res.send('offer created');
+    logger.log('Received createOffer request, creating...', 0);
+
+    const { id, name, description, terminateAt, location, icon, photos, tags } =
+        req.body;
+
+    try {
+        const offer = await db.offers.create({
+            name,
+            description,
+            terminateAt,
+            location,
+            icon,
+            photos,
+            ownerId: id,
+        });
+
+        tags.forEach((tag) => {
+            console.log(tag);
+            await db.tags.create({ tag });
+        });
+
+        logger.log('Successfully created offer', 0);
+
+        res.status(StatusCodes.CREATED).json({
+            id: offer.id,
+            createdAt: offer.createdAt,
+        });
+    } catch (error) {
+        logger.log(error.message, 0);
+    }
 };
 
 const createRequest = async (req, res) => {

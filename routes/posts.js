@@ -16,7 +16,8 @@ const {
     getRequestsByQuery,
 } = require('../controllers/posts');
 
-router.route('/offers').post(authMiddleware, createOffer).get(getOffersByQuery);
+// need to add auth middleware to createOffer
+router.route('/offers').post(createOffer).get(getOffersByQuery);
 router
     .route('/offers/:offerId')
     .put(authMiddleware, editOffer)
