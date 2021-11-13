@@ -47,10 +47,26 @@ db.users.hasMany(db.requests, { foreignKey: 'ownerId' });
 
 db.completedPosts.belongsTo(db.acceptedPosts, { foreignKey: 'acceptedPostId' });
 
-db.tags.belongsToMany(db.offers, { through: 'OfferTags' });
-db.offers.belongsToMany(db.tags, { through: 'OfferTags' });
-db.tags.belongsToMany(db.requests, { through: 'RequestTags' });
-db.requests.belongsToMany(db.tags, { through: 'RequestTags' });
+db.tags.belongsToMany(db.offers, {
+    through: 'OfferTags',
+    as: 'offersUsing',
+    foreignKey: 'tag_id',
+});
+db.offers.belongsToMany(db.tags, {
+    through: 'OfferTags',
+    as: 'tags',
+    foreignKey: 'offer_id',
+});
+db.tags.belongsToMany(db.requests, {
+    through: 'RequestTags',
+    as: 'requestsUsing',
+    foreignKey: 'tag_id',
+});
+db.requests.belongsToMany(db.tags, {
+    through: 'RequestTags',
+    as: 'tags',
+    foreignKey: 'request_id',
+});
 
 // Sync with the db
 sequelize.sync({ force: false });

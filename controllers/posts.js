@@ -13,6 +13,8 @@ const { inspect } = require('util');
 const createOffer = async (req, res) => {
     logger.log('Received createOffer request, creating...', 0);
 
+    // TO-DO: validar todos los campos de la req.body
+
     const { id, name, description, terminateAt, location, icon, photos, tags } =
         req.body;
 
@@ -27,9 +29,20 @@ const createOffer = async (req, res) => {
             ownerId: id,
         });
 
-        tags.forEach((tag) => {
-            console.log(tag);
-            await db.tags.create({ tag });
+        // TO-DO: comprobar si existe tag
+
+        tags.forEach(async (each) => {
+            console.log(each);
+            const tag = await db.tags.findOrCreate({
+                where: {
+                    name: each,
+                },
+                default: {
+                    name: each,
+                },
+            });
+
+            offer.addTag(tag);
         });
 
         logger.log('Successfully created offer', 0);
