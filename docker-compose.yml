@@ -2,8 +2,8 @@ version: '3'
 services:
     greenshare:
         container_name: 'greenshare-server'
-        image: 'raulplesa/greenshare-server:latest'
-        #build: .
+        #image: 'raulplesa/greenshare-server:latest'
+        build: .
         depends_on:
             - 'mariadb'
         ports:

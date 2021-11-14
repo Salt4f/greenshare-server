@@ -18,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
             description: {
                 type: DataTypes.STRING,
             },
-            createdAt: true,
             terminateAt: DataTypes.DATE,
             location: DataTypes.STRING,
             ecoImpact: DataTypes.INTEGER,

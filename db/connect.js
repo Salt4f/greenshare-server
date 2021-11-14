@@ -50,22 +50,22 @@ db.completedPosts.belongsTo(db.acceptedPosts, { foreignKey: 'acceptedPostId' });
 db.tags.belongsToMany(db.offers, {
     through: 'OfferTags',
     as: 'offersUsing',
-    foreignKey: 'tag_id',
+    foreignKey: 'tags_name',
 });
 db.offers.belongsToMany(db.tags, {
     through: 'OfferTags',
     as: 'tags',
-    foreignKey: 'offer_id',
+    foreignKey: 'offers_id',
 });
 db.tags.belongsToMany(db.requests, {
     through: 'RequestTags',
     as: 'requestsUsing',
-    foreignKey: 'tag_id',
+    foreignKey: 'tags_name',
 });
 db.requests.belongsToMany(db.tags, {
     through: 'RequestTags',
     as: 'tags',
-    foreignKey: 'request_id',
+    foreignKey: 'requests_id',
 });
 
 // Sync with the db

@@ -9,9 +9,10 @@ const db = require('../db/connect');
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
+const { waitForDebugger } = require('inspector');
 
 const createOffer = async (req, res) => {
-    logger.log('Received createOffer request, creating...', 0);
+    logger.log('Received createOffer request, creating...', 1);
 
     // TO-DO: validar todos los campos de la req.body
 
@@ -28,24 +29,34 @@ const createOffer = async (req, res) => {
             photos,
             ownerId: id,
         });
+        logger.log('Created offer, setting up tags...', 1);
 
         // TO-DO: comprobar si existe tag
 
-        tags.forEach(async (each) => {
-            console.log(each);
+        // let tagsArray = [];
+
+        for (const element of tags) {
+            console.log(element);
             const tag = await db.tags.findOrCreate({
                 where: {
-                    name: each,
+                    name: element,
                 },
-                default: {
-                    name: each,
+                defaults: {
+                    name: element,
+                    isOfficial: false,
                 },
             });
+            // tagsArray.push(tag);
+            await offer.addTags(tag);
+        }
+        // logger.log(
+        //     'Added Tags array to db, setting up OfferTags relation...',
+        //     1
+        // );
 
-            offer.addTag(tag);
-        });
+        // await offer.setTags(tagsArray);
 
-        logger.log('Successfully created offer', 0);
+        logger.log('Successfully created offer', 1);
 
         res.status(StatusCodes.CREATED).json({
             id: offer.id,
@@ -62,10 +73,6 @@ const createRequest = async (req, res) => {
 
 const editRequest = async (req, res) => {
     res.send('request edited');
-};
-
-const editOffer = async (req, res) => {
-    res.send('offer edited');
 };
 
 const editOffer = async (req, res) => {
