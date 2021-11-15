@@ -48,24 +48,24 @@ db.users.hasMany(db.requests, { foreignKey: 'ownerId' });
 db.completedPosts.belongsTo(db.acceptedPosts, { foreignKey: 'acceptedPostId' });
 
 db.tags.belongsToMany(db.offers, {
-    through: 'OfferTags',
+    through: 'OfferTag',
     as: 'offersUsing',
-    foreignKey: 'tags_name',
+    // foreignKey: 'offer_id',
 });
 db.offers.belongsToMany(db.tags, {
-    through: 'OfferTags',
+    through: 'OfferTag',
     as: 'tags',
-    foreignKey: 'offers_id',
+    // foreignKey: 'tag_id',
 });
 db.tags.belongsToMany(db.requests, {
-    through: 'RequestTags',
+    through: 'RequestTag',
     as: 'requestsUsing',
-    foreignKey: 'tags_name',
+    // foreignKey: 'request_id',
 });
 db.requests.belongsToMany(db.tags, {
-    through: 'RequestTags',
+    through: 'RequestTag',
     as: 'tags',
-    foreignKey: 'requests_id',
+    // foreignKey: 'tag_id',
 });
 
 // Sync with the db

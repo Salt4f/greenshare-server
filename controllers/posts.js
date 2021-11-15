@@ -33,11 +33,8 @@ const createOffer = async (req, res) => {
 
         // TO-DO: comprobar si existe tag
 
-        // let tagsArray = [];
-
         for (const element of tags) {
-            console.log(element);
-            const tag = await db.tags.findOrCreate({
+            const [tag, created] = await db.tags.findOrCreate({
                 where: {
                     name: element,
                 },
@@ -46,17 +43,20 @@ const createOffer = async (req, res) => {
                     isOfficial: false,
                 },
             });
-            // tagsArray.push(tag);
-            await offer.addTags(tag);
+
+            logger.log(
+                `Current tag's id: ${tag.id}, name: ${tag.name}, isOfficial: ${tag.isOfficial}`,
+                1
+            );
+            await offer.addTag(tag);
+
+            logger.log(
+                `Added tag with id: ${tag.id} to offer with id: ${offer.id}`,
+                1
+            );
         }
-        // logger.log(
-        //     'Added Tags array to db, setting up OfferTags relation...',
-        //     1
-        // );
 
-        // await offer.setTags(tagsArray);
-
-        logger.log('Successfully created offer', 1);
+        logger.log('Successfully created offer, sending response...', 1);
 
         res.status(StatusCodes.CREATED).json({
             id: offer.id,
