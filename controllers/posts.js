@@ -68,7 +68,55 @@ const createOffer = async (req, res) => {
 };
 
 const createRequest = async (req, res) => {
-    res.send('request created');
+    logger.log('Received createRequest request, creating...', 1);
+
+    // TO-DO: validar todos los campos de la req.body
+    const { id, name, description, terminateAt, location, tags } = req.body;
+
+    try {
+        const request = await db.requests.create({
+            name,
+            description,
+            terminateAt,
+            location,
+            ownerId: id,
+        });
+        logger.log('Created request, setting up tags...', 1);
+
+        // TO-DO: comprobar si existe tag
+
+        for (const element of tags) {
+            const [tag, created] = await db.tags.findOrCreate({
+                where: {
+                    name: element,
+                },
+                defaults: {
+                    name: element,
+                    isOfficial: false,
+                },
+            });
+
+            logger.log(
+                `Current tag's id: ${tag.id}, name: ${tag.name}, isOfficial: ${tag.isOfficial}`,
+                1
+            );
+            await request.addTag(tag);
+
+            logger.log(
+                `Added tag with id: ${tag.id} to request with id: ${request.id}`,
+                1
+            );
+        }
+
+        logger.log('Successfully created request, sending response...', 1);
+
+        res.status(StatusCodes.CREATED).json({
+            id: request.id,
+            createdAt: request.createdAt,
+        });
+    } catch (error) {
+        logger.log(error.message, 0);
+    }
 };
 
 const editRequest = async (req, res) => {
