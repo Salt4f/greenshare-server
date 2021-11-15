@@ -1,21 +1,20 @@
-version: "3"
+version: '3'
 services:
-  greenshare:
-    container_name: "greenshare-server"
-    #image: "raulplesa/greenshare-server:latest"
-    build: .
-    depends_on:
-      - "mariadb"
-    ports:
-      - "13000:13000"
-  mariadb:
-    container_name: "mariadb"
-    image: "mariadb:10"
-    environment:
-      - "MARIADB_PASSWORD=p4ssw0rd"
-      - "MARIADB_USER=user"
-      - "MARIADB_DATABASE=greenshare"
-      - "MARIADB_RANDOM_ROOT_PASSWORD=yes"
-    volumes:
-      - "./mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql"
-      - "./mariadb/dbdata:/var/lib/mysql"
+    greenshare:
+        container_name: 'greenshare-server'
+        #image: 'raulplesa/greenshare-server:latest'
+        build: .
+        depends_on:
+            - 'mariadb'
+        ports:
+            - '13000:13000'
+    mariadb:
+        container_name: 'mariadb'
+        image: 'mariadb:10'
+        environment:
+            - 'MARIADB_PASSWORD=p4ssw0rd'
+            - 'MARIADB_USER=user'
+            - 'MARIADB_DATABASE=greenshare'
+            - 'MARIADB_RANDOM_ROOT_PASSWORD=yes'
+        volumes:
+            - './mariadb/dbdata:/var/lib/mysql'
