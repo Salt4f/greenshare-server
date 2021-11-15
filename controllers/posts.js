@@ -94,12 +94,13 @@ const getOffersByQuery = async (req, res) => {
     const { location, distance, owner, quantity } = req.query;
     let { tags } = req.query;
     let tagsArray = [];
+    let whereObject = {};
 
     if (tags !== undefined) {
         tagsArray = tags.split(';');
-    } else tagsArray = undefined;
+        whereObject.tags = tagsArray;
+    }
 
-    let whereObject = {};
     whereObject.location = location;
 
     if (distance !== undefined) {
@@ -123,6 +124,8 @@ const getOffersByQuery = async (req, res) => {
 
     console.log(whereObject);
 
+    const offersFinal = [];
+
     const offers = await db.offers.findAll({
         where: whereObject,
         include: [
@@ -133,7 +136,18 @@ const getOffersByQuery = async (req, res) => {
             },
         ],
     });
-    res.status(StatusCodes.OK).json(offers);
+
+    for (const offer of offers) {
+        for (const tag of offer.tags) {
+            for (const tagQuery of tagsArray) {
+                if (tagQuery == tag.name) {
+                    offersFinal.push(offer);
+                }
+            }
+        }
+    }
+
+    res.status(StatusCodes.OK).json(offersFinal);
 };
 
 const getRequestsByQuery = async (req, res) => {
