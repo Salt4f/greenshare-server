@@ -80,7 +80,32 @@ const editOffer = async (req, res) => {
 };
 
 const getOfferById = async (req, res) => {
-    res.send('offer');
+    logger.log(`Received getOfferById request`, 1);
+
+    const offerId = req.params.offerId;
+    logger.log(`The offerId is: ${offerId}`, 1);
+
+    const offer = await db.offers.findOne({
+        where: { id: offerId },
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial'],
+            },
+        ],
+    });
+
+    if (offer == null) {
+        logger.log(
+            `Offer with id: ${offerId} not found, sending response...`,
+            1
+        );
+
+        res.status(StatusCodes.NOT_FOUND).send();
+    } else {
+        res.status(StatusCodes.OK).json(offer);
+    }
 };
 
 const getRequestById = async (req, res) => {
