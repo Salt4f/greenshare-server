@@ -10,6 +10,7 @@ const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
 const { waitForDebugger } = require('inspector');
+const { STATUS_CODES } = require('http');
 
 const createOffer = async (req, res) => {
     logger.log('Received createOffer request, creating...', 1);
@@ -88,7 +89,38 @@ const getRequestById = async (req, res) => {
 };
 
 const getOffersByQuery = async (req, res) => {
-    res.send('offers');
+    logger.log(`Received getOffersByQuery request`, 1);
+
+    const { location, distance, owner, quantity } = req.query;
+    let { tags } = req.query;
+    let tagsArray = [];
+
+    if (tags != undefined) {
+        tagsArray = tags.split(';');
+    } else tagsArray = undefined;
+
+    logger.log(
+        `Query params are: location: ${location}, distance: ${distance}, tags: ${tagsArray}, owner: ${owner}, quantity: ${quantity}`,
+        1
+    );
+
+    logger.log(`Selecting query...`, 1);
+
+    const offers = await db.offers.findAll({
+        where: {
+            location,
+            active: true,
+            ownerId: owner,
+        },
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial'],
+            },
+        ],
+    });
+    res.status(StatusCodes.OK).json(offers);
 };
 
 const getRequestsByQuery = async (req, res) => {
