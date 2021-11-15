@@ -14,7 +14,6 @@ module.exports = (sequelize, DataTypes) => {
             requestId: {
                 type: DataTypes.INTEGER,
             },
-            createdAt: true,
         },
         {
             // Other model options go here

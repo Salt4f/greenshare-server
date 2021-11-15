@@ -21,7 +21,6 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-            createdAt: true,
             terminateAt: DataTypes.DATE,
             location: DataTypes.STRING,
             ecoImpact: DataTypes.INTEGER,
