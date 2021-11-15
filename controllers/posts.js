@@ -9,8 +9,7 @@ const db = require('../db/connect');
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
-const { waitForDebugger } = require('inspector');
-const { STATUS_CODES } = require('http');
+const { distanceBetweenPoints } = require('../utils/math');
 
 const createOffer = async (req, res) => {
     logger.log('Received createOffer request, creating...', 1);
@@ -91,28 +90,19 @@ const getRequestById = async (req, res) => {
 const getOffersByQuery = async (req, res) => {
     logger.log(`Received getOffersByQuery request`, 1);
 
-    const { location, distance, owner, quantity } = req.query;
-    let { tags } = req.query;
+    const { location, owner, quantity } = req.query;
+    let { tags, distance } = req.query;
     let tagsArray = [];
-    let whereObject = {};
+    let whereObject = {
+        active: true,
+    };
 
     if (tags !== undefined) {
         tagsArray = tags.split(';');
-        whereObject.tags = tagsArray;
-    }
-
-    whereObject.location = location;
-
-    if (distance !== undefined) {
-        whereObject.distance = distance;
     }
 
     if (owner !== undefined) {
         whereObject.ownerId = owner;
-    }
-
-    if (quantity !== undefined) {
-        whereObject.quantity = quantity;
     }
 
     logger.log(
@@ -122,12 +112,11 @@ const getOffersByQuery = async (req, res) => {
 
     logger.log(`Selecting query...`, 1);
 
-    console.log(whereObject);
-
     const offersFinal = [];
 
     const offers = await db.offers.findAll({
         where: whereObject,
+        attributes: ['id', 'location', 'name', 'icon', 'ownerId'],
         include: [
             {
                 association: 'tags',
@@ -137,17 +126,51 @@ const getOffersByQuery = async (req, res) => {
         ],
     });
 
+    const queryLocation = location.split(',');
+
+    let numTags = tagsArray.length;
     for (const offer of offers) {
+        let count = 0;
         for (const tag of offer.tags) {
             for (const tagQuery of tagsArray) {
-                if (tagQuery == tag.name) {
-                    offersFinal.push(offer);
-                }
+                if (tagQuery == tag.name) count++;
+            }
+        }
+        if (numTags == count) {
+            const user = await db.users.findOne({
+                where: { id: offer.ownerId },
+                attributes: ['nickname'],
+            });
+            offer.dataValues.nickname = user.nickname;
+
+            let offerLocation = offer.location.split(',');
+            const dist = distanceBetweenPoints(
+                parseFloat(offerLocation[0]),
+                parseFloat(offerLocation[1]),
+                parseFloat(queryLocation[0]),
+                parseFloat(queryLocation[1])
+            );
+
+            if (distance === undefined || dist <= parseInt(distance)) {
+                offer.dataValues.distance = dist;
+                offersFinal.push(offer);
             }
         }
     }
 
-    res.status(StatusCodes.OK).json(offersFinal);
+    offersFinal.sort((a, b) => {
+        return b.dataValues.distance - a.dataValues.distance;
+    });
+
+    let offersv3 = [];
+
+    if (quantity !== undefined) {
+        offersv3 = offersFinal.slice(0, quantity);
+    } else {
+        offersv3 = offersFinal;
+    }
+
+    res.status(StatusCodes.OK).json(offersv3);
 };
 
 const getRequestsByQuery = async (req, res) => {
