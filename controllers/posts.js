@@ -157,7 +157,32 @@ const getOfferById = async (req, res) => {
 };
 
 const getRequestById = async (req, res) => {
-    res.send('request');
+    logger.log(`Received getRequestById request`, 1);
+
+    const requestId = req.params.requestId;
+    logger.log(`The requestId is: ${requestId}`, 1);
+
+    const request = await db.requests.findOne({
+        where: { id: requestId },
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial'],
+            },
+        ],
+    });
+
+    if (request == null) {
+        logger.log(
+            `request with id: ${requestId} not found, sending response...`,
+            1
+        );
+
+        res.status(StatusCodes.NOT_FOUND).send();
+    } else {
+        res.status(StatusCodes.OK).json(request);
+    }
 };
 
 const getOffersByQuery = async (req, res) => {
