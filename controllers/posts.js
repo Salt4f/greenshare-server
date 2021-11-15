@@ -95,9 +95,24 @@ const getOffersByQuery = async (req, res) => {
     let { tags } = req.query;
     let tagsArray = [];
 
-    if (tags != undefined) {
+    if (tags !== undefined) {
         tagsArray = tags.split(';');
     } else tagsArray = undefined;
+
+    let whereObject = {};
+    whereObject.location = location;
+
+    if (distance !== undefined) {
+        whereObject.distance = distance;
+    }
+
+    if (owner !== undefined) {
+        whereObject.ownerId = owner;
+    }
+
+    if (quantity !== undefined) {
+        whereObject.quantity = quantity;
+    }
 
     logger.log(
         `Query params are: location: ${location}, distance: ${distance}, tags: ${tagsArray}, owner: ${owner}, quantity: ${quantity}`,
@@ -106,12 +121,10 @@ const getOffersByQuery = async (req, res) => {
 
     logger.log(`Selecting query...`, 1);
 
+    console.log(whereObject);
+
     const offers = await db.offers.findAll({
-        where: {
-            location,
-            active: true,
-            ownerId: owner,
-        },
+        where: whereObject,
         include: [
             {
                 association: 'tags',
