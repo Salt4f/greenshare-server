@@ -8,7 +8,7 @@ const {
     registerRequest,
     loginRequest,
     tokenValidationRequest,
-} = require('../requests/stubs/user-service');
+} = require('../requests/user-service');
 // const { createUser } = require('../db/models/users');
 const db = require('../db/connect');
 const validate = require('../utils/data-validation');
