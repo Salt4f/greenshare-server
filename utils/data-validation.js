@@ -88,7 +88,7 @@ function underAge(birthday) {
     }
 }
 
-function offer(
+function post(
     id,
     name,
     description,
@@ -158,5 +158,5 @@ module.exports = {
     underAge,
     id,
     token,
-    offer,
+    post,
 };
