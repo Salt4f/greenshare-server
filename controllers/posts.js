@@ -1,9 +1,4 @@
 const { StatusCodes } = require('http-status-codes');
-const {
-    BadRequestError,
-    UnauthenticatedError,
-    InternalServerError,
-} = require('../errors');
 
 const db = require('../db/connect');
 const validate = require('../utils/data-validation');
@@ -13,8 +8,6 @@ const { distanceBetweenPoints } = require('../utils/math');
 
 const createOffer = async (req, res) => {
     logger.log('Received createOffer request...', 1);
-
-    // TO-DO: validar todos los campos de la req.body
 
     const { id, name, description, terminateAt, location, icon, photos, tags } =
         req.body;
@@ -53,21 +46,20 @@ const createOffer = async (req, res) => {
         });
         logger.log('Created offer, setting up tags...', 1);
 
-        // TO-DO: comprobar si existe tag
-
         for (const element of tags) {
             const [tag, created] = await db.tags.findOrCreate({
                 where: {
-                    name: element,
+                    name: element.name,
                 },
                 defaults: {
-                    name: element,
+                    name: element.name,
                     isOfficial: false,
+                    color: element.color,
                 },
             });
 
             logger.log(
-                `Current tag's id: ${tag.id}, name: ${tag.name}, isOfficial: ${tag.isOfficial}`,
+                `Current tag's id: ${tag.id}, name: ${tag.name}, isOfficial: ${tag.isOfficial}, color: ${tag.color}`,
                 1
             );
             await offer.addTag(tag);
@@ -86,13 +78,15 @@ const createOffer = async (req, res) => {
         });
     } catch (error) {
         logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
     }
 };
 
 const createRequest = async (req, res) => {
-    logger.log('Received createRequest request, creating...', 1);
+    logger.log('Received createRequest request...', 1);
 
-    // TO-DO: validar todos los campos de la req.body
     const { id, name, description, terminateAt, location, tags } = req.body;
 
     logger.log('Starting data validation...', 1);
@@ -125,16 +119,15 @@ const createRequest = async (req, res) => {
         });
         logger.log('Created request, setting up tags...', 1);
 
-        // TO-DO: comprobar si existe tag
-
         for (const element of tags) {
             const [tag, created] = await db.tags.findOrCreate({
                 where: {
-                    name: element,
+                    name: element.name,
                 },
                 defaults: {
-                    name: element,
+                    name: element.name,
                     isOfficial: false,
+                    color: element.color,
                 },
             });
 
@@ -158,15 +151,294 @@ const createRequest = async (req, res) => {
         });
     } catch (error) {
         logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
     }
 };
 
 const editRequest = async (req, res) => {
-    res.send('request edited');
+    logger.log('Received editRequest request, editing...', 1);
+
+    const { id, name, description, terminateAt, location, tags } =
+        req.body;
+
+    const requestId = req.params.requestId;
+
+    if (!validate.id(id)) {
+        var message = `Invalid id`;
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: message,
+        });
+        return;
+    }
+
+    if (!validate.id(requestId)) {
+        var message = `Invalid request Id`;
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: message,
+        });
+        return;
+    }
+    try {
+        const request = await db.requests.findOne({
+            where: {
+                id: requestId,
+                active: true
+            }
+        });
+        
+        if (request == undefined) {
+            logger.log(
+                `request with id: ${requestId} not found, sending response...`,
+                1
+            );
+            var message = `Request with given id not found`;
+            res.status(StatusCodes.NOT_FOUND).json({
+               error: message,
+            });
+            return;
+        }
+    
+        if(name != undefined){
+            if(validate.name(name)){
+                request.name = name;
+            }
+            else{
+                var message = `Invalid name`;
+                res.status(StatusCodes.BAD_REQUEST).json({
+                   error: message,
+                });
+                return;
+            }
+        } 
+
+        if(description != undefined){
+            if(validate.description(description)){
+                request.description = description;
+            }
+            else{
+                var message = `Invalid description`;
+                res.status(StatusCodes.BAD_REQUEST).json({
+                   error: message,
+                });
+                return;
+            }
+        }
+
+        if(terminateAt != undefined){
+            if(validate.terminateAt(terminateAt)){
+                request.terminateAt = terminateAt;
+            }
+            else{
+                var message = `Invalid terminateAt date`;
+                res.status(StatusCodes.BAD_REQUEST).json({
+                   error: message,
+                });
+                return;
+            }
+        }
+
+        if(location != undefined){
+            if(validate.location(location)){
+                request.location = location;
+            }
+            else{
+                var message = `Invalid location`;
+                res.status(StatusCodes.BAD_REQUEST).json({
+                   error: message,
+                });
+                return;
+            }
+        }
+
+        if (tags != undefined) {
+            if (validate.tags(tags))
+            var newTags = [];
+            for (var newTagObject of tags) {
+                const [newTag, created] = await db.tags.findOrCreate({
+                    where: {
+                        name: newTagObject.name,
+                    },
+                    defaults: {
+                        name: newTagObject.name,
+                        color: newTagObject.color,
+                        isOfficial: false,
+                    },
+                });
+    
+                logger.log(
+                    `Current tag's id: ${newTag.id}, name: ${newTag.name}, isOfficial: ${newTag.isOfficial}`,
+                    1
+                );
+                newTags.push(newTag);
+            }
+            request.setTags(newTags);
+        }
+        request.save();
+        res.send('Request edited');
+        return;
+    } catch (error) {
+        logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
+    }
 };
 
 const editOffer = async (req, res) => {
-    res.send('offer edited');
+    logger.log('Received editOffer request, editing...', 1);
+
+    const { id, name, description, terminateAt, location, tags, icon, photos} =
+        req.body;
+
+    const offerId = req.params.offerId;
+
+    if (!validate.id(id)) {
+        var message = `Invalid id`;
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: message,
+        });
+        return;
+    }
+
+    if (!validate.id(offerId)) {
+        var message = `Invalid offer Id`;
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: message,
+        });
+        return;
+    }
+    try {
+        const offer = await db.offers.findOne({
+            where: {
+                id: offerId,
+                active: true
+            }
+        });
+        
+        if (offer == undefined) {
+            logger.log(
+                `offer with id: ${offerId} not found, sending response...`,
+                1
+            );
+            var message = `Offer with given id not found`;
+            res.status(StatusCodes.NOT_FOUND).json({
+               error: message,
+            });
+            return;
+        }
+    
+        if(name != undefined){
+            if(validate.name(name)){
+                offer.name = name;
+            }
+            else{
+                var message = `Invalid name`;
+                res.status(StatusCodes.BAD_REQUEST).json({
+                   error: message,
+                });
+                return;
+            }
+        } 
+
+        if(description != undefined){
+            if(validate.description(description)){
+                offer.description = description;
+            }
+            else{
+                var message = `Invalid description`;
+                res.status(StatusCodes.BAD_REQUEST).json({
+                   error: message,
+                });
+                return;
+            }
+        }
+
+        if(terminateAt != undefined){
+            if(validate.terminateAt(terminateAt)){
+                offer.terminateAt = terminateAt;
+            }
+            else{
+                var message = `Invalid terminateAt date`;
+                res.status(StatusCodes.BAD_REQUEST).json({
+                   error: message,
+                });
+                return;
+            }
+        }
+
+        if(location != undefined){
+            if(validate.location(location)){
+                offer.location = location;
+            }
+            else{
+                var message = `Invalid location`;
+                res.status(StatusCodes.BAD_REQUEST).json({
+                   error: message,
+                });
+                return;
+            }
+        }
+
+        if (tags != undefined) {
+            if (validate.tags(tags))
+            var newTags = [];
+            for (var newTagObject of tags) {
+                const [newTag, created] = await db.tags.findOrCreate({
+                    where: {
+                        name: newTagObject.name,
+                    },
+                    defaults: {
+                        name: newTagObject.name,
+                        color: newTagObject.color,
+                        isOfficial: false,
+                    },
+                });
+    
+                logger.log(
+                    `Current tag's id: ${newTag.id}, name: ${newTag.name}, isOfficial: ${newTag.isOfficial}`,
+                    1
+                );
+                newTags.push(newTag);
+            }
+            offer.setTags(newTags);
+        }
+        if(photos != undefined){
+            if(validate.photos(photos)){
+                offer.photos = photos;
+            }
+            else{
+                var message = `missing photos`;
+                res.status(StatusCodes.BAD_REQUEST).json({
+                   error: message,
+                });
+                return;
+            }
+        }
+        if(icon != undefined){
+            if(validate.icon(icon)){
+                offer.icon = icon;
+            }
+            else{
+                var message = `missing icon`;
+                res.status(StatusCodes.BAD_REQUEST).json({
+                   error: message,
+                });
+                return;
+            }
+        }
+
+        offer.save();
+        res.send('Offer edited');
+        return;
+
+    } catch (error) {
+        logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
+    }
 };
 
 const getOfferById = async (req, res) => {
@@ -185,13 +457,11 @@ const getOfferById = async (req, res) => {
             },
         ],
     });
-
     if (offer == null) {
         logger.log(
             `Offer with id: ${offerId} not found, sending response...`,
             1
         );
-
         res.status(StatusCodes.NOT_FOUND).send();
     } else {
         res.status(StatusCodes.OK).json(offer);
@@ -220,7 +490,6 @@ const getRequestById = async (req, res) => {
             `request with id: ${requestId} not found, sending response...`,
             1
         );
-
         res.status(StatusCodes.NOT_FOUND).send();
     } else {
         res.status(StatusCodes.OK).json(request);
@@ -231,9 +500,9 @@ const getOffersByQuery = async (req, res) => {
     logger.log(`Received getOffersByQuery request`, 1);
 
     const { location, owner, quantity } = req.query;
-    let { tags, distance } = req.query;
-    let tagsArray = [];
-    let whereObject = {
+    var { tags, distance } = req.query;
+    var tagsArray = [];
+    var whereObject = {
         active: true,
     };
 
@@ -268,9 +537,9 @@ const getOffersByQuery = async (req, res) => {
 
     const queryLocation = location.split(',');
 
-    let numTags = tagsArray.length;
+    var numTags = tagsArray.length;
     for (const offer of offers) {
-        let count = 0;
+        var count = 0;
         for (const tag of offer.tags) {
             for (const tagQuery of tagsArray) {
                 if (tagQuery == tag.name) count++;
@@ -283,7 +552,7 @@ const getOffersByQuery = async (req, res) => {
             });
             offer.dataValues.nickname = user.nickname;
 
-            let offerLocation = offer.location.split(',');
+            var offerLocation = offer.location.split(',');
             const dist = distanceBetweenPoints(
                 parseFloat(offerLocation[0]),
                 parseFloat(offerLocation[1]),
@@ -302,15 +571,15 @@ const getOffersByQuery = async (req, res) => {
         return b.dataValues.distance - a.dataValues.distance;
     });
 
-    let offersv3 = [];
+    var offersSlice = [];
 
     if (quantity !== undefined) {
-        offersv3 = offersFinal.slice(0, quantity);
+        offersSlice = offersFinal.slice(0, quantity);
     } else {
-        offersv3 = offersFinal;
+        offersSlice = offersFinal;
     }
 
-    res.status(StatusCodes.OK).json(offersv3);
+    res.status(StatusCodes.OK).json(offersSlice);
 };
 
 const getRequestsByQuery = async (req, res) => {
