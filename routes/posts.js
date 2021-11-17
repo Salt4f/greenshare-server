@@ -16,20 +16,17 @@ const {
     getRequestsByQuery,
 } = require('../controllers/posts');
 
-// need to add auth middleware to createOffer
+// need to add auth middleware to createOffer, createRequest
 router.route('/offers').post(createOffer).get(getOffersByQuery);
 router
     .route('/offers/:offerId')
-    .put(authMiddleware, editOffer)
+    .put(editOffer)
     .get(getOfferById);
 
-router
-    .route('/requests')
-    .post(authMiddleware, createRequest)
-    .get(getRequestsByQuery);
+router.route('/requests').post(createRequest).get(getRequestsByQuery);
 router
     .route('/requests/:requestId')
-    .put(authMiddleware, editRequest)
+    .put(editRequest)
     .get(getRequestById);
 
 module.exports = router;

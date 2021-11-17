@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
             // Model attributes are defined here
             id: {
                 type: DataTypes.INTEGER,
+                autoIncrement: true,
                 primaryKey: true,
             },
             active: {
@@ -14,9 +15,11 @@ module.exports = (sequelize, DataTypes) => {
             },
             name: {
                 type: DataTypes.STRING,
+                allowNull: false,
             },
             description: {
                 type: DataTypes.STRING,
+                allowNull: false,
             },
             terminateAt: DataTypes.DATE,
             location: DataTypes.STRING,

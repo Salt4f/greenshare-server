@@ -88,6 +88,208 @@ function underAge(birthday) {
     }
 }
 
+function location(location) {
+    let passed = false;
+
+    if (!location) {
+        return { passed };
+    }
+    let parsedLocation = location.split(',');
+    let latitude = parseFloat(parsedLocation[0]);
+    let longitude = parseFloat(parsedLocation[1]);
+
+    if (
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+    ) {
+        return { passed};
+    }
+    
+    passed = true;
+
+    return { passed};
+}
+
+function name(name) {
+    let passed = false;
+
+    if (
+        typeof name !== 'string' ||
+        name === undefined ||
+        !name ||
+        !isNaN(name)
+    ) {
+        return { passed};
+    }
+    
+    passed = true;
+
+    return { passed };
+}
+
+function description(description) {
+    let passed = false;
+
+    if (
+        typeof description !== 'string' ||
+        description === undefined ||
+        !description ||
+        !isNaN(description)
+    ) {
+        return { passed };
+    }
+    
+    passed = true;
+
+    return { passed };
+}
+
+function terminateAt(terminateAt) {
+    let passed = false;
+
+    let currentDate = new Date();
+    let paramDate = new Date(terminateAt);
+
+    if (paramDate < currentDate || !terminateAt) {
+
+        return { passed };
+    }
+   
+    passed = true;
+
+    return { passed};
+}
+function tags(tags) {
+    let passed = false;
+
+    if (tags.length == 0) {
+        return { passed };
+    }
+    for (const tag of tags) {
+        if (typeof tag.name !== 'string' || !isNaN(tag)) {
+            return { passed };
+        }
+    }
+
+    passed = true;
+
+    return { passed };
+}
+
+function icon(icon) {
+    let passed = false;
+
+    if (icon === undefined || icon.length == 0) {
+        return { passed};
+    }
+
+    passed = true;
+
+    return { passed };
+}
+
+function photos(photos) {
+    let passed = false;
+
+    if (photos === undefined || photos.length == 0) {
+        return {passed};
+    }
+
+    passed = true;
+
+    return { passed };
+}
+
+function offer(
+    _id,
+    _name,
+    _description,
+    _terminateAt,
+    _location,
+    _icon,
+    _photos,
+    _tags
+) {
+    let passed = false;
+    let message = '';
+
+    if (!id(_id)) {
+        message = `invalid id`;
+        return { passed, message };
+    }
+    if (!name(_name)) {
+        message = `invalid name`;
+        return { passed, message };
+    }
+    if (!description(_description)) {
+        message = `invalid description`;
+        return { passed, message };
+    }
+    if (!terminateAt(_terminateAt)) {
+        message = `invalid terminateAt date`;
+        return { passed, message };
+    }
+    if (!location(_location)) {
+        message = `invalid location`;
+        return { passed, message };
+    }
+    if (!tags(_tags)) {
+        message = `missing tag(s) field or invalid tag`;
+        return { passed, message };
+    }
+    if (!icon(_icon)) {
+        message = `missing icon`;
+        return { passed, message };
+    }
+    if (!photos(_photos)) {
+        message = `missing photos`;
+        return { passed, message };
+    }
+
+    passed = true;
+    message = `validation passed`;
+
+    return { passed, message };
+}
+
+function request(_id, _name, _description, _terminateAt, _location, _tags) {
+    let passed = false;
+    let message = '';
+
+    if (!id(_id)) {
+        message = `invalid id`;
+        return { passed, message };
+    }
+    if (!name(_name)) {
+        message = `invalid name`;
+        return { passed, message };
+    }
+    if (!description(_description)) {
+        message = `invalid description`;
+        return { passed, message };
+    }
+    if (!terminateAt(_terminateAt)) {
+        message = `invalid terminateAt date`;
+        return { passed, message };
+    }
+    if (!location(_location)) {
+        message = `invalid location`;
+        return { passed, message };
+    }
+    if (!tags(_tags)) {
+        message = `missing tag(s) field or invalid tag`;
+        return { passed, message };
+    }
+
+    passed = true;
+    message = `validation passed`;
+
+    return { passed, message };
+}
+
+
 module.exports = {
     email,
     nickname,
@@ -96,4 +298,13 @@ module.exports = {
     underAge,
     id,
     token,
+    offer,
+    request,
+    location,
+    name,
+    description,
+    terminateAt,
+    tags,
+    photos,
+    icon
 };
