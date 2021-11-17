@@ -20,7 +20,7 @@ const createOffer = async (req, res) => {
         req.body;
 
     logger.log('Starting data validation...', 1);
-    const { passed, message } = validate.post(
+    const { passed, message } = validate.offer(
         id,
         name,
         description,
@@ -96,7 +96,7 @@ const createRequest = async (req, res) => {
     const { id, name, description, terminateAt, location, tags } = req.body;
 
     logger.log('Starting data validation...', 1);
-    const { passed, message } = validate.post(
+    const { passed, message } = validate.request(
         id,
         name,
         description,
