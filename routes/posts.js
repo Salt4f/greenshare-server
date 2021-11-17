@@ -20,13 +20,13 @@ const {
 router.route('/offers').post(createOffer).get(getOffersByQuery);
 router
     .route('/offers/:offerId')
-    .put(authMiddleware, editOffer)
+    .put(editOffer)
     .get(getOfferById);
 
 router.route('/requests').post(createRequest).get(getRequestsByQuery);
 router
     .route('/requests/:requestId')
-    .put(authMiddleware, editRequest)
+    .put(editRequest)
     .get(getRequestById);
 
 module.exports = router;
