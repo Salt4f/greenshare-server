@@ -15,6 +15,9 @@ module.exports = (sequelize, DataTypes) => {
             isOfficial: {
                 type: DataTypes.BOOLEAN,
             },
+            color: {
+                type: DataTypes.STRING,
+            }
         },
         {
             // Other model options go here
