@@ -104,26 +104,25 @@ function location(location) {
         longitude < -180 ||
         longitude > 180
     ) {
-        return { passed};
+        return { passed };
     }
-    
+
     passed = true;
 
-    return { passed};
+    return { passed };
 }
 
 function name(name) {
     let passed = false;
-
     if (
         typeof name !== 'string' ||
         name === undefined ||
         !name ||
         !isNaN(name)
     ) {
-        return { passed};
+        return { passed };
     }
-    
+
     passed = true;
 
     return { passed };
@@ -140,7 +139,7 @@ function description(description) {
     ) {
         return { passed };
     }
-    
+
     passed = true;
 
     return { passed };
@@ -153,13 +152,12 @@ function terminateAt(terminateAt) {
     let paramDate = new Date(terminateAt);
 
     if (paramDate < currentDate || !terminateAt) {
-
         return { passed };
     }
-   
+
     passed = true;
 
-    return { passed};
+    return { passed };
 }
 function tags(tags) {
     let passed = false;
@@ -168,7 +166,12 @@ function tags(tags) {
         return { passed };
     }
     for (const tag of tags) {
-        if (typeof tag.name !== 'string' || !isNaN(tag)) {
+        if (
+            typeof tag.name !== 'string' ||
+            !isNaN(tag.name) ||
+            typeof tag.color !== 'string' ||
+            !isNaN(tag.color)
+        ) {
             return { passed };
         }
     }
@@ -182,7 +185,7 @@ function icon(icon) {
     let passed = false;
 
     if (icon === undefined || icon.length == 0) {
-        return { passed};
+        return { passed };
     }
 
     passed = true;
@@ -194,7 +197,7 @@ function photos(photos) {
     let passed = false;
 
     if (photos === undefined || photos.length == 0) {
-        return {passed};
+        return { passed };
     }
 
     passed = true;
@@ -219,31 +222,32 @@ function offer(
         message = `invalid id`;
         return { passed, message };
     }
-    if (!name(_name)) {
+
+    if (!name(_name).passed) {
         message = `invalid name`;
         return { passed, message };
     }
-    if (!description(_description)) {
+    if (!description(_description).passed) {
         message = `invalid description`;
         return { passed, message };
     }
-    if (!terminateAt(_terminateAt)) {
+    if (!terminateAt(_terminateAt).passed) {
         message = `invalid terminateAt date`;
         return { passed, message };
     }
-    if (!location(_location)) {
+    if (!location(_location).passed) {
         message = `invalid location`;
         return { passed, message };
     }
-    if (!tags(_tags)) {
+    if (!tags(_tags).passed) {
         message = `missing tag(s) field or invalid tag`;
         return { passed, message };
     }
-    if (!icon(_icon)) {
+    if (!icon(_icon).passed) {
         message = `missing icon`;
         return { passed, message };
     }
-    if (!photos(_photos)) {
+    if (!photos(_photos).passed) {
         message = `missing photos`;
         return { passed, message };
     }
@@ -262,23 +266,23 @@ function request(_id, _name, _description, _terminateAt, _location, _tags) {
         message = `invalid id`;
         return { passed, message };
     }
-    if (!name(_name)) {
+    if (!name(_name).passed) {
         message = `invalid name`;
         return { passed, message };
     }
-    if (!description(_description)) {
+    if (!description(_description).passed) {
         message = `invalid description`;
         return { passed, message };
     }
-    if (!terminateAt(_terminateAt)) {
+    if (!terminateAt(_terminateAt).passed) {
         message = `invalid terminateAt date`;
         return { passed, message };
     }
-    if (!location(_location)) {
+    if (!location(_location).passed) {
         message = `invalid location`;
         return { passed, message };
     }
-    if (!tags(_tags)) {
+    if (!tags(_tags).passed) {
         message = `missing tag(s) field or invalid tag`;
         return { passed, message };
     }
@@ -288,7 +292,6 @@ function request(_id, _name, _description, _terminateAt, _location, _tags) {
 
     return { passed, message };
 }
-
 
 module.exports = {
     email,
@@ -306,5 +309,5 @@ module.exports = {
     terminateAt,
     tags,
     photos,
-    icon
+    icon,
 };
