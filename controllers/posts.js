@@ -12,12 +12,34 @@ const { inspect } = require('util');
 const { distanceBetweenPoints } = require('../utils/math');
 
 const createOffer = async (req, res) => {
-    logger.log('Received createOffer request, creating...', 1);
+    logger.log('Received createOffer request...', 1);
 
     // TO-DO: validar todos los campos de la req.body
 
     const { id, name, description, terminateAt, location, icon, photos, tags } =
         req.body;
+
+    logger.log('Starting data validation...', 1);
+    const { passed, message } = validate.offer(
+        id,
+        name,
+        description,
+        terminateAt,
+        location,
+        icon,
+        photos,
+        tags
+    );
+
+    if (!passed) {
+        logger.log(message, 1);
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: message,
+        });
+        return;
+    }
+
+    logger.log('Data validation passed, creating offer...', 1);
 
     try {
         const offer = await db.offers.create({
@@ -72,6 +94,26 @@ const createRequest = async (req, res) => {
 
     // TO-DO: validar todos los campos de la req.body
     const { id, name, description, terminateAt, location, tags } = req.body;
+
+    logger.log('Starting data validation...', 1);
+    const { passed, message } = validate.request(
+        id,
+        name,
+        description,
+        terminateAt,
+        location,
+        tags
+    );
+
+    if (!passed) {
+        logger.log(message, 1);
+        res.status(StatusCodes.BAD_REQUEST).json({
+            error: message,
+        });
+        return;
+    }
+
+    logger.log('Data validation passed, creating request...', 1);
 
     try {
         const request = await db.requests.create({

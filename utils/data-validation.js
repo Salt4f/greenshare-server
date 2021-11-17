@@ -88,6 +88,160 @@ function underAge(birthday) {
     }
 }
 
+function offer(
+    id,
+    name,
+    description,
+    terminateAt,
+    location,
+    icon,
+    photos,
+    tags
+) {
+    let passed = false;
+    let message = '';
+
+    if (!location) {
+        message = `location field missing`;
+        return { passed, message };
+    }
+
+    let currentDate = new Date();
+    let paramDate = new Date(terminateAt);
+
+    let parsedLocation = location.split(',');
+    let latitude = parseFloat(parsedLocation[0]);
+    let longitude = parseFloat(parsedLocation[1]);
+
+    if (isNaN(id) || !id) {
+        message = `invalid id`;
+        return { passed, message };
+    }
+    if (
+        typeof name !== 'string' ||
+        name === undefined ||
+        !name ||
+        !isNaN(name)
+    ) {
+        message = `invalid name`;
+        return { passed, message };
+    }
+    if (
+        typeof description !== 'string' ||
+        description === undefined ||
+        !description ||
+        !isNaN(description)
+    ) {
+        message = `invalid description`;
+        return { passed, message };
+    }
+    if (paramDate < currentDate || !terminateAt) {
+        message = `invalid terminateAt date`;
+        return { passed, message };
+    }
+    if (
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+    ) {
+        message = `invalid location`;
+        return { passed, message };
+    }
+    if (tags.length == 0) {
+        message = `missing tag(s) field`;
+        return { passed, message };
+    }
+    for (const tag of tags) {
+        if (typeof tag !== 'string' || !isNaN(tag)) {
+            message = `invalid tag: ${tag}`;
+            return { passed, message };
+        }
+    }
+
+    if (icon === undefined || icon.length == 0) {
+        message = `missing icon`;
+        return { passed, message };
+    }
+    if (photos === undefined || photos.length == 0) {
+        message = `missing photos`;
+        return { passed, message };
+    }
+
+    passed = true;
+    message = `validation passed`;
+
+    return { passed, message };
+}
+
+function request(id, name, description, terminateAt, location, tags) {
+    let passed = false;
+    let message = '';
+
+    if (!location) {
+        message = `location field missing`;
+        return { passed, message };
+    }
+
+    let currentDate = new Date();
+    let paramDate = new Date(terminateAt);
+
+    let parsedLocation = location.split(',');
+    let latitude = parseFloat(parsedLocation[0]);
+    let longitude = parseFloat(parsedLocation[1]);
+
+    if (isNaN(id) || !id) {
+        message = `invalid id`;
+        return { passed, message };
+    }
+    if (
+        typeof name !== 'string' ||
+        name === undefined ||
+        !name ||
+        !isNaN(name)
+    ) {
+        message = `invalid name`;
+        return { passed, message };
+    }
+    if (
+        typeof description !== 'string' ||
+        description === undefined ||
+        !description ||
+        !isNaN(description)
+    ) {
+        message = `invalid description`;
+        return { passed, message };
+    }
+    if (paramDate < currentDate || !terminateAt) {
+        message = `invalid terminateAt date`;
+        return { passed, message };
+    }
+    if (
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+    ) {
+        message = `invalid location`;
+        return { passed, message };
+    }
+    if (tags.length == 0) {
+        message = `missing tag(s) field`;
+        return { passed, message };
+    }
+    for (const tag of tags) {
+        if (typeof tag !== 'string' || !isNaN(tag)) {
+            message = `invalid tag: ${tag}`;
+            return { passed, message };
+        }
+    }
+
+    passed = true;
+    message = `validation passed`;
+
+    return { passed, message };
+}
+
 module.exports = {
     email,
     nickname,
@@ -96,4 +250,6 @@ module.exports = {
     underAge,
     id,
     token,
+    offer,
+    request,
 };
