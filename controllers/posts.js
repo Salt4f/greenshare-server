@@ -160,8 +160,7 @@ const createRequest = async (req, res) => {
 const editRequest = async (req, res) => {
     logger.log('Received editRequest request, editing...', 1);
 
-    const { id, name, description, terminateAt, location, tags } =
-        req.body;
+    const { id, name, description, terminateAt, location, tags } = req.body;
 
     const requestId = req.params.requestId;
 
@@ -184,10 +183,10 @@ const editRequest = async (req, res) => {
         const request = await db.requests.findOne({
             where: {
                 id: requestId,
-                active: true
-            }
+                active: true,
+            },
         });
-        
+
         if (request == undefined) {
             logger.log(
                 `request with id: ${requestId} not found, sending response...`,
@@ -195,66 +194,61 @@ const editRequest = async (req, res) => {
             );
             var message = `Request with given id not found`;
             res.status(StatusCodes.NOT_FOUND).json({
-               error: message,
+                error: message,
             });
             return;
         }
-    
-        if(name != undefined){
-            if(validate.name(name)){
+
+        if (name != undefined) {
+            if (validate.name(name)) {
                 request.name = name;
-            }
-            else{
+            } else {
                 var message = `Invalid name`;
                 res.status(StatusCodes.BAD_REQUEST).json({
-                   error: message,
+                    error: message,
                 });
                 return;
             }
-        } 
+        }
 
-        if(description != undefined){
-            if(validate.description(description)){
+        if (description != undefined) {
+            if (validate.description(description)) {
                 request.description = description;
-            }
-            else{
+            } else {
                 var message = `Invalid description`;
                 res.status(StatusCodes.BAD_REQUEST).json({
-                   error: message,
+                    error: message,
                 });
                 return;
             }
         }
 
-        if(terminateAt != undefined){
-            if(validate.terminateAt(terminateAt)){
+        if (terminateAt != undefined) {
+            if (validate.terminateAt(terminateAt)) {
                 request.terminateAt = terminateAt;
-            }
-            else{
+            } else {
                 var message = `Invalid terminateAt date`;
                 res.status(StatusCodes.BAD_REQUEST).json({
-                   error: message,
+                    error: message,
                 });
                 return;
             }
         }
 
-        if(location != undefined){
-            if(validate.location(location)){
+        if (location != undefined) {
+            if (validate.location(location)) {
                 request.location = location;
-            }
-            else{
+            } else {
                 var message = `Invalid location`;
                 res.status(StatusCodes.BAD_REQUEST).json({
-                   error: message,
+                    error: message,
                 });
                 return;
             }
         }
 
         if (tags != undefined) {
-            if (validate.tags(tags))
-            var newTags = [];
+            if (validate.tags(tags)) var newTags = [];
             for (var newTagObject of tags) {
                 const [newTag, created] = await db.tags.findOrCreate({
                     where: {
@@ -266,7 +260,7 @@ const editRequest = async (req, res) => {
                         isOfficial: false,
                     },
                 });
-    
+
                 logger.log(
                     `Current tag's id: ${newTag.id}, name: ${newTag.name}, isOfficial: ${newTag.isOfficial}`,
                     1
@@ -289,7 +283,7 @@ const editRequest = async (req, res) => {
 const editOffer = async (req, res) => {
     logger.log('Received editOffer request, editing...', 1);
 
-    const { id, name, description, terminateAt, location, tags, icon, photos} =
+    const { id, name, description, terminateAt, location, tags, icon, photos } =
         req.body;
 
     const offerId = req.params.offerId;
@@ -313,10 +307,10 @@ const editOffer = async (req, res) => {
         const offer = await db.offers.findOne({
             where: {
                 id: offerId,
-                active: true
-            }
+                active: true,
+            },
         });
-        
+
         if (offer == undefined) {
             logger.log(
                 `offer with id: ${offerId} not found, sending response...`,
@@ -324,66 +318,61 @@ const editOffer = async (req, res) => {
             );
             var message = `Offer with given id not found`;
             res.status(StatusCodes.NOT_FOUND).json({
-               error: message,
+                error: message,
             });
             return;
         }
-    
-        if(name != undefined){
-            if(validate.name(name)){
+
+        if (name != undefined) {
+            if (validate.name(name)) {
                 offer.name = name;
-            }
-            else{
+            } else {
                 var message = `Invalid name`;
                 res.status(StatusCodes.BAD_REQUEST).json({
-                   error: message,
+                    error: message,
                 });
                 return;
             }
-        } 
+        }
 
-        if(description != undefined){
-            if(validate.description(description)){
+        if (description != undefined) {
+            if (validate.description(description)) {
                 offer.description = description;
-            }
-            else{
+            } else {
                 var message = `Invalid description`;
                 res.status(StatusCodes.BAD_REQUEST).json({
-                   error: message,
+                    error: message,
                 });
                 return;
             }
         }
 
-        if(terminateAt != undefined){
-            if(validate.terminateAt(terminateAt)){
+        if (terminateAt != undefined) {
+            if (validate.terminateAt(terminateAt)) {
                 offer.terminateAt = terminateAt;
-            }
-            else{
+            } else {
                 var message = `Invalid terminateAt date`;
                 res.status(StatusCodes.BAD_REQUEST).json({
-                   error: message,
+                    error: message,
                 });
                 return;
             }
         }
 
-        if(location != undefined){
-            if(validate.location(location)){
+        if (location != undefined) {
+            if (validate.location(location)) {
                 offer.location = location;
-            }
-            else{
+            } else {
                 var message = `Invalid location`;
                 res.status(StatusCodes.BAD_REQUEST).json({
-                   error: message,
+                    error: message,
                 });
                 return;
             }
         }
 
         if (tags != undefined) {
-            if (validate.tags(tags))
-            var newTags = [];
+            if (validate.tags(tags)) var newTags = [];
             for (var newTagObject of tags) {
                 const [newTag, created] = await db.tags.findOrCreate({
                     where: {
@@ -395,7 +384,7 @@ const editOffer = async (req, res) => {
                         isOfficial: false,
                     },
                 });
-    
+
                 logger.log(
                     `Current tag's id: ${newTag.id}, name: ${newTag.name}, isOfficial: ${newTag.isOfficial}`,
                     1
@@ -404,26 +393,24 @@ const editOffer = async (req, res) => {
             }
             offer.setTags(newTags);
         }
-        if(photos != undefined){
-            if(validate.photos(photos)){
+        if (photos != undefined) {
+            if (validate.photos(photos)) {
                 offer.photos = photos;
-            }
-            else{
+            } else {
                 var message = `missing photos`;
                 res.status(StatusCodes.BAD_REQUEST).json({
-                   error: message,
+                    error: message,
                 });
                 return;
             }
         }
-        if(icon != undefined){
-            if(validate.icon(icon)){
+        if (icon != undefined) {
+            if (validate.icon(icon)) {
                 offer.icon = icon;
-            }
-            else{
+            } else {
                 var message = `missing icon`;
                 res.status(StatusCodes.BAD_REQUEST).json({
-                   error: message,
+                    error: message,
                 });
                 return;
             }
@@ -432,7 +419,6 @@ const editOffer = async (req, res) => {
         offer.save();
         res.send('Offer edited');
         return;
-
     } catch (error) {
         logger.log(error.message, 0);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -530,7 +516,7 @@ const getOffersByQuery = async (req, res) => {
             {
                 association: 'tags',
                 model: db.tags,
-                attributes: ['name', 'isOfficial'],
+                attributes: ['name', 'isOfficial', 'color'],
             },
         ],
     });
@@ -542,7 +528,7 @@ const getOffersByQuery = async (req, res) => {
         var count = 0;
         for (const tag of offer.tags) {
             for (const tagQuery of tagsArray) {
-                if (tagQuery == tag.name) count++;
+                if (tagQuery.name == tag.name) count++;
             }
         }
         if (numTags == count) {
