@@ -242,6 +242,106 @@ function request(id, name, description, terminateAt, location, tags) {
     return { passed, message };
 }
 
+
+function locationValidation(location) {
+    let passed = false;
+
+    if (!location) {
+        return { passed};
+    }
+    let parsedLocation = location.split(',');
+    let latitude = parseFloat(parsedLocation[0]);
+    let longitude = parseFloat(parsedLocation[1]);
+
+    if (
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+    ) {
+        return { passed};
+    }
+
+    passed = true;
+
+    return { passed};
+}
+
+function nameValidation(name) {
+    let passed = false;
+
+    if (
+        typeof name !== 'string' ||
+        name === undefined ||
+        !name ||
+        !isNaN(name)
+    ) {
+        return { passed};
+    }
+    
+    passed = true;
+
+
+    return { passed};
+}
+
+function descriptionValidation(description) {
+    let passed = false;
+
+    if (
+        typeof description !== 'string' ||
+        description === undefined ||
+        !description ||
+        !isNaN(description)
+    ) {
+        return { passed};
+    }
+    
+
+    passed = true;
+
+
+    return { passed};
+}
+
+function terminateAtValidation(terminateAt) {
+    let passed = false;
+
+    let currentDate = new Date();
+    let paramDate = new Date(terminateAt);
+
+    
+    if (paramDate < currentDate || !terminateAt) {
+
+        return { passed};
+    }
+   
+
+    passed = true;
+
+
+    return { passed};
+}
+function tagsValidation(tags) {
+    let passed = false;
+
+    if (tags.length == 0) {
+        return { passed};
+    }
+    for (const tag of tags) {
+        if (typeof tag !== 'string' || !isNaN(tag)) {
+            return { passed};
+        }
+    }
+
+    passed = true;
+
+
+    return { passed};
+}
+
+
+
 module.exports = {
     email,
     nickname,
@@ -252,4 +352,9 @@ module.exports = {
     token,
     offer,
     request,
+    locationValidation,
+    nameValidation,
+    descriptionValidation,
+    terminateAtValidation,
+    tagsValidation
 };
