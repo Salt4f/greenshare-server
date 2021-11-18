@@ -5,6 +5,7 @@ const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
 const { distanceBetweenPoints } = require('../utils/math');
+const dataEncoding = require('../utils/data');
 
 const createOffer = async (req, res) => {
     logger.log('Received createOffer request...', 1);
@@ -35,12 +36,17 @@ const createOffer = async (req, res) => {
     logger.log('Data validation passed, creating offer...', 1);
 
     try {
+        logger.log('Parsing icon...', 1);
+        const parsedIcon = dataEncoding.base64ToBuffer(icon);
+        logger.log('Parsed icon', 1);
+        logger.log('Creating offer...', 1);
+
         const offer = await db.offers.create({
             name,
             description,
             terminateAt,
             location,
-            icon,
+            icon: parsedIcon,
             photos,
             ownerId: id,
         });
@@ -54,7 +60,7 @@ const createOffer = async (req, res) => {
                 defaults: {
                     name: element.name,
                     isOfficial: false,
-                    color: (element.color != undefined ? element.color : null),
+                    color: element.color != undefined ? element.color : null,
                 },
             });
 
@@ -127,7 +133,7 @@ const createRequest = async (req, res) => {
                 defaults: {
                     name: element.name,
                     isOfficial: false,
-                    color: (element.color != undefined ? element.color : null),
+                    color: element.color != undefined ? element.color : null,
                 },
             });
 
@@ -164,6 +170,8 @@ const editRequest = async (req, res) => {
 
     const requestId = req.params.requestId;
 
+    logger.log('Starting data validation of id and requestId...', 1);
+
     if (!validate.id(id)) {
         var message = `Invalid id`;
         res.status(StatusCodes.BAD_REQUEST).json({
@@ -179,6 +187,8 @@ const editRequest = async (req, res) => {
         });
         return;
     }
+    logger.log('Data validation of id and requestId passed, checking...', 1);
+
     try {
         const request = await db.requests.findOne({
             where: {
@@ -256,7 +266,10 @@ const editRequest = async (req, res) => {
                     },
                     defaults: {
                         name: newTagObject.name,
-                        color: (newTagObject.color != undefined ? newTagObject.color : null),
+                        color:
+                            newTagObject.color != undefined
+                                ? newTagObject.color
+                                : null,
                         isOfficial: false,
                     },
                 });
@@ -269,6 +282,7 @@ const editRequest = async (req, res) => {
             }
             request.setTags(newTags);
         }
+
         request.save();
         res.send('Request edited');
         return;
@@ -288,6 +302,8 @@ const editOffer = async (req, res) => {
 
     const offerId = req.params.offerId;
 
+    logger.log('Starting data validation of id and offerId...', 1);
+
     if (!validate.id(id)) {
         var message = `Invalid id`;
         res.status(StatusCodes.BAD_REQUEST).json({
@@ -303,6 +319,9 @@ const editOffer = async (req, res) => {
         });
         return;
     }
+
+    logger.log('Data validation of id and offerId passed...', 1);
+
     try {
         const offer = await db.offers.findOne({
             where: {
@@ -380,7 +399,10 @@ const editOffer = async (req, res) => {
                     },
                     defaults: {
                         name: newTagObject.name,
-                        color: (newTagObject.color != undefined ? newTagObject.color : null),
+                        color:
+                            newTagObject.color != undefined
+                                ? newTagObject.color
+                                : null,
                         isOfficial: false,
                     },
                 });
@@ -406,6 +428,9 @@ const editOffer = async (req, res) => {
         }
         if (icon != undefined) {
             if (validate.icon(icon)) {
+                logger.log('Parsing icon...', 1);
+                const parsedIcon = dataEncoding.base64ToBuffer(icon);
+                logger.log('Parsed icon', 1);
                 offer.icon = icon;
             } else {
                 var message = `missing icon`;
@@ -416,8 +441,9 @@ const editOffer = async (req, res) => {
             }
         }
 
+        logger.log('Updating offer...', 1);
         offer.save();
-        res.send('Offer edited');
+        res.send('Offer updated');
         return;
     } catch (error) {
         logger.log(error.message, 0);
@@ -433,16 +459,25 @@ const getOfferById = async (req, res) => {
     const offerId = req.params.offerId;
     logger.log(`The offerId is: ${offerId}`, 1);
 
+    logger.log(`Looking for offer in db...`, 1);
     const offer = await db.offers.findOne({
         where: { id: offerId },
         include: [
             {
                 association: 'tags',
                 model: db.tags,
-                attributes: ['name', 'isOfficial'],
+                attributes: ['name', 'isOfficial', 'color'],
             },
         ],
     });
+
+    logger.log('Cleaning up tags...', 1);
+    for (let t of offer.tags) {
+        delete t.dataValues.OfferTag;
+    }
+    logger.log('Encoding icon to base64...', 1);
+    offer.icon = dataEncoding.bufferToBase64(offer.icon);
+    logger.log('Encoded icon to base64', 1);
     if (offer == null) {
         logger.log(
             `Offer with id: ${offerId} not found, sending response...`,
@@ -450,6 +485,7 @@ const getOfferById = async (req, res) => {
         );
         res.status(StatusCodes.NOT_FOUND).send();
     } else {
+        logger.log(`Got offer with id: ${offerId}, sending response...`, 1);
         res.status(StatusCodes.OK).json(offer);
     }
 };
@@ -460,16 +496,22 @@ const getRequestById = async (req, res) => {
     const requestId = req.params.requestId;
     logger.log(`The requestId is: ${requestId}`, 1);
 
+    logger.log(`Looking for request in db...`, 1);
     const request = await db.requests.findOne({
         where: { id: requestId },
         include: [
             {
                 association: 'tags',
                 model: db.tags,
-                attributes: ['name', 'isOfficial'],
+                attributes: ['name', 'isOfficial', 'color'],
             },
         ],
     });
+
+    logger.log('Cleaning up tags...', 1);
+    for (let t in offer.tags) {
+        delete t.dataValues.OfferTag;
+    }
 
     if (request == null) {
         logger.log(
@@ -478,6 +520,7 @@ const getRequestById = async (req, res) => {
         );
         res.status(StatusCodes.NOT_FOUND).send();
     } else {
+        logger.log(`Got request with id: ${requestId}, sending back...`, 1);
         res.status(StatusCodes.OK).json(request);
     }
 };
@@ -521,9 +564,10 @@ const getOffersByQuery = async (req, res) => {
         ],
     });
 
-    const queryLocation = location.replace(',','.').split(';');
+    const queryLocation = location.replace(',', '.').split(';');
 
     var numTags = tagsArray.length;
+    logger.log(`Checking tags...`, 1);
     for (const offer of offers) {
         var count = 0;
         for (const tag of offer.tags) {
@@ -537,15 +581,15 @@ const getOffersByQuery = async (req, res) => {
                 attributes: ['nickname'],
             });
             offer.dataValues.nickname = user.nickname;
-
-            var offerLocation = offer.location.replace(',','.').split(';');
+            logger.log(`Checking location...`, 1);
+            var offerLocation = offer.location.replace(',', '.').split(';');
             const dist = distanceBetweenPoints(
                 parseFloat(offerLocation[0]),
                 parseFloat(offerLocation[1]),
                 parseFloat(queryLocation[0]),
                 parseFloat(queryLocation[1])
             );
-
+            logger.log(`Checking distance...`, 1);
             if (distance === undefined || dist <= parseInt(distance)) {
                 offer.dataValues.distance = dist;
                 offersFinal.push(offer);
@@ -564,7 +608,7 @@ const getOffersByQuery = async (req, res) => {
     } else {
         offersSlice = offersFinal;
     }
-
+    logger.log(`Got offer(s), sending back response...`, 1);
     res.status(StatusCodes.OK).json(offersSlice);
 };
 
