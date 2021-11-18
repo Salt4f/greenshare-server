@@ -94,7 +94,7 @@ function location(_location) {
     if (!_location) {
         return { passed };
     }
-    let parsedLocation = _location.split(',');
+    let parsedLocation = _location.replace(',','.').split(';');
     let latitude = parseFloat(parsedLocation[0]);
     let longitude = parseFloat(parsedLocation[1]);
 
