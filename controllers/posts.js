@@ -521,7 +521,7 @@ const getOffersByQuery = async (req, res) => {
         ],
     });
 
-    const queryLocation = location.split(',');
+    const queryLocation = location.replace(',','.').split(';');
 
     var numTags = tagsArray.length;
     for (const offer of offers) {
@@ -538,7 +538,7 @@ const getOffersByQuery = async (req, res) => {
             });
             offer.dataValues.nickname = user.nickname;
 
-            var offerLocation = offer.location.split(',');
+            var offerLocation = offer.location.replace(',','.').split(';');
             const dist = distanceBetweenPoints(
                 parseFloat(offerLocation[0]),
                 parseFloat(offerLocation[1]),
