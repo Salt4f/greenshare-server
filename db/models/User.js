@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
             },
             profilePicture: {
-                type: DataTypes.BLOB,
+                type: DataTypes.BLOB('long'),
             },
             aboutMe: {
                 type: DataTypes.STRING,
