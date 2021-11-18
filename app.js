@@ -11,7 +11,7 @@ const logger = require('./utils/logger');
 require('dotenv').config();
 
 // Middlewares
-app.use(express.json());
+app.use(express.json({ limit: '200MB' }));
 
 // Routes
 app.use('/api/auth', auth);
