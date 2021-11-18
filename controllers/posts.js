@@ -54,7 +54,7 @@ const createOffer = async (req, res) => {
                 defaults: {
                     name: element.name,
                     isOfficial: false,
-                    color: element.color,
+                    color: (element.color != undefined ? element.color : null),
                 },
             });
 
@@ -127,7 +127,7 @@ const createRequest = async (req, res) => {
                 defaults: {
                     name: element.name,
                     isOfficial: false,
-                    color: element.color,
+                    color: (element.color != undefined ? element.color : null),
                 },
             });
 
@@ -256,7 +256,7 @@ const editRequest = async (req, res) => {
                     },
                     defaults: {
                         name: newTagObject.name,
-                        color: newTagObject.color,
+                        color: (newTagObject.color != undefined ? newTagObject.color : null),
                         isOfficial: false,
                     },
                 });
@@ -380,7 +380,7 @@ const editOffer = async (req, res) => {
                     },
                     defaults: {
                         name: newTagObject.name,
-                        color: newTagObject.color,
+                        color: (newTagObject.color != undefined ? newTagObject.color : null),
                         isOfficial: false,
                     },
                 });

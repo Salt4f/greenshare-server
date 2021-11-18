@@ -49,21 +49,21 @@ function DNI(dni) {
     }
 }
 
-function password(password) {
-    if (password === undefined || !password) return false;
+function password(_password) {
+    if (_password === undefined || !_password) return false;
 
     return true;
 }
 
-function id(id) {
-    if (id === undefined || !id) return false;
-    if (id < 1) return false;
+function id(_id) {
+    if (_id === undefined || !_id) return false;
+    if (_id < 1) return false;
 
     return true;
 }
 
-function token(token) {
-    if (token === undefined || !token) return false;
+function token(_token) {
+    if (_token === undefined || !_token) return false;
 
     return true;
 }
@@ -88,13 +88,13 @@ function underAge(birthday) {
     }
 }
 
-function location(location) {
+function location(_location) {
     let passed = false;
 
-    if (!location) {
+    if (!_location) {
         return { passed };
     }
-    let parsedLocation = location.split(',');
+    let parsedLocation = _location.split(',');
     let latitude = parseFloat(parsedLocation[0]);
     let longitude = parseFloat(parsedLocation[1]);
 
@@ -112,13 +112,13 @@ function location(location) {
     return { passed };
 }
 
-function name(name) {
+function name(_name) {
     let passed = false;
     if (
-        typeof name !== 'string' ||
-        name === undefined ||
-        !name ||
-        !isNaN(name)
+        typeof _name !== 'string' ||
+        _name === undefined ||
+        !_name ||
+        !isNaN(_name)
     ) {
         return { passed };
     }
@@ -128,14 +128,14 @@ function name(name) {
     return { passed };
 }
 
-function description(description) {
+function description(_description) {
     let passed = false;
 
     if (
-        typeof description !== 'string' ||
-        description === undefined ||
-        !description ||
-        !isNaN(description)
+        typeof _description !== 'string' ||
+        _description === undefined ||
+        !_description ||
+        !isNaN(_description)
     ) {
         return { passed };
     }
@@ -145,13 +145,13 @@ function description(description) {
     return { passed };
 }
 
-function terminateAt(terminateAt) {
+function terminateAt(_terminateAt) {
     let passed = false;
 
     let currentDate = new Date();
-    let paramDate = new Date(terminateAt);
+    let paramDate = new Date(_terminateAt);
 
-    if (paramDate < currentDate || !terminateAt) {
+    if (paramDate < currentDate || !_terminateAt) {
         return { passed };
     }
 
@@ -159,18 +159,16 @@ function terminateAt(terminateAt) {
 
     return { passed };
 }
-function tags(tags) {
+function tags(_tags) {
     let passed = false;
 
-    if (tags.length == 0) {
+    if (!Array.isArray(_tags) || _tags.length == 0) {
         return { passed };
     }
-    for (const tag of tags) {
+    for (const tag of _tags) {
         if (
             typeof tag.name !== 'string' ||
-            !isNaN(tag.name) ||
-            typeof tag.color !== 'string' ||
-            !isNaN(tag.color)
+            !isNaN(tag.name)
         ) {
             return { passed };
         }
@@ -181,10 +179,10 @@ function tags(tags) {
     return { passed };
 }
 
-function icon(icon) {
+function icon(_icon) {
     let passed = false;
 
-    if (icon === undefined || icon.length == 0) {
+    if (_icon === undefined || _icon.length == 0) {
         return { passed };
     }
 
@@ -193,10 +191,10 @@ function icon(icon) {
     return { passed };
 }
 
-function photos(photos) {
+function photos(_photos) {
     let passed = false;
 
-    if (photos === undefined || photos.length == 0) {
+    if (_photos === undefined || _photos.length == 0) {
         return { passed };
     }
 
@@ -231,10 +229,16 @@ function offer(
         message = `invalid description`;
         return { passed, message };
     }
+    /*
     if (!terminateAt(_terminateAt).passed) {
         message = `invalid terminateAt date`;
         return { passed, message };
     }
+    if (!photos(_photos).passed) {
+        message = `missing photos`;
+        return { passed, message };
+    }
+    */
     if (!location(_location).passed) {
         message = `invalid location`;
         return { passed, message };
@@ -245,10 +249,6 @@ function offer(
     }
     if (!icon(_icon).passed) {
         message = `missing icon`;
-        return { passed, message };
-    }
-    if (!photos(_photos).passed) {
-        message = `missing photos`;
         return { passed, message };
     }
 
@@ -274,10 +274,12 @@ function request(_id, _name, _description, _terminateAt, _location, _tags) {
         message = `invalid description`;
         return { passed, message };
     }
+    /*
     if (!terminateAt(_terminateAt).passed) {
         message = `invalid terminateAt date`;
         return { passed, message };
     }
+    */
     if (!location(_location).passed) {
         message = `invalid location`;
         return { passed, message };
