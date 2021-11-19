@@ -581,12 +581,21 @@ const getOffersByQuery = async (req, res) => {
                 if (tagQuery.name == tag.name) count++;
             }
         }
+
         if (numTags == count) {
+            logger.log('Cleaning up tags...', 1);
+            for (let t of offer.tags) {
+                delete t.dataValues.OfferTag;
+            }
+            logger.log('Tags cleaned...', 1);
+
             const user = await db.users.findOne({
                 where: { id: offer.ownerId },
                 attributes: ['nickname'],
             });
+
             offer.dataValues.author = user.nickname;
+
             logger.log(`Checking location...`, 1);
             var offerLocation = offer.location.replace(',', '.').split(';');
             const dist = distanceBetweenPoints(
@@ -674,6 +683,12 @@ const getRequestsByQuery = async (req, res) => {
             }
         }
         if (numTags == count) {
+            logger.log('Cleaning up tags...', 1);
+            for (let t of request.tags) {
+                delete t.dataValues.RequestTag;
+            }
+            logger.log('Tags cleaned...', 1);
+
             const user = await db.users.findOne({
                 where: { id: request.ownerId },
                 attributes: ['nickname'],
