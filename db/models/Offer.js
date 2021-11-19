@@ -25,7 +25,6 @@ module.exports = (sequelize, DataTypes) => {
             location: DataTypes.STRING,
             ecoImpact: DataTypes.INTEGER,
             icon: DataTypes.BLOB('long'),
-            photos: DataTypes.BLOB('long'),
             ownerId: DataTypes.INTEGER,
         },
         {
