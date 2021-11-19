@@ -471,6 +471,12 @@ const getOfferById = async (req, res) => {
         ],
     });
 
+    const user = await db.users.findOne({
+        where: { id: offer.ownerId },
+        attributes: ['nickname'],
+    });
+    offer.dataValues.author = user.nickname;
+
     logger.log('Cleaning up tags...', 1);
     for (let t of offer.tags) {
         delete t.dataValues.OfferTag;
@@ -580,7 +586,7 @@ const getOffersByQuery = async (req, res) => {
                 where: { id: offer.ownerId },
                 attributes: ['nickname'],
             });
-            offer.dataValues.nickname = user.nickname;
+            offer.dataValues.author = user.nickname;
             logger.log(`Checking location...`, 1);
             var offerLocation = offer.location.replace(',', '.').split(';');
             const dist = distanceBetweenPoints(
@@ -592,6 +598,11 @@ const getOffersByQuery = async (req, res) => {
             logger.log(`Checking distance...`, 1);
             if (distance === undefined || dist <= parseInt(distance)) {
                 offer.dataValues.distance = dist;
+                logger.log('Encoding icon to base64...', 1);
+                offer.dataValues.icon = dataEncoding.bufferToBase64(
+                    offer.dataValues.icon
+                );
+                logger.log('Encoded icon to base64', 1);
                 offersFinal.push(offer);
             }
         }
