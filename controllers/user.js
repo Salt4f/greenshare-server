@@ -22,12 +22,12 @@ const getUser = async (req, res) => {
                     },
                 });
             } else {
-                logger.log(
-                    `User with id ${req.body.id} trying to get someone else's info...`,
-                    1
-                );
-                res.status(StatusCodes.UNAUTHORIZED).send();
-                throw new Error('UNAUTHORIZED');
+                user = await db.users.findOne({
+                    where: {
+                        id: userId,
+                    },
+                    attributes: ['nickname'],
+                });
             }
         } else {
             user = await db.users.findOne({
