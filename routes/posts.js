@@ -2,7 +2,11 @@
 const express = require('express');
 const router = express.Router();
 
-const authMiddleware = require('../middlewares/authentication');
+const {
+    authenticateUser,
+    offerOwnerAuth,
+    requestOwnerAuth,
+} = require('../middlewares/authentication');
 
 // controller
 const {
@@ -16,17 +20,22 @@ const {
     getRequestsByQuery,
 } = require('../controllers/posts');
 
-// need to add auth middleware to createOffer, createRequest
-router.route('/offers').post(createOffer).get(getOffersByQuery);
+router
+    .route('/offers')
+    .post(authenticateUser, createOffer)
+    .get(getOffersByQuery);
 router
     .route('/offers/:offerId')
-    .put(editOffer)
+    .put(authenticateUser, offerOwnerAuth, editOffer)
     .get(getOfferById);
 
-router.route('/requests').post(createRequest).get(getRequestsByQuery);
+router
+    .route('/requests')
+    .post(authenticateUser, createRequest)
+    .get(getRequestsByQuery);
 router
     .route('/requests/:requestId')
-    .put(editRequest)
+    .put(authenticateUser, requestOwnerAuth, editRequest)
     .get(getRequestById);
 
 module.exports = router;

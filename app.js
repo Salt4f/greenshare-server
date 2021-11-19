@@ -3,6 +3,7 @@ const app = express();
 
 const auth = require('./routes/auth.js');
 const posts = require('./routes/posts');
+const user = require('./routes/user');
 
 const authenticateUser = require('./middlewares/authentication');
 
@@ -15,8 +16,8 @@ app.use(express.json({ limit: '200MB' }));
 
 // Routes
 app.use('/api/auth', auth);
-//app.use('/api/posts/', authenticateUser, jobsRouter);
 app.use('/api/posts', posts);
+app.use('/api/user', user);
 
 const port = process.env.PORT || 13000;
 
