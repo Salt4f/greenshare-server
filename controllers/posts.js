@@ -613,7 +613,90 @@ const getOffersByQuery = async (req, res) => {
 };
 
 const getRequestsByQuery = async (req, res) => {
-    res.send('requests');
+    logger.log(`Received getRequestsByQuery request`, 1);
+
+    const { location, owner, quantity } = req.query;
+    var { tags, distance } = req.query;
+    var tagsArray = [];
+    var whereObject = {
+        active: true,
+    };
+
+    if (tags !== undefined) {
+        tagsArray = tags.split(';');
+    }
+
+    if (owner !== undefined) {
+        whereObject.ownerId = owner;
+    }
+
+    logger.log(
+        `Query params are: location: ${location}, distance: ${distance}, tags: ${tagsArray}, owner: ${owner}, quantity: ${quantity}`,
+        1
+    );
+
+    logger.log(`Selecting query...`, 1);
+
+    const requestsFinal = [];
+
+    const requests = await db.requests.findAll({
+        where: whereObject,
+        attributes: ['id', 'location', 'name', 'ownerId'],
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial', 'color'],
+            },
+        ],
+    });
+
+    const queryLocation = location.replace(',', '.').split(';');
+
+    var numTags = tagsArray.length;
+    logger.log(`Checking tags...`, 1);
+    for (const request of requests) {
+        var count = 0;
+        for (const tag of request.tags) {
+            for (const tagQuery of tagsArray) {
+                if (tagQuery.name == tag.name) count++;
+            }
+        }
+        if (numTags == count) {
+            const user = await db.users.findOne({
+                where: { id: request.ownerId },
+                attributes: ['nickname'],
+            });
+            request.dataValues.nickname = user.nickname;
+            logger.log(`Checking location...`, 1);
+            var requestLocation = request.location.replace(',', '.').split(';');
+            const dist = distanceBetweenPoints(
+                parseFloat(requestLocation[0]),
+                parseFloat(requestLocation[1]),
+                parseFloat(queryLocation[0]),
+                parseFloat(queryLocation[1])
+            );
+            logger.log(`Checking distance...`, 1);
+            if (distance === undefined || dist <= parseInt(distance)) {
+                request.dataValues.distance = dist;
+                requestsFinal.push(request);
+            }
+        }
+    }
+
+    requestsFinal.sort((a, b) => {
+        return b.dataValues.distance - a.dataValues.distance;
+    });
+
+    var requestsSlice = [];
+
+    if (quantity !== undefined) {
+        requestsSlice = requestsFinal.slice(0, quantity);
+    } else {
+        requestsSlice = requestsFinal;
+    }
+    logger.log(`Got request(s), sending back response...`, 1);
+    res.status(StatusCodes.OK).json(requestsSlice);
 };
 
 module.exports = {
