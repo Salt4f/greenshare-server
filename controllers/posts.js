@@ -47,11 +47,21 @@ const createOffer = async (req, res) => {
             terminateAt,
             location,
             icon: parsedIcon,
-            photos,
             ownerId: id,
         });
-        logger.log('Created offer, setting up tags...', 1);
+        logger.log('Created offer, setting up photos...', 1);
 
+        for (let photo of photos) {
+            logger.log('Parsing photo...', 1);
+            const parsedPhoto = dataEncoding.base64ToBuffer(photo);
+            logger.log('Parsed photo', 1);
+            await db.photos.create({
+                image: parsedPhoto,
+                offerId: offer.dataValues.id,
+            });
+        }
+
+        logger.log('Setting up tags...', 1);
         for (const element of tags) {
             const [tag, created] = await db.tags.findOrCreate({
                 where: {
@@ -468,8 +478,22 @@ const getOfferById = async (req, res) => {
                 model: db.tags,
                 attributes: ['name', 'isOfficial', 'color'],
             },
+            {
+                model: db.photos,
+                attributes: ['image'],
+            },
         ],
     });
+
+    if (offer == null) {
+        logger.log(
+            `Offer with id: ${offerId} not found, sending response...`,
+            1
+        );
+        res.status(StatusCodes.NOT_FOUND).send();
+        return;
+    }
+    logger.log(`Got offer with id: ${offerId}`, 1);
 
     const user = await db.users.findOne({
         where: { id: offer.ownerId },
@@ -484,16 +508,19 @@ const getOfferById = async (req, res) => {
     logger.log('Encoding icon to base64...', 1);
     offer.icon = dataEncoding.bufferToBase64(offer.icon);
     logger.log('Encoded icon to base64', 1);
-    if (offer == null) {
-        logger.log(
-            `Offer with id: ${offerId} not found, sending response...`,
-            1
-        );
-        res.status(StatusCodes.NOT_FOUND).send();
-    } else {
-        logger.log(`Got offer with id: ${offerId}, sending response...`, 1);
-        res.status(StatusCodes.OK).json(offer);
+
+    let photosArray = [];
+
+    logger.log('Encoding photos to base64...', 1);
+    for (let photo of offer.Photos) {
+        photosArray.push(dataEncoding.bufferToBase64(photo.dataValues.image));
     }
+    logger.log('Encoded photos to base64...', 1);
+    console.log(offer.dataValues.photos);
+    offer.dataValues.photos = photosArray;
+    delete offer.dataValues.Photos;
+
+    res.status(StatusCodes.OK).json(offer);
 };
 
 const getRequestById = async (req, res) => {
@@ -567,6 +594,10 @@ const getOffersByQuery = async (req, res) => {
                 model: db.tags,
                 attributes: ['name', 'isOfficial', 'color'],
             },
+            {
+                model: db.photos,
+                attributes: ['image'],
+            },
         ],
     });
 
@@ -612,6 +643,17 @@ const getOffersByQuery = async (req, res) => {
                     offer.dataValues.icon
                 );
                 logger.log('Encoded icon to base64', 1);
+
+                let photoArray = [];
+                logger.log('Encoding photos to base64...', 1);
+                for (let photo of offer.Photos) {
+                    photoArray.push(
+                        dataEncoding.bufferToBase64(photo.dataValues.image)
+                    );
+                }
+                logger.log('Encoded photos to base64...', 1);
+                offer.dataValues.photos = photoArray;
+                delete offer.dataValues.Photos;
                 offersFinal.push(offer);
             }
         }
@@ -685,7 +727,7 @@ const getRequestsByQuery = async (req, res) => {
         if (numTags == count) {
             logger.log('Cleaning up tags...', 1);
             for (let t of request.tags) {
-                delete t.dataValues.RequestTag;
+                delete t.dataValues.OfferTag;
             }
             logger.log('Tags cleaned...', 1);
 
