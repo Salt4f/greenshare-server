@@ -94,7 +94,7 @@ function location(_location) {
     if (!_location) {
         return { passed };
     }
-    let parsedLocation = _location.replace(',','.').split(';');
+    let parsedLocation = _location.replace(',', '.').split(';');
     let latitude = parseFloat(parsedLocation[0]);
     let longitude = parseFloat(parsedLocation[1]);
 
@@ -151,7 +151,11 @@ function terminateAt(_terminateAt) {
     let currentDate = new Date();
     let paramDate = new Date(_terminateAt);
 
-    if (paramDate < currentDate || !_terminateAt) {
+    if (
+        !(paramDate instanceof Date && !isNaN(paramDate)) ||
+        paramDate < currentDate ||
+        !_terminateAt
+    ) {
         return { passed };
     }
 
@@ -166,10 +170,7 @@ function tags(_tags) {
         return { passed };
     }
     for (const tag of _tags) {
-        if (
-            typeof tag.name !== 'string' ||
-            !isNaN(tag.name)
-        ) {
+        if (typeof tag.name !== 'string' || !isNaN(tag.name)) {
             return { passed };
         }
     }
@@ -194,7 +195,11 @@ function icon(_icon) {
 function photos(_photos) {
     let passed = false;
 
-    if (_photos === undefined || _photos.length == 0) {
+    if (
+        _photos == undefined ||
+        !Array.isArray(_photos) ||
+        _photos.length == 0
+    ) {
         return { passed };
     }
 
@@ -229,16 +234,18 @@ function offer(
         message = `invalid description`;
         return { passed, message };
     }
-    /*
-    if (!terminateAt(_terminateAt).passed) {
-        message = `invalid terminateAt date`;
-        return { passed, message };
+    if (_terminateAt != undefined) {
+        if (!terminateAt(_terminateAt).passed) {
+            message = `invalid terminateAt date`;
+            return { passed, message };
+        }
     }
-    if (!photos(_photos).passed) {
-        message = `missing photos`;
-        return { passed, message };
+    if (_photos != undefined) {
+        if (!photos(_photos).passed) {
+            message = `invalid photos (not an array)`;
+            return { passed, message };
+        }
     }
-    */
     if (!location(_location).passed) {
         message = `invalid location`;
         return { passed, message };
@@ -274,12 +281,12 @@ function request(_id, _name, _description, _terminateAt, _location, _tags) {
         message = `invalid description`;
         return { passed, message };
     }
-    /*
-    if (!terminateAt(_terminateAt).passed) {
-        message = `invalid terminateAt date`;
-        return { passed, message };
+    if (_terminateAt != undefined) {
+        if (!terminateAt(_terminateAt).passed) {
+            message = `invalid terminateAt date`;
+            return { passed, message };
+        }
     }
-    */
     if (!location(_location).passed) {
         message = `invalid location`;
         return { passed, message };
