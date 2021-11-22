@@ -6,6 +6,7 @@ const logger = require('../utils/logger');
 const { inspect } = require('util');
 const { distanceBetweenPoints } = require('../utils/math');
 const dataEncoding = require('../utils/data');
+const sharp = require('sharp');
 
 const createOffer = async (req, res) => {
     logger.log('Received createOffer request...', 1);
@@ -36,8 +37,27 @@ const createOffer = async (req, res) => {
     logger.log('Data validation passed, creating offer...', 1);
 
     try {
+        logger.log('Compressing icon...', 1);
+        let compressedIcon;
+        const { width, height } = await sharp(icon).metadata();
+        if (height < width) {
+            compressedIcon = await sharp('dunk.jpg')
+                .resize({
+                    width: height,
+                    height: height,
+                })
+                .toFormat('jpg', { quality: 25 });
+        } else {
+            compressedIcon = await sharp('dunk.jpg')
+                .resize({
+                    width: width,
+                    height: width,
+                })
+                .toFormat('jpg', { quality: 25 });
+        }
+
         logger.log('Parsing icon...', 1);
-        const parsedIcon = dataEncoding.base64ToBuffer(icon);
+        const parsedIcon = dataEncoding.base64ToBuffer(compressedIcon);
         logger.log('Parsed icon', 1);
         logger.log('Creating offer...', 1);
 
