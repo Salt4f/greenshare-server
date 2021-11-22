@@ -55,7 +55,7 @@ const createOffer = async (req, res) => {
                 })
                 .toFormat('jpg', { quality: 25 });
         }
-
+        logger.log('Compressed icon...', 1);
         logger.log('Parsing icon...', 1);
         const parsedIcon = dataEncoding.base64ToBuffer(compressedIcon);
         logger.log('Parsed icon', 1);
@@ -72,8 +72,13 @@ const createOffer = async (req, res) => {
         logger.log('Created offer, setting up photos...', 1);
 
         for (let photo of photos) {
+            logger.log('Compressing photo...', 1);
+            const compressedPhoto = await sharp(photo).jpeg({
+                quality: 25,
+            });
+            logger.log('Compressed photo...', 1);
             logger.log('Parsing photo...', 1);
-            const parsedPhoto = dataEncoding.base64ToBuffer(photo);
+            const parsedPhoto = dataEncoding.base64ToBuffer(compressedPhoto);
             logger.log('Parsed photo', 1);
             await db.photos.create({
                 image: parsedPhoto,
