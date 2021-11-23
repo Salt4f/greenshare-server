@@ -43,22 +43,23 @@ const createOffer = async (req, res) => {
 
         logger.log('Compressing icon...', 1);
         let compressedIcon;
-        const { width, height } = await sharp(parsedIcon).metadata();
+        compressedIcon = await sharp(parsedIcon);
+        const { width, height } = compressedIcon.metadata();
         if (height < width) {
-            compressedIcon = await sharp(parsedIcon)
+            compressedIcon = compressedIcon
                 .resize({
                     width: height,
                     height: height,
                 })
-                .toFormat('jpg', { quality: 25 })
+                .toFormat('jpg', { quality: 15 })
                 .toBuffer();
         } else {
-            compressedIcon = await sharp(parsedIcon)
+            compressedIcon = compressedIcon
                 .resize({
                     width: width,
                     height: width,
                 })
-                .toFormat('jpg', { quality: 25 })
+                .toFormat('jpg', { quality: 15 })
                 .toBuffer();
         }
         logger.log('Compressed icon...', 1);
@@ -472,7 +473,31 @@ const editOffer = async (req, res) => {
                 logger.log('Parsing icon...', 1);
                 const parsedIcon = dataEncoding.base64ToBuffer(icon);
                 logger.log('Parsed icon', 1);
-                offer.icon = icon;
+
+                logger.log('Compressing icon...', 1);
+                let compressedIcon;
+                compressedIcon = await sharp(parsedIcon);
+                const { width, height } = compressedIcon.metadata();
+                if (height < width) {
+                    compressedIcon = compressedIcon
+                        .resize({
+                            width: height,
+                            height: height,
+                        })
+                        .toFormat('jpg', { quality: 15 })
+                        .toBuffer();
+                } else {
+                    compressedIcon = compressedIcon
+                        .resize({
+                            width: width,
+                            height: width,
+                        })
+                        .toFormat('jpg', { quality: 15 })
+                        .toBuffer();
+                }
+                logger.log('Compressed icon...', 1);
+
+                offer.icon = compressedIcon;
             } else {
                 var message = `missing icon`;
                 res.status(StatusCodes.BAD_REQUEST).json({
