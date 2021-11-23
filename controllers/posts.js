@@ -6,6 +6,7 @@ const logger = require('../utils/logger');
 const { inspect } = require('util');
 const { distanceBetweenPoints } = require('../utils/math');
 const dataEncoding = require('../utils/data');
+const sharp = require('sharp');
 
 const createOffer = async (req, res) => {
     logger.log('Received createOffer request...', 1);
@@ -39,14 +40,37 @@ const createOffer = async (req, res) => {
         logger.log('Parsing icon...', 1);
         const parsedIcon = dataEncoding.base64ToBuffer(icon);
         logger.log('Parsed icon', 1);
-        logger.log('Creating offer...', 1);
 
+        logger.log('Compressing icon...', 1);
+        let compressedIcon;
+        compressedIcon = await sharp(parsedIcon);
+        const { width, height } = compressedIcon.metadata();
+        if (height < width) {
+            compressedIcon = compressedIcon
+                .resize({
+                    width: height,
+                    height: height,
+                })
+                .toFormat('jpg', { quality: 15 })
+                .toBuffer();
+        } else {
+            compressedIcon = compressedIcon
+                .resize({
+                    width: width,
+                    height: width,
+                })
+                .toFormat('jpg', { quality: 15 })
+                .toBuffer();
+        }
+        logger.log('Compressed icon...', 1);
+
+        logger.log('Creating offer...', 1);
         const offer = await db.offers.create({
             name,
             description,
             terminateAt,
             location,
-            icon: parsedIcon,
+            icon: compressedIcon,
             ownerId: id,
         });
         logger.log('Created offer, setting up photos...', 1);
@@ -55,8 +79,16 @@ const createOffer = async (req, res) => {
             logger.log('Parsing photo...', 1);
             const parsedPhoto = dataEncoding.base64ToBuffer(photo);
             logger.log('Parsed photo', 1);
+            logger.log('Compressing photo...', 1);
+            const compressedPhoto = await sharp(parsedPhoto)
+                .toFormat('jpg', {
+                    quality: 25,
+                })
+                .toBuffer();
+            logger.log('Compressed photo...', 1);
+
             await db.photos.create({
-                image: parsedPhoto,
+                image: compressedPhoto,
                 offerId: offer.dataValues.id,
             });
         }
@@ -441,7 +473,31 @@ const editOffer = async (req, res) => {
                 logger.log('Parsing icon...', 1);
                 const parsedIcon = dataEncoding.base64ToBuffer(icon);
                 logger.log('Parsed icon', 1);
-                offer.icon = icon;
+
+                logger.log('Compressing icon...', 1);
+                let compressedIcon;
+                compressedIcon = await sharp(parsedIcon);
+                const { width, height } = compressedIcon.metadata();
+                if (height < width) {
+                    compressedIcon = compressedIcon
+                        .resize({
+                            width: height,
+                            height: height,
+                        })
+                        .toFormat('jpg', { quality: 15 })
+                        .toBuffer();
+                } else {
+                    compressedIcon = compressedIcon
+                        .resize({
+                            width: width,
+                            height: width,
+                        })
+                        .toFormat('jpg', { quality: 15 })
+                        .toBuffer();
+                }
+                logger.log('Compressed icon...', 1);
+
+                offer.icon = compressedIcon;
             } else {
                 var message = `missing icon`;
                 res.status(StatusCodes.BAD_REQUEST).json({
