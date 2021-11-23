@@ -25,6 +25,7 @@
         "mariadb": "^2.5.4",
         "sequelize": "^6.8.0",
         "sharp": "^0.29.3",
+        "unicode": "^13.0.0",
         "util": "^0.12.4"
     },
     "devDependencies": {
