@@ -38,7 +38,7 @@ const createOffer = async (req, res) => {
 
     try {
         logger.log('Parsing icon...', 1);
-        const parsedIcon = dataEncoding.base64ToBuffer(compressedIcon);
+        const parsedIcon = dataEncoding.base64ToBuffer(icon);
         logger.log('Parsed icon', 1);
 
         logger.log('Compressing icon...', 1);
@@ -50,14 +50,16 @@ const createOffer = async (req, res) => {
                     width: height,
                     height: height,
                 })
-                .toFormat('jpg', { quality: 25 });
+                .toFormat('jpg', { quality: 25 })
+                .toBuffer();
         } else {
             compressedIcon = await sharp(parsedIcon)
                 .resize({
                     width: width,
                     height: width,
                 })
-                .toFormat('jpg', { quality: 25 });
+                .toFormat('jpg', { quality: 25 })
+                .toBuffer();
         }
         logger.log('Compressed icon...', 1);
 
@@ -77,9 +79,11 @@ const createOffer = async (req, res) => {
             const parsedPhoto = dataEncoding.base64ToBuffer(photo);
             logger.log('Parsed photo', 1);
             logger.log('Compressing photo...', 1);
-            const compressedPhoto = await sharp(parsedPhoto).toFormat('jpg', {
-                quality: 25,
-            });
+            const compressedPhoto = await sharp(parsedPhoto)
+                .toFormat('jpg', {
+                    quality: 25,
+                })
+                .toBuffer();
             logger.log('Compressed photo...', 1);
 
             await db.photos.create({
