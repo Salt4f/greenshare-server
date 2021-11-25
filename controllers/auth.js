@@ -4,13 +4,6 @@ const {
     UnauthenticatedError,
     InternalServerError,
 } = require('../errors');
-const {
-    registerRequest,
-    loginRequest,
-    tokenValidationRequest,
-} = require('../requests/user-service');
-// const { createUser } = require('../db/models/users');
-const db = require('../db/connect');
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
@@ -19,18 +12,8 @@ const { registerService } = require('../services/auth');
 const register = async (req, res) => {
     logger.log('Received register request', 1);
 
-    const { email, password, nickname, dni, birthDate, fullName } = req.body;
-
     try {
-        const { status, infoMessage } = await registerService(
-            email,
-            password,
-            nickname,
-            dni,
-            birthDate,
-            fullName
-        );
-
+        const { status, infoMessage } = await registerService(req.body);
         res.status(status).json(infoMessage);
     } catch (e) {
         logger.log(e.message, 0);

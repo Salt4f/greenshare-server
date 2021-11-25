@@ -3,21 +3,16 @@ const {
     registerRequest,
     loginRequest,
     tokenValidationRequest,
-} = require('../requests/user-service');
+} = require('../requests/stubs/user-service');
 // const { createUser } = require('../db/models/users');
 const db = require('../db/connect');
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
 
-const registerService = async (
-    email,
-    password,
-    nickname,
-    dni,
-    birthDate,
-    fullName
-) => {
+const registerService = async (requestBody) => {
+    const { email, password, nickname, dni, birthDate, fullName } = requestBody;
+
     /////////////// VALIDATION ///////////////
     logger.log(`Starting validation...`, 1);
     let status, infoMessage;
