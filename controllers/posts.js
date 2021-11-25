@@ -598,7 +598,7 @@ const getRequestById = async (req, res) => {
     });
 
     logger.log('Cleaning up tags...', 1);
-    for (let t in offer.tags) {
+    for (let t in request.tags) {
         delete t.dataValues.OfferTag;
     }
 
@@ -823,6 +823,27 @@ const getRequestsByQuery = async (req, res) => {
     res.status(StatusCodes.OK).json(requestsSlice);
 };
 
+const requestOffer = async (req, res) => {
+    logger.log('Received requestOffer request...', 1);
+
+    const { requestId } = res.body;
+    const offerId = req.params.offerId;
+
+    // 1. find offer & request
+    const request = await db.requests.findOne({
+        where: { id: requestId },
+    });
+    const offer = await db.offers.findOne({
+        where: { id: offerId },
+    });
+
+    // 2. offer.addRequest(request)
+    offer.addRequest(request);
+
+    // 3. request.status = 'pending'
+    request.status = 'pending';
+};
+
 module.exports = {
     createOffer,
     createRequest,
@@ -832,4 +853,5 @@ module.exports = {
     getRequestById,
     getOffersByQuery,
     getRequestsByQuery,
+    requestOffer,
 };

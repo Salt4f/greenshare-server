@@ -46,6 +46,12 @@ db.requests.belongsTo(db.users, { foreignKey: 'ownerId' });
 db.users.hasMany(db.offers, { foreignKey: 'ownerId' });
 db.users.hasMany(db.requests, { foreignKey: 'ownerId' });
 
+db.offers.hasMany(db.requests, {
+    foreignKey: 'offerId',
+    as: 'pendingRequests',
+});
+db.requests.belongsTo(db.offers, { foreignKey: 'offerId' });
+
 db.completedPosts.belongsTo(db.acceptedPosts, { foreignKey: 'acceptedPostId' });
 
 db.tags.belongsToMany(db.offers, {
