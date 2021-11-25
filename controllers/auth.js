@@ -14,95 +14,24 @@ const db = require('../db/connect');
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
+const { registerService } = require('../services/auth');
 
 const register = async (req, res) => {
     logger.log('Received register request', 1);
 
     const { email, password, nickname, dni, birthDate, fullName } = req.body;
 
-    /////////////// VALIDATION ///////////////
-    logger.log(`Starting validation...`, 1);
-
-    if (!validate.email(email)) {
-        logger.log('Email validation failed', 1);
-
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: `Wrong parameters: invalid or missing email`,
-        });
-        return;
-    }
-    if (!validate.nickname(nickname)) {
-        logger.log('Nickname validation failed', 1);
-
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: `Wrong parameters: invalid or missing nickname`,
-        });
-        return;
-    }
-    if (!validate.password(password)) {
-        logger.log('Password validation failed', 1);
-
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: `Wrong parameters: invalid or missing password`,
-        });
-        return;
-    }
-    logger.log('Validation passed', 1);
-
     try {
-        logger.log('Sending register request to UserService...', 1);
-        const response = await registerRequest(email, password, nickname);
-        logger.log(
-            'Received register response from UserService, checking...',
-            1
+        const { status, infoMessage } = await registerService(
+            email,
+            password,
+            nickname,
+            dni,
+            birthDate,
+            fullName
         );
 
-        // logger.log(
-        //     `Received register response from UserService, checking... ${inspect(
-        //         response,
-        //         false,
-        //         null,
-        //         false
-        //     )}`,
-        //     2
-        // );
-
-        if (response.status == StatusCodes.CREATED) {
-            logger.log(
-                'UserService successfully registered user, creating user...',
-                1
-            );
-
-            // CREATE USER TO OUR DATABSE
-            // await createUser(response.data.id, email, nickname);
-            await db.users.create({
-                id: response.data.id,
-                email,
-                password,
-                nickname,
-                dni,
-                birthDate: new Date(birthDate),
-                fullName,
-            });
-
-            logger.log(
-                'Successfully created user, sending response with id and token...',
-                1
-            );
-
-            res.status(StatusCodes.CREATED).json({
-                id: response.data.id,
-                token: response.data.token,
-            });
-        } else if (response.status == StatusCodes.BAD_REQUEST) {
-            res.status(StatusCodes.BAD_REQUEST).json({
-                error: `Email already registered`,
-            });
-        } else {
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-                error: `User service error`,
-            });
-        }
+        res.status(status).json(infoMessage);
     } catch (e) {
         logger.log(e.message, 0);
 
@@ -130,23 +59,17 @@ const login = async (req, res) => {
     /////////////// VALIDATION ///////////////
     logger.log(`Starting validation...`, 1);
 
-    if (!validate.email(email)) {
-        logger.log('Email validation failed', 1);
+    const { passed, message } = validate.login(email, password);
 
+    if (!passed) {
+        logger.log(message, 1);
         res.status(StatusCodes.BAD_REQUEST).json({
-            error: `Wrong parameters: invalid or missing email`,
+            error: message,
         });
         return;
     }
-    if (!validate.password(password)) {
-        logger.log('Password validation failed', 1);
 
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: `Wrong parameters: invalid or missing password`,
-        });
-        return;
-    }
-    logger.log('Validation passed', 1);
+    logger.log(message, 1);
 
     try {
         logger.log('Sending loginRequest...', 1);
@@ -197,22 +120,17 @@ const tokenValidation = async (req, res) => {
     /////////////// VALIDATION ///////////////
 
     logger.log(`Starting token validation...`, 1);
-    if (!validate.id(id)) {
-        logger.log(`id validation failed, invalid or missing id`, 1);
+    const { passed, message } = validate.tokenValidation(id, token);
 
+    if (!passed) {
+        logger.log(message, 1);
         res.status(StatusCodes.BAD_REQUEST).json({
-            error: `Wrong parameters: invalid or missing id`,
+            error: message,
         });
         return;
     }
-    if (!validate.token(token)) {
-        logger.log(`token validation failed, invalid or missing token`, 1);
 
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: `Wrong parameters: invalid or missing token`,
-        });
-        return;
-    }
+    logger.log(message, 1);
 
     try {
         logger.log(`Sending tokenValidationRequest...`, 1);
