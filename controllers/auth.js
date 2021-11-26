@@ -4,7 +4,6 @@ const {
     UnauthenticatedError,
     InternalServerError,
 } = require('../errors');
-const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
 const {
@@ -12,7 +11,6 @@ const {
     loginService,
     tokenValidationService,
 } = require('../services/auth');
-const { tokenValidationRequest } = require('../requests/stubs/user-service');
 
 const register = async (req, res) => {
     logger.log('Received register request', 1);

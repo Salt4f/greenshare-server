@@ -1,12 +1,5 @@
 const { StatusCodes } = require('http-status-codes');
-
-const db = require('../db/connect');
-const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
-const { inspect } = require('util');
-const { distanceBetweenPoints } = require('../utils/math');
-const dataEncoding = require('../utils/data');
-const sharp = require('sharp');
 
 const {
     createOfferService,

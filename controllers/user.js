@@ -1,7 +1,6 @@
 const { StatusCodes } = require('http-status-codes');
 const logger = require('../utils/logger');
 const { getUserAllInfo, getUserNickname } = require('../services/user');
-const { authenticateUser } = require('../middlewares/authentication');
 const { tokenValidationService } = require('../services/auth');
 
 const getUser = async (req, res) => {
