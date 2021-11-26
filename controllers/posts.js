@@ -8,122 +8,24 @@ const { distanceBetweenPoints } = require('../utils/math');
 const dataEncoding = require('../utils/data');
 const sharp = require('sharp');
 
+const {
+    createOfferService,
+    createRequestService,
+    editRequestService,
+    editOfferService,
+    getOfferByIdService,
+    getRequestByIdService,
+    getOffersByQueryService,
+    getRequestByQueryService,
+    requestOfferService,
+} = require('../services/posts');
+
 const createOffer = async (req, res) => {
     logger.log('Received createOffer request...', 1);
 
-    const { id, name, description, terminateAt, location, icon, photos, tags } =
-        req.body;
-
-    logger.log('Starting data validation...', 1);
-    const { passed, message } = validate.offer(
-        id,
-        name,
-        description,
-        terminateAt,
-        location,
-        icon,
-        photos,
-        tags
-    );
-
-    if (!passed) {
-        logger.log(message, 1);
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: message,
-        });
-        return;
-    }
-
-    logger.log('Data validation passed, creating offer...', 1);
-
     try {
-        logger.log('Parsing icon...', 1);
-        const parsedIcon = dataEncoding.base64ToBuffer(icon);
-        logger.log('Parsed icon', 1);
-
-        logger.log('Compressing icon...', 1);
-        let compressedIcon;
-        compressedIcon = await sharp(parsedIcon);
-        const { width, height } = compressedIcon.metadata();
-        if (height < width) {
-            compressedIcon = compressedIcon
-                .resize({
-                    width: height,
-                    height: height,
-                })
-                .toFormat('jpg', { quality: 15 })
-                .toBuffer();
-        } else {
-            compressedIcon = compressedIcon
-                .resize({
-                    width: width,
-                    height: width,
-                })
-                .toFormat('jpg', { quality: 15 })
-                .toBuffer();
-        }
-        logger.log('Compressed icon...', 1);
-
-        logger.log('Creating offer...', 1);
-        const offer = await db.offers.create({
-            name,
-            description,
-            terminateAt,
-            location,
-            icon: compressedIcon,
-            ownerId: id,
-        });
-        logger.log('Created offer, setting up photos...', 1);
-
-        for (let photo of photos) {
-            logger.log('Parsing photo...', 1);
-            const parsedPhoto = dataEncoding.base64ToBuffer(photo);
-            logger.log('Parsed photo', 1);
-            logger.log('Compressing photo...', 1);
-            const compressedPhoto = await sharp(parsedPhoto)
-                .toFormat('jpg', {
-                    quality: 25,
-                })
-                .toBuffer();
-            logger.log('Compressed photo...', 1);
-
-            await db.photos.create({
-                image: compressedPhoto,
-                offerId: offer.dataValues.id,
-            });
-        }
-
-        logger.log('Setting up tags...', 1);
-        for (const element of tags) {
-            const [tag, created] = await db.tags.findOrCreate({
-                where: {
-                    name: element.name,
-                },
-                defaults: {
-                    name: element.name,
-                    isOfficial: false,
-                    color: element.color != undefined ? element.color : null,
-                },
-            });
-
-            logger.log(
-                `Current tag's id: ${tag.id}, name: ${tag.name}, isOfficial: ${tag.isOfficial}, color: ${tag.color}`,
-                1
-            );
-            await offer.addTag(tag);
-
-            logger.log(
-                `Added tag with id: ${tag.id} to offer with id: ${offer.id}`,
-                1
-            );
-        }
-
-        logger.log('Successfully created offer, sending response...', 1);
-
-        res.status(StatusCodes.CREATED).json({
-            id: offer.id,
-            createdAt: offer.createdAt,
-        });
+        const { status, infoMessage } = await createOfferService(req.body);
+        res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -135,68 +37,9 @@ const createOffer = async (req, res) => {
 const createRequest = async (req, res) => {
     logger.log('Received createRequest request...', 1);
 
-    const { id, name, description, terminateAt, location, tags } = req.body;
-
-    logger.log('Starting data validation...', 1);
-    const { passed, message } = validate.request(
-        id,
-        name,
-        description,
-        terminateAt,
-        location,
-        tags
-    );
-
-    if (!passed) {
-        logger.log(message, 1);
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: message,
-        });
-        return;
-    }
-
-    logger.log('Data validation passed, creating request...', 1);
-
     try {
-        const request = await db.requests.create({
-            name,
-            description,
-            terminateAt,
-            location,
-            ownerId: id,
-        });
-        logger.log('Created request, setting up tags...', 1);
-
-        for (const element of tags) {
-            const [tag, created] = await db.tags.findOrCreate({
-                where: {
-                    name: element.name,
-                },
-                defaults: {
-                    name: element.name,
-                    isOfficial: false,
-                    color: element.color != undefined ? element.color : null,
-                },
-            });
-
-            logger.log(
-                `Current tag's id: ${tag.id}, name: ${tag.name}, isOfficial: ${tag.isOfficial}`,
-                1
-            );
-            await request.addTag(tag);
-
-            logger.log(
-                `Added tag with id: ${tag.id} to request with id: ${request.id}`,
-                1
-            );
-        }
-
-        logger.log('Successfully created request, sending response...', 1);
-
-        res.status(StatusCodes.CREATED).json({
-            id: request.id,
-            createdAt: request.createdAt,
-        });
+        const { status, infoMessage } = await createRequestService(req.body);
+        res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -208,126 +51,12 @@ const createRequest = async (req, res) => {
 const editRequest = async (req, res) => {
     logger.log('Received editRequest request, editing...', 1);
 
-    const { id, name, description, terminateAt, location, tags } = req.body;
-
-    const requestId = req.params.requestId;
-
-    logger.log('Starting data validation of id and requestId...', 1);
-
-    if (!validate.id(id)) {
-        var message = `Invalid id`;
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: message,
-        });
-        return;
-    }
-
-    if (!validate.id(requestId)) {
-        var message = `Invalid request Id`;
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: message,
-        });
-        return;
-    }
-    logger.log('Data validation of id and requestId passed, checking...', 1);
-
     try {
-        const request = await db.requests.findOne({
-            where: {
-                id: requestId,
-                active: true,
-            },
-        });
-
-        if (request == undefined) {
-            logger.log(
-                `request with id: ${requestId} not found, sending response...`,
-                1
-            );
-            var message = `Request with given id not found`;
-            res.status(StatusCodes.NOT_FOUND).json({
-                error: message,
-            });
-            return;
-        }
-
-        if (name != undefined) {
-            if (validate.name(name)) {
-                request.name = name;
-            } else {
-                var message = `Invalid name`;
-                res.status(StatusCodes.BAD_REQUEST).json({
-                    error: message,
-                });
-                return;
-            }
-        }
-
-        if (description != undefined) {
-            if (validate.description(description)) {
-                request.description = description;
-            } else {
-                var message = `Invalid description`;
-                res.status(StatusCodes.BAD_REQUEST).json({
-                    error: message,
-                });
-                return;
-            }
-        }
-
-        if (terminateAt != undefined) {
-            if (validate.terminateAt(terminateAt)) {
-                request.terminateAt = terminateAt;
-            } else {
-                var message = `Invalid terminateAt date`;
-                res.status(StatusCodes.BAD_REQUEST).json({
-                    error: message,
-                });
-                return;
-            }
-        }
-
-        if (location != undefined) {
-            if (validate.location(location)) {
-                request.location = location;
-            } else {
-                var message = `Invalid location`;
-                res.status(StatusCodes.BAD_REQUEST).json({
-                    error: message,
-                });
-                return;
-            }
-        }
-
-        if (tags != undefined) {
-            if (validate.tags(tags)) var newTags = [];
-            for (var newTagObject of tags) {
-                const [newTag, created] = await db.tags.findOrCreate({
-                    where: {
-                        name: newTagObject.name,
-                    },
-                    defaults: {
-                        name: newTagObject.name,
-                        color:
-                            newTagObject.color != undefined
-                                ? newTagObject.color
-                                : null,
-                        isOfficial: false,
-                    },
-                });
-
-                logger.log(
-                    `Current tag's id: ${newTag.id}, name: ${newTag.name}, isOfficial: ${newTag.isOfficial}`,
-                    1
-                );
-                newTags.push(newTag);
-            }
-            request.setTags(newTags);
-        }
-
-        request.save();
-        res.send('Request edited');
-        return;
+        const { status, infoMessage } = await editRequestService(
+            req.body,
+            req.params.requestId
+        );
+        res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
