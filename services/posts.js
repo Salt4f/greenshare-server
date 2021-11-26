@@ -171,13 +171,13 @@ const editRequestService = async (requestBody, requestId) => {
 
     logger.log('Starting data validation of id and requestId...', 1);
     if (!validate.id(id)) {
-        infoMessage = `Invalid id`;
+        infoMessage = { error: `Invalid id` };
         status = StatusCodes.BAD_REQUEST;
         return { status, infoMessage };
     }
 
     if (!validate.id(requestId)) {
-        infoMessage = `Invalid requestId`;
+        infoMessage = { error: `Invalid requestId` };
         status = StatusCodes.BAD_REQUEST;
         return { status, infoMessage };
     }
@@ -197,7 +197,7 @@ const editRequestService = async (requestBody, requestId) => {
             `request with id: ${requestId} not found, sending response...`,
             1
         );
-        infoMessage = `Request with given id not found`;
+        infoMessage = { error: `Request with given id not found` };
         status = StatusCodes.NOT_FOUND;
         return { status, infoMessage };
     }
@@ -206,7 +206,7 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.name(name)) {
             request.name = name;
         } else {
-            infoMessage = `Invalid name`;
+            infoMessage = { error: `Invalid name` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
         }
@@ -216,7 +216,7 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.description(description)) {
             request.description = description;
         } else {
-            infoMessage = `Invalid description`;
+            infoMessage = { error: `Invalid description` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
         }
@@ -226,7 +226,7 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.terminateAt(terminateAt)) {
             request.terminateAt = terminateAt;
         } else {
-            infoMessage = `Invalid terminateAt date`;
+            infoMessage = { error: `Invalid terminateAt date` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
         }
@@ -236,34 +236,36 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.location(location)) {
             request.location = location;
         } else {
-            infoMessage = `Invalid location`;
+            infoMessage = { error: `Invalid location` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
         }
     }
 
     if (tags != undefined) {
-        if (validate.tags(tags)) var newTags = [];
-        for (var newTagObject of tags) {
-            const [newTag, created] = await db.tags.findOrCreate({
-                where: {
-                    name: newTagObject.name,
-                },
-                defaults: {
-                    name: newTagObject.name,
-                    color:
-                        newTagObject.color != undefined
-                            ? newTagObject.color
-                            : null,
-                    isOfficial: false,
-                },
-            });
+        if (validate.tags(tags)) {
+            let newTags = [];
+            for (let newTagObject of tags) {
+                const [newTag, created] = await db.tags.findOrCreate({
+                    where: {
+                        name: newTagObject.name,
+                    },
+                    defaults: {
+                        name: newTagObject.name,
+                        color:
+                            newTagObject.color != undefined
+                                ? newTagObject.color
+                                : null,
+                        isOfficial: false,
+                    },
+                });
 
-            logger.log(
-                `Current tag's id: ${newTag.id}, name: ${newTag.name}, isOfficial: ${newTag.isOfficial}`,
-                1
-            );
-            newTags.push(newTag);
+                logger.log(
+                    `Current tag's id: ${newTag.id}, name: ${newTag.name}, isOfficial: ${newTag.isOfficial}`,
+                    1
+                );
+                newTags.push(newTag);
+            }
         }
         request.setTags(newTags);
     }
@@ -314,7 +316,7 @@ const editOfferService = async (requestBody, offerId) => {
         if (validate.name(name)) {
             offer.name = name;
         } else {
-            infoMessage = `Invalid name`;
+            infoMessage = { error: `Invalid name` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
         }
@@ -334,7 +336,7 @@ const editOfferService = async (requestBody, offerId) => {
         if (validate.terminateAt(terminateAt)) {
             offer.terminateAt = terminateAt;
         } else {
-            infoMessage = `Invalid terminateAt date`;
+            infoMessage = { error: `Invalid terminateAt date` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
         }
@@ -344,36 +346,36 @@ const editOfferService = async (requestBody, offerId) => {
         if (validate.location(location)) {
             offer.location = location;
         } else {
-            var message = `Invalid location`;
-            res.status(StatusCodes.BAD_REQUEST).json({
-                error: message,
-            });
-            return;
+            infoMessage = { error: `Invalid location` };
+            status = StatusCodes.BAD_REQUEST;
+            return { status, infoMessage };
         }
     }
 
     if (tags != undefined) {
-        if (validate.tags(tags)) var newTags = [];
-        for (var newTagObject of tags) {
-            const [newTag, created] = await db.tags.findOrCreate({
-                where: {
-                    name: newTagObject.name,
-                },
-                defaults: {
-                    name: newTagObject.name,
-                    color:
-                        newTagObject.color != undefined
-                            ? newTagObject.color
-                            : null,
-                    isOfficial: false,
-                },
-            });
+        if (validate.tags(tags)) {
+            let newTags = [];
+            for (let newTagObject of tags) {
+                const [newTag, created] = await db.tags.findOrCreate({
+                    where: {
+                        name: newTagObject.name,
+                    },
+                    defaults: {
+                        name: newTagObject.name,
+                        color:
+                            newTagObject.color != undefined
+                                ? newTagObject.color
+                                : null,
+                        isOfficial: false,
+                    },
+                });
 
-            logger.log(
-                `Current tag's id: ${newTag.id}, name: ${newTag.name}, isOfficial: ${newTag.isOfficial}`,
-                1
-            );
-            newTags.push(newTag);
+                logger.log(
+                    `Current tag's id: ${newTag.id}, name: ${newTag.name}, isOfficial: ${newTag.isOfficial}`,
+                    1
+                );
+                newTags.push(newTag);
+            }
         }
         offer.setTags(newTags);
     }
@@ -381,11 +383,9 @@ const editOfferService = async (requestBody, offerId) => {
         if (validate.photos(photos)) {
             offer.photos = photos;
         } else {
-            var message = `missing photos`;
-            res.status(StatusCodes.BAD_REQUEST).json({
-                error: message,
-            });
-            return;
+            infoMessage = { error: `missing photos` };
+            status = StatusCodes.BAD_REQUEST;
+            return { status, infoMessage };
         }
     }
     if (icon != undefined) {
@@ -395,53 +395,349 @@ const editOfferService = async (requestBody, offerId) => {
             logger.log('Parsed icon', 1);
 
             logger.log('Compressing icon...', 1);
-            let compressedIcon;
-            compressedIcon = await sharp(parsedIcon);
-            const { width, height } = compressedIcon.metadata();
-            if (height < width) {
-                compressedIcon = compressedIcon
-                    .resize({
-                        width: height,
-                        height: height,
-                    })
-                    .toFormat('jpg', { quality: 15 })
-                    .toBuffer();
-            } else {
-                compressedIcon = compressedIcon
-                    .resize({
-                        width: width,
-                        height: width,
-                    })
-                    .toFormat('jpg', { quality: 15 })
-                    .toBuffer();
-            }
-            logger.log('Compressed icon...', 1);
-
+            const compressedIcon = await compressIcon(parsedIcon);
             offer.icon = compressedIcon;
         } else {
-            var message = `missing icon`;
-            res.status(StatusCodes.BAD_REQUEST).json({
-                error: message,
+            infoMessage = { error: `missing icon` };
+            status = StatusCodes.BAD_REQUEST;
+            return { status, infoMessage };
+        }
+    }
+    offer.save();
+    logger.log('Offer updated, sending response...', 1);
+    infoMessage = 'Offer updated';
+    status = StatusCodes.OK;
+    return { status, infoMessage };
+};
+
+const getOfferByIdService = async (offerId) => {
+    logger.log(`The offerId is: ${offerId}`, 1);
+    let status, infoMessage;
+
+    logger.log(`Looking for offer in db...`, 1);
+    const offer = await db.offers.findOne({
+        where: { id: offerId },
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial', 'color'],
+            },
+            {
+                model: db.photos,
+                attributes: ['image'],
+            },
+        ],
+    });
+
+    if (offer == null) {
+        logger.log(
+            `Offer with id: ${offerId} not found, sending response...`,
+            1
+        );
+        status = StatusCodes.NOT_FOUND;
+        infoMessage = { error: `Offer with id: ${offerId} not found` };
+        return { status, infoMessage };
+    }
+    logger.log(`Got offer with id: ${offerId}`, 1);
+
+    const user = await db.users.findOne({
+        where: { id: offer.ownerId },
+        attributes: ['nickname'],
+    });
+    offer.dataValues.author = user.nickname;
+
+    logger.log('Cleaning up tags...', 1);
+    for (let t of offer.tags) {
+        delete t.dataValues.OfferTag;
+    }
+    logger.log('Encoding icon to base64...', 1);
+    offer.icon = dataEncoding.bufferToBase64(offer.icon);
+    logger.log('Encoded icon to base64', 1);
+
+    let photosArray = [];
+
+    logger.log('Encoding photos to base64...', 1);
+    for (let photo of offer.Photos) {
+        photosArray.push(dataEncoding.bufferToBase64(photo.dataValues.image));
+    }
+    logger.log('Encoded photos to base64...', 1);
+    offer.dataValues.photos = photosArray;
+    delete offer.dataValues.Photos;
+
+    status = StatusCodes.OK;
+    infoMessage = offer;
+    return { status, infoMessage };
+};
+
+const getRequestByIdService = async (requestId) => {
+    logger.log(`The requestId is: ${requestId}`, 1);
+    let status, infoMessage;
+
+    logger.log(`Looking for request in db...`, 1);
+    const request = await db.requests.findOne({
+        where: { id: requestId },
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial', 'color'],
+            },
+        ],
+    });
+
+    logger.log('Cleaning up tags...', 1);
+    for (let t in request.tags) {
+        delete t.dataValues.OfferTag;
+    }
+
+    if (request == null) {
+        logger.log(
+            `request with id: ${requestId} not found, sending response...`,
+            1
+        );
+        status = StatusCodes.NOT_FOUND;
+        infoMessage = { error: `request with id: ${requestId} not found` };
+        return { status, infoMessage };
+    } else {
+        logger.log(`Got request with id: ${requestId}, sending back...`, 1);
+        status = StatusCodes.OK;
+        infoMessage = request;
+        return { status, infoMessage };
+    }
+};
+
+const getOffersByQueryService = async (requestQuery) => {
+    const { location, owner, quantity } = requestQuery;
+    let { tags, distance } = requestQuery;
+    let tagsArray = [];
+    let whereObject = {
+        active: true,
+    };
+    let status, infoMessage;
+
+    if (tags !== undefined) {
+        tagsArray = tags.split(';');
+    }
+
+    if (owner !== undefined) {
+        whereObject.ownerId = owner;
+    }
+
+    logger.log(
+        `Query params are: location: ${location}, distance: ${distance}, tags: ${tagsArray}, owner: ${owner}, quantity: ${quantity}`,
+        1
+    );
+
+    logger.log(`Selecting query...`, 1);
+
+    const offersFinal = [];
+
+    const offers = await db.offers.findAll({
+        where: whereObject,
+        attributes: ['id', 'location', 'name', 'icon', 'ownerId'],
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial', 'color'],
+            },
+            {
+                model: db.photos,
+                attributes: ['image'],
+            },
+        ],
+    });
+
+    const queryLocation = location.replace(',', '.').split(';');
+
+    let numTags = tagsArray.length;
+    logger.log(`Checking tags...`, 1);
+    for (const offer of offers) {
+        let count = 0;
+        for (const tag of offer.tags) {
+            for (const tagQuery of tagsArray) {
+                if (tagQuery.name == tag.name) count++;
+            }
+        }
+
+        if (numTags == count) {
+            logger.log('Cleaning up tags...', 1);
+            for (let t of offer.tags) {
+                delete t.dataValues.OfferTag;
+            }
+            logger.log('Tags cleaned...', 1);
+
+            const user = await db.users.findOne({
+                where: { id: offer.ownerId },
+                attributes: ['nickname'],
             });
-            return;
+
+            offer.dataValues.author = user.nickname;
+
+            logger.log(`Checking location...`, 1);
+            let offerLocation = offer.location.replace(',', '.').split(';');
+            const dist = distanceBetweenPoints(
+                parseFloat(offerLocation[0]),
+                parseFloat(offerLocation[1]),
+                parseFloat(queryLocation[0]),
+                parseFloat(queryLocation[1])
+            );
+            logger.log(`Checking distance...`, 1);
+            if (distance === undefined || dist <= parseInt(distance)) {
+                offer.dataValues.distance = dist;
+                logger.log('Encoding icon to base64...', 1);
+                offer.dataValues.icon = dataEncoding.bufferToBase64(
+                    offer.dataValues.icon
+                );
+                logger.log('Encoded icon to base64', 1);
+
+                let photoArray = [];
+                logger.log('Encoding photos to base64...', 1);
+                for (let photo of offer.Photos) {
+                    photoArray.push(
+                        dataEncoding.bufferToBase64(photo.dataValues.image)
+                    );
+                }
+                logger.log('Encoded photos to base64...', 1);
+                offer.dataValues.photos = photoArray;
+                delete offer.dataValues.Photos;
+                offersFinal.push(offer);
+            }
         }
     }
 
-    logger.log('Updating offer...', 1);
-    offer.save();
-    res.send('Offer updated');
-    return;
+    offersFinal.sort((a, b) => {
+        return b.dataValues.distance - a.dataValues.distance;
+    });
+
+    let offersSlice = [];
+
+    if (quantity !== undefined) {
+        offersSlice = offersFinal.slice(0, quantity);
+    } else {
+        offersSlice = offersFinal;
+    }
+    logger.log(`Got offer(s), sending back response...`, 1);
+    status = StatusCodes.OK;
+    infoMessage = offersSlice;
+    return { status, infoMessage };
 };
 
-const getOfferByIdService = async (requestBody) => {};
+const getRequestsByQueryService = async (requestQuery) => {
+    const { location, owner, quantity } = requestQuery;
+    let { tags, distance } = requestQuery;
+    let tagsArray = [];
+    let whereObject = {
+        active: true,
+    };
+    let status, infoMessage;
 
-const getRequestByIdService = async (requestBody) => {};
+    if (tags !== undefined) {
+        tagsArray = tags.split(';');
+    }
 
-const getOffersByQueryService = async (requestBody) => {};
+    if (owner !== undefined) {
+        whereObject.ownerId = owner;
+    }
 
-const getRequestByQueryService = async (requestBody) => {};
+    logger.log(
+        `Query params are: location: ${location}, distance: ${distance}, tags: ${tagsArray}, owner: ${owner}, quantity: ${quantity}`,
+        1
+    );
 
-const requestOfferService = async (requestBody) => {};
+    logger.log(`Selecting query...`, 1);
+
+    const requestsFinal = [];
+
+    const requests = await db.requests.findAll({
+        where: whereObject,
+        attributes: ['id', 'location', 'name', 'ownerId'],
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial', 'color'],
+            },
+        ],
+    });
+
+    const queryLocation = location.replace(',', '.').split(';');
+
+    let numTags = tagsArray.length;
+    logger.log(`Checking tags...`, 1);
+    for (const request of requests) {
+        let count = 0;
+        for (const tag of request.tags) {
+            for (const tagQuery of tagsArray) {
+                if (tagQuery.name == tag.name) count++;
+            }
+        }
+        if (numTags == count) {
+            logger.log('Cleaning up tags...', 1);
+            for (let t of request.tags) {
+                delete t.dataValues.OfferTag;
+            }
+            logger.log('Tags cleaned...', 1);
+
+            const user = await db.users.findOne({
+                where: { id: request.ownerId },
+                attributes: ['nickname'],
+            });
+            request.dataValues.nickname = user.nickname;
+            logger.log(`Checking location...`, 1);
+            let requestLocation = request.location.replace(',', '.').split(';');
+            const dist = distanceBetweenPoints(
+                parseFloat(requestLocation[0]),
+                parseFloat(requestLocation[1]),
+                parseFloat(queryLocation[0]),
+                parseFloat(queryLocation[1])
+            );
+            logger.log(`Checking distance...`, 1);
+            if (distance === undefined || dist <= parseInt(distance)) {
+                request.dataValues.distance = dist;
+                requestsFinal.push(request);
+            }
+        }
+    }
+
+    requestsFinal.sort((a, b) => {
+        return b.dataValues.distance - a.dataValues.distance;
+    });
+
+    let requestsSlice = [];
+
+    if (quantity !== undefined) {
+        requestsSlice = requestsFinal.slice(0, quantity);
+    } else {
+        requestsSlice = requestsFinal;
+    }
+    logger.log(`Got request(s), sending back response...`, 1);
+    status = StatusCodes.OK;
+    infoMessage = requestsSlice;
+    return { status, infoMessage };
+};
+
+const requestOfferService = async (requestId, offerId) => {
+    let status, infoMessage;
+    // 1. find offer & request
+    const request = await db.requests.findOne({
+        where: { id: requestId },
+    });
+    const offer = await db.offers.findOne({
+        where: { id: offerId },
+    });
+
+    // 2. offer.addRequest(request)
+    offer.addRequest(request);
+
+    // 3. request.status = 'pending'
+    request.status = 'pending';
+
+    status = StatusCodes.OK;
+    infoMessage = `Added request with id: ${requestId} to offer with id: ${offerId}`;
+    return { status, infoMessage };
+};
 
 module.exports = {
     createOfferService,
@@ -451,6 +747,6 @@ module.exports = {
     getOfferByIdService,
     getRequestByIdService,
     getOffersByQueryService,
-    getRequestByQueryService,
+    getRequestsByQueryService,
     requestOfferService,
 };
