@@ -302,6 +302,79 @@ function request(_id, _name, _description, _terminateAt, _location, _tags) {
     return { passed, message };
 }
 
+function register(_email, _password, _nickname, _dni, _birthDate, _fullName) {
+    let passed = false;
+    let message = '';
+
+    if (email(_email) == false) {
+        message = `Wrong parameters: invalid or missing email`;
+        return { passed, message };
+    }
+    if (password(_password) == false) {
+        message = `Wrong parameters: invalid or missing password`;
+        return { passed, message };
+    }
+    if (nickname(_nickname) == false) {
+        message = `Wrong parameters: invalid or missing nickname`;
+        return { passed, message };
+    }
+    if (DNI(_dni) == false) {
+        message = `Wrong parameters: invalid or missing dni`;
+        return { passed, message };
+    }
+    if (underAge(_birthDate) == false) {
+        message = `Wrong parameters: invalid birthDate or underAge`;
+        return { passed, message };
+    }
+    if (!name(_fullName).passed) {
+        message = `invalid fullName`;
+        return { passed, message };
+    }
+
+    passed = true;
+    message = 'validation passed';
+
+    return { passed, message };
+}
+
+function login(_email, _password) {
+    let passed = false;
+    let message = '';
+
+    if (email(_email) == false) {
+        message = `Wrong parameters: invalid or missing email`;
+        return { passed, message };
+    }
+    if (password(_password) == false) {
+        message = `Wrong parameters: invalid or missing password`;
+        return { passed, message };
+    }
+
+    passed = true;
+    message = 'validation passed';
+
+    return { passed, message };
+}
+
+function tokenValidation(_id, _token) {
+    let passed = false;
+    let message = '';
+
+    if (!id(_id)) {
+        message = `invalid id`;
+        return { passed, message };
+    }
+    if (token(_token) == false) {
+        message = `Wrong parameters: invalid or missing token`;
+        return { passed, message };
+    }
+
+    passed = true;
+    message = 'validation passed';
+
+    return { passed, message };
+}
+
 module.exports = {
     email,
     nickname,
@@ -319,4 +392,7 @@ module.exports = {
     tags,
     photos,
     icon,
+    register,
+    login,
+    tokenValidation,
 };
