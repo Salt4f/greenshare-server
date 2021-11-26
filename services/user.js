@@ -1,37 +1,51 @@
 const { StatusCodes } = require('http-status-codes');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
-const { authenticateUser } = require('../middlewares/authentication');
 
-const getUserService = async (userId, requestBody) => {
-    const { id, token } = requestBody;
+const getUserAllInfo = async (requestUserId, paramsUserId) => {
     let user, status, infoMessage;
 
-    if (id != undefined && token != undefined) {
-        logger.log(`Authenticating user info....`, 1);
-        await authenticateUser(req, res);
-        logger.log(`User authenticated, checking id's....`, 1);
-        if (req.body.id == userId) {
-            user = await db.users.findOne({
-                where: {
-                    id: userId,
-                },
-            });
-        } else {
-            logger.log(
-                `User with id ${req.body.id} trying to get someone else's info...`,
-                1
-            );
-            status = StatusCodes.UNAUTHORIZED;
-            return status;
-        }
-    } else {
+    if (requestUserId == paramsUserId) {
         user = await db.users.findOne({
             where: {
-                id: userId,
+                id: paramsUserId,
             },
-            attributes: ['nickname'],
         });
+    } else {
+        logger.log(
+            `User with id ${requestUserId} is trying to get someone else's info...`,
+            1
+        );
+        status = StatusCodes.UNAUTHORIZED;
+        infoMessage = {
+            error: `User with id ${requestUserId} is trying to get someone else's info...`,
+        };
+        return { status, infoMessage };
+    }
+    logger.log(`Got user with id: ${paramsUserId}, sending response...`, 1);
+    infoMessage = user;
+    status = StatusCodes.OK;
+    return { status, infoMessage };
+};
+
+const getUserNickname = async (userId) => {
+    let status, infoMessage;
+    const user = await db.users.findOne({
+        where: {
+            id: userId,
+        },
+        attributes: ['nickname'],
+    });
+    if (user === null) {
+        logger.log(
+            `No user with id: ${userId} in back-end, sending response...`,
+            1
+        );
+        infoMessage = {
+            error: `No user with id: ${userId} in back-end`,
+        };
+        status = StatusCodes.BAD_REQUEST;
+        return { status, infoMessage };
     }
     logger.log(`Got user with id: ${userId}, sending response...`, 1);
     infoMessage = user;
@@ -39,4 +53,4 @@ const getUserService = async (userId, requestBody) => {
     return { status, infoMessage };
 };
 
-module.exports = { getUserService };
+module.exports = { getUserAllInfo, getUserNickname };
