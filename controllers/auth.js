@@ -7,7 +7,12 @@ const {
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
-const { registerService } = require('../services/auth');
+const {
+    registerService,
+    loginService,
+    tokenValidationService,
+} = require('../services/auth');
+const { tokenValidationRequest } = require('../requests/stubs/user-service');
 
 const register = async (req, res) => {
     logger.log('Received register request', 1);
@@ -37,45 +42,9 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     logger.log('Received login request', 1);
 
-    const { email, password } = req.body;
-
-    /////////////// VALIDATION ///////////////
-    logger.log(`Starting validation...`, 1);
-
-    const { passed, message } = validate.login(email, password);
-
-    if (!passed) {
-        logger.log(message, 1);
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: message,
-        });
-        return;
-    }
-
-    logger.log(message, 1);
-
     try {
-        logger.log('Sending loginRequest...', 1);
-        const response = await loginRequest(email, password);
-        logger.log('Received loginRequest, checking response...', 1);
-
-        if (response.status == StatusCodes.CREATED) {
-            logger.log('Successfully logged in, sending response...', 1);
-
-            res.status(StatusCodes.OK).json({
-                id: response.data.id,
-                token: response.data.token,
-            });
-        } else {
-            logger.log(
-                'Login failed, invalid credentials, sending response...',
-                1
-            );
-
-            res.status(StatusCodes.UNAUTHORIZED).json({
-                error: `Invalid credentials`,
-            });
-        }
+        const { status, infoMessage } = await loginService(req.body);
+        res.status(status).json(infoMessage);
     } catch (e) {
         logger.log(e.message, 0);
 
@@ -98,46 +67,9 @@ const login = async (req, res) => {
 const tokenValidation = async (req, res) => {
     logger.log('Received tokenValidation request', 1);
 
-    const { id, token } = req.body;
-
-    /////////////// VALIDATION ///////////////
-
-    logger.log(`Starting token validation...`, 1);
-    const { passed, message } = validate.tokenValidation(id, token);
-
-    if (!passed) {
-        logger.log(message, 1);
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: message,
-        });
-        return;
-    }
-
-    logger.log(message, 1);
-
     try {
-        logger.log(`Sending tokenValidationRequest...`, 1);
-        const response = await tokenValidationRequest(id, token);
-        logger.log(`Received tokenValidationRequest response, checking...`, 1);
-
-        // logger.log(
-        //     `Received login response from UserService, checking... ${inspect(
-        //         response,
-        //         false,
-        //         null,
-        //         false
-        //     )}`,
-        //     2
-        // );
-
-        if (response.status == StatusCodes.CREATED) {
-            logger.log(`Token successfuly validated, sending response...`, 1);
-
-            res.status(StatusCodes.OK).send();
-        } else {
-            logger.log(`Invalid token, sending response...`, 1);
-            res.status(StatusCodes.UNAUTHORIZED).send();
-        }
+        const { status } = await tokenValidationService(req.body);
+        res.status(status);
     } catch (e) {
         logger.log(e.message, 0);
 
