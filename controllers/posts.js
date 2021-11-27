@@ -41,13 +41,13 @@ const createRequest = async (req, res) => {
     }
 };
 
-const editRequest = async (req, res) => {
-    logger.log('Received editRequest request, editing...', 1);
+const editOffer = async (req, res) => {
+    logger.log('Received editOffer request, editing...', 1);
 
     try {
-        const { status, infoMessage } = await editRequestService(
+        const { status, infoMessage } = await editOfferService(
             req.body,
-            req.params.requestId
+            req.params.offerId
         );
         res.status(status).json(infoMessage);
     } catch (error) {
@@ -58,13 +58,13 @@ const editRequest = async (req, res) => {
     }
 };
 
-const editOffer = async (req, res) => {
-    logger.log('Received editOffer request, editing...', 1);
+const editRequest = async (req, res) => {
+    logger.log('Received editRequest request, editing...', 1);
 
     try {
-        const { status, infoMessage } = await editOfferService(
+        const { status, infoMessage } = await editRequestService(
             req.body,
-            req.params.offerId
+            req.params.requestId
         );
         res.status(status).json(infoMessage);
     } catch (error) {
