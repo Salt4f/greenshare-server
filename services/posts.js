@@ -442,6 +442,10 @@ const getOfferByIdService = async (offerId) => {
                 model: db.photos,
                 attributes: ['image'],
             },
+            {
+                model: db.requests,
+                attributes: ['id', 'location', 'name', 'ownerId'],
+            },
         ],
     });
 
@@ -501,11 +505,6 @@ const getRequestByIdService = async (requestId) => {
         ],
     });
 
-    logger.log('Cleaning up tags...', 1);
-    for (let t in request.tags) {
-        delete t.dataValues.OfferTag;
-    }
-
     if (request == null) {
         logger.log(
             `request with id: ${requestId} not found, sending response...`,
@@ -514,12 +513,18 @@ const getRequestByIdService = async (requestId) => {
         status = StatusCodes.NOT_FOUND;
         infoMessage = { error: `request with id: ${requestId} not found` };
         return { status, infoMessage };
-    } else {
-        logger.log(`Got request with id: ${requestId}, sending back...`, 1);
-        status = StatusCodes.OK;
-        infoMessage = request;
-        return { status, infoMessage };
     }
+
+    logger.log('Cleaning up tags...', 1);
+    for (let t of request.tags) {
+        delete t.dataValues.RequestTag;
+    }
+
+    logger.log(`Got request with id: ${requestId}, sending back...`, 1);
+    console.log(request);
+    status = StatusCodes.OK;
+    infoMessage = request;
+    return { status, infoMessage };
 };
 
 const getOffersByQueryService = async (requestQuery) => {
@@ -748,13 +753,20 @@ const requestOfferService = async (requestId, offerId) => {
         infoMessage = { error: `Invalid requestId or offerId` };
         return { status, infoMessage };
     }
-
+    logger.log('Adding request to Offer...', 1);
     // 2. offer.addRequest(request)
     await offer.addRequest(request);
-
+    console.log(request.dataValues.status);
     // 3. request.status = 'pending'
-    request.status = 'pending';
+    request.dataValues.status = 'pending';
+    request.save();
+    console.log(request.dataValues);
+    console.log(request.dataValues.status);
 
+    logger.log(
+        `Added request with id: ${requestId} to offer with id: ${offerId}`,
+        1
+    );
     status = StatusCodes.OK;
     infoMessage = `Added request with id: ${requestId} to offer with id: ${offerId}`;
     return { status, infoMessage };
