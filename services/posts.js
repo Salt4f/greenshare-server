@@ -834,6 +834,51 @@ const acceptRequestService = async (offerId, requestId) => {
     return { status, infoMessage };
 };
 
+const completePostService = async (requestId, offerId) => {
+    let status, infoMessage;
+
+    const acceptedPost = await db.acceptedPosts.findOne({
+        where: {
+            offerId: offerId,
+        },
+    });
+    if (acceptedPost === null) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = `Not accepted yet`;
+        return { status, infoMessage };
+    }
+    const [competedPost, created] = await db.completedPosts.findOrCreate({
+        where: {
+            acceptedPostId: acceptedPost.id,
+        },
+        defaults: {
+            acceptedPostId: acceptedPost.id,
+        },
+    });
+    if (!created) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = { error: `This post is already completed` };
+        return { status, infoMessage };
+    }
+    logger.log('Deactivating offer...', 1);
+    const offer = await db.offers.findOne({
+        where: { id: offerId },
+    });
+    await offer.update({ active: false });
+    logger.log('Offer deactivated...', 1);
+    logger.log('Deactivating request...', 1);
+    const request = await db.requests.findOne({
+        where: { id: requestId },
+    });
+    await request.update({ active: false });
+    logger.log('Request deactivated...', 1);
+
+    logger.log('Created completedPost', 1);
+    status = StatusCodes.OK;
+    infoMessage = `Request with id: ${requestId} confirmed transaction`;
+    return { status, infoMessage };
+};
+
 module.exports = {
     createOfferService,
     createRequestService,
@@ -845,4 +890,5 @@ module.exports = {
     getRequestsByQueryService,
     requestOfferService,
     acceptRequestService,
+    completePostService,
 };
