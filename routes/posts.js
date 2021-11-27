@@ -30,7 +30,9 @@ router
     .put(authenticateUser, offerOwnerAuth, editOffer)
     .get(getOfferById);
 
-router.route('/offers/:offerId/request').post(requestOffer);
+router
+    .route('/offers/:offerId/request/:requestId')
+    .post(authenticateUser, requestOwnerAuth, requestOffer);
 
 router
     .route('/requests')

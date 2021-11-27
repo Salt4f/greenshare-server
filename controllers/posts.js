@@ -141,7 +141,7 @@ const requestOffer = async (req, res) => {
     logger.log('Received requestOffer request...', 1);
     try {
         const { status, infoMessage } = await requestOfferService(
-            req.body.requestId,
+            req.params.requestId,
             req.params.offerId
         );
         res.status(status).json(infoMessage);

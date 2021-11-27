@@ -744,6 +744,7 @@ const requestOfferService = async (requestId, offerId) => {
     });
     const offer = await db.offers.findOne({
         where: { id: offerId },
+        include: { model: db.requests },
     });
 
     if (request === null || offer === null) {
@@ -751,12 +752,31 @@ const requestOfferService = async (requestId, offerId) => {
         infoMessage = { error: `Invalid requestId or offerId` };
         return { status, infoMessage };
     }
+    logger.log(`Checking if user is requesting its own Offer...`, 1);
+    if (request.ownerId === offer.ownerId) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = {
+            error: `User is requesting its own Offer`,
+        };
+        return { status, infoMessage };
+    }
+    logger.log(
+        `Checking if offer already has request as 'pendingRequests'...`,
+        1
+    );
+    for (let req of offer.Requests) {
+        if (req.dataValues.id == requestId) {
+            status = StatusCodes.BAD_REQUEST;
+            infoMessage = {
+                error: `Request with id: ${requestId} already requested to Offer with id: ${offerId}`,
+            };
+            return { status, infoMessage };
+        }
+    }
     logger.log('Adding request to Offer...', 1);
-    // 2. offer.addRequest(request)
     await offer.addRequest(request);
     logger.log('Added request to Offer...', 1);
     logger.log(`Updating request' status to pending...`, 1);
-    // 3. request.status = 'pending'
     await request.update({ status: 'pending' });
     request.save();
     logger.log(`Updated`, 1);
