@@ -789,6 +789,32 @@ const requestOfferService = async (requestId, offerId) => {
     return { status, infoMessage };
 };
 
+const acceptRequestService = async (offerId, requestId) => {
+    let status, infoMessage;
+
+    const [acceptedPost, created] = await db.acceptedPosts.findOrCreate({
+        where: {
+            offerId: offerId,
+        },
+        defaults: {
+            offerId: offerId,
+            requestId: requestId,
+        },
+    });
+    if (!created) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = { error: `This offer is already accepted` };
+        return { status, infoMessage };
+    }
+    logger.log(
+        `Offer with id: ${offerId} accepted Request with id: ${requestId}`,
+        1
+    );
+    status = StatusCodes.OK;
+    infoMessage = `Offer with id: ${offerId} accepted Request with id: ${requestId}`;
+    return { status, infoMessage };
+};
+
 module.exports = {
     createOfferService,
     createRequestService,
@@ -799,4 +825,5 @@ module.exports = {
     getOffersByQueryService,
     getRequestsByQueryService,
     requestOfferService,
+    acceptRequestService,
 };

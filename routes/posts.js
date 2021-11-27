@@ -19,6 +19,7 @@ const {
     getOffersByQuery,
     getRequestsByQuery,
     requestOffer,
+    acceptRequest,
 } = require('../controllers/posts');
 
 router
@@ -33,6 +34,8 @@ router
 router
     .route('/offers/:offerId/request/:requestId')
     .post(authenticateUser, requestOwnerAuth, requestOffer);
+
+router.route('/offers/:offerId/request/:requestId/accept').post(acceptRequest);
 
 router
     .route('/requests')

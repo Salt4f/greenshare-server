@@ -11,6 +11,7 @@ const {
     getOffersByQueryService,
     getRequestsByQueryService,
     requestOfferService,
+    acceptRequestService,
 } = require('../services/posts');
 
 const createOffer = async (req, res) => {
@@ -153,6 +154,22 @@ const requestOffer = async (req, res) => {
     }
 };
 
+const acceptRequest = async (req, res) => {
+    logger.log('Received acceptRequest request...', 1);
+    try {
+        const { status, infoMessage } = await acceptRequestService(
+            req.params.offerId,
+            req.params.requestId
+        );
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
+    }
+};
+
 module.exports = {
     createOffer,
     createRequest,
@@ -163,4 +180,5 @@ module.exports = {
     getOffersByQuery,
     getRequestsByQuery,
     requestOffer,
+    acceptRequest,
 };
