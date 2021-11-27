@@ -32,13 +32,11 @@ const createOfferService = async (requestBody) => {
         return { status, infoMessage };
     }
     logger.log(message, 1);
-
     logger.log('Parsing icon...', 1);
-    const parsedIcon = dataEncoding.base64ToBuffer(icon);
+    const buff = Buffer.from(icon, 'base64');
     logger.log('Parsed icon', 1);
-
     logger.log('Compressing icon...', 1);
-    const compressedIcon = await compressIcon(parsedIcon);
+    const compressedIcon = await compressIcon(buff);
     logger.log('Compressed icon...', 1);
 
     logger.log('Creating offer...', 1);
@@ -54,10 +52,10 @@ const createOfferService = async (requestBody) => {
 
     for (let photo of photos) {
         logger.log('Parsing photo...', 1);
-        const parsedPhoto = dataEncoding.base64ToBuffer(photo);
+        const buff = Buffer.from(photo, 'base64');
         logger.log('Parsed photo', 1);
         logger.log('Compressing photo...', 1);
-        const compressedPhoto = await compressPhoto(parsedPhoto);
+        const compressedPhoto = await compressPhoto(buff);
         logger.log('Compressed photo...', 1);
         logger.log('Adding photo to database...', 1);
         await db.photos.create({
@@ -381,7 +379,24 @@ const editOfferService = async (requestBody, offerId) => {
     }
     if (photos != undefined) {
         if (validate.photos(photos)) {
-            offer.photos = photos;
+            let newPhotos = [];
+            for (let newPhotoObject of photos) {
+                logger.log('Parsing photo...', 1);
+                const buff = Buffer.from(newPhotoObject, 'base64');
+                logger.log('Parsed photo', 1);
+                logger.log('Compressing photo...', 1);
+                const compressedPhoto = await compressPhoto(buff);
+                logger.log('Compressed photo...', 1);
+                logger.log('Adding photo to database...', 1);
+                const newPhoto = await db.photos.create({
+                    image: compressedPhoto,
+                    offerId: offer.dataValues.id,
+                });
+                logger.log('Photo added to database...', 1);
+                newPhotos.push(newPhoto);
+            }
+            offer.setPhotos(newPhotos);
+            logger.log(`Photos updated`, 1);
         } else {
             infoMessage = { error: `missing photos` };
             status = StatusCodes.BAD_REQUEST;
@@ -728,8 +743,14 @@ const requestOfferService = async (requestId, offerId) => {
         where: { id: offerId },
     });
 
+    if (request === null || offer === null) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = { error: `Invalid requestId or offerId` };
+        return { status, infoMessage };
+    }
+
     // 2. offer.addRequest(request)
-    offer.addRequest(request);
+    await offer.addRequest(request);
 
     // 3. request.status = 'pending'
     request.status = 'pending';
