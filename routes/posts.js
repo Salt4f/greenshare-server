@@ -18,6 +18,9 @@ const {
     getRequestById,
     getOffersByQuery,
     getRequestsByQuery,
+    requestOffer,
+    acceptRequest,
+    completePost,
 } = require('../controllers/posts');
 
 router
@@ -28,6 +31,18 @@ router
     .route('/offers/:offerId')
     .put(authenticateUser, offerOwnerAuth, editOffer)
     .get(getOfferById);
+
+router
+    .route('/offers/:offerId/request/:requestId')
+    .post(authenticateUser, requestOwnerAuth, requestOffer);
+
+router
+    .route('/offers/:offerId/request/:requestId/accept')
+    .post(authenticateUser, offerOwnerAuth, acceptRequest);
+
+router
+    .route('/offers/:offerId/request/:requestId/completed')
+    .post(authenticateUser, requestOwnerAuth, completePost);
 
 router
     .route('/requests')
