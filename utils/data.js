@@ -1,5 +1,6 @@
 const base64ToBuffer = (base64String) => {
-    return new Buffer(base64String, 'base64');
+    const buff = Buffer.from(base64String, 'base64');
+    return buff;
 };
 
 const bufferToBase64 = (buffer) => {

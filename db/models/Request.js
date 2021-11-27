@@ -25,7 +25,10 @@ module.exports = (sequelize, DataTypes) => {
             location: DataTypes.STRING,
             ecoImpact: DataTypes.INTEGER,
             ownerId: DataTypes.INTEGER,
-            status: DataTypes.STRING,
+            status: {
+                type: DataTypes.STRING,
+                defaultValue: 'idle',
+            },
         },
         {
             // Other model options go here

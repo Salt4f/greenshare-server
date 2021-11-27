@@ -1,11 +1,12 @@
 const sharp = require('sharp');
+const logger = require('../utils/logger');
 
-const compressIcon = async (parsedIcon) => {
+const compressIcon = async (buff) => {
     let compressedIcon;
-    compressedIcon = await sharp(parsedIcon);
-    const { width, height } = compressedIcon.metadata();
+    const { width, height } = await sharp(buff).metadata();
+
     if (height < width) {
-        compressedIcon = compressedIcon
+        compressedIcon = await sharp(buff)
             .resize({
                 width: height,
                 height: height,
@@ -13,7 +14,7 @@ const compressIcon = async (parsedIcon) => {
             .toFormat('jpg', { quality: 15 })
             .toBuffer();
     } else {
-        compressedIcon = compressedIcon
+        compressedIcon = await sharp(buff)
             .resize({
                 width: width,
                 height: width,
@@ -24,8 +25,8 @@ const compressIcon = async (parsedIcon) => {
     return compressedIcon;
 };
 
-const compressPhoto = async (parsedPhoto) => {
-    const compressedPhoto = await sharp(parsedPhoto)
+const compressPhoto = async (buff) => {
+    const compressedPhoto = await sharp(buff)
         .toFormat('jpg', {
             quality: 25,
         })

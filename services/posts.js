@@ -32,13 +32,11 @@ const createOfferService = async (requestBody) => {
         return { status, infoMessage };
     }
     logger.log(message, 1);
-
     logger.log('Parsing icon...', 1);
-    const parsedIcon = dataEncoding.base64ToBuffer(icon);
+    const buff = Buffer.from(icon, 'base64');
     logger.log('Parsed icon', 1);
-
     logger.log('Compressing icon...', 1);
-    const compressedIcon = await compressIcon(parsedIcon);
+    const compressedIcon = await compressIcon(buff);
     logger.log('Compressed icon...', 1);
 
     logger.log('Creating offer...', 1);
@@ -54,10 +52,10 @@ const createOfferService = async (requestBody) => {
 
     for (let photo of photos) {
         logger.log('Parsing photo...', 1);
-        const parsedPhoto = dataEncoding.base64ToBuffer(photo);
+        const buff = Buffer.from(photo, 'base64');
         logger.log('Parsed photo', 1);
         logger.log('Compressing photo...', 1);
-        const compressedPhoto = await compressPhoto(parsedPhoto);
+        const compressedPhoto = await compressPhoto(buff);
         logger.log('Compressed photo...', 1);
         logger.log('Adding photo to database...', 1);
         await db.photos.create({
@@ -381,7 +379,24 @@ const editOfferService = async (requestBody, offerId) => {
     }
     if (photos != undefined) {
         if (validate.photos(photos)) {
-            offer.photos = photos;
+            let newPhotos = [];
+            for (let newPhotoObject of photos) {
+                logger.log('Parsing photo...', 1);
+                const buff = Buffer.from(newPhotoObject, 'base64');
+                logger.log('Parsed photo', 1);
+                logger.log('Compressing photo...', 1);
+                const compressedPhoto = await compressPhoto(buff);
+                logger.log('Compressed photo...', 1);
+                logger.log('Adding photo to database...', 1);
+                const newPhoto = await db.photos.create({
+                    image: compressedPhoto,
+                    offerId: offer.dataValues.id,
+                });
+                logger.log('Photo added to database...', 1);
+                newPhotos.push(newPhoto);
+            }
+            offer.setPhotos(newPhotos);
+            logger.log(`Photos updated`, 1);
         } else {
             infoMessage = { error: `missing photos` };
             status = StatusCodes.BAD_REQUEST;
@@ -426,6 +441,10 @@ const getOfferByIdService = async (offerId) => {
             {
                 model: db.photos,
                 attributes: ['image'],
+            },
+            {
+                model: db.requests,
+                attributes: ['id', 'location', 'name', 'ownerId'],
             },
         ],
     });
@@ -486,11 +505,6 @@ const getRequestByIdService = async (requestId) => {
         ],
     });
 
-    logger.log('Cleaning up tags...', 1);
-    for (let t in request.tags) {
-        delete t.dataValues.OfferTag;
-    }
-
     if (request == null) {
         logger.log(
             `request with id: ${requestId} not found, sending response...`,
@@ -499,12 +513,16 @@ const getRequestByIdService = async (requestId) => {
         status = StatusCodes.NOT_FOUND;
         infoMessage = { error: `request with id: ${requestId} not found` };
         return { status, infoMessage };
-    } else {
-        logger.log(`Got request with id: ${requestId}, sending back...`, 1);
-        status = StatusCodes.OK;
-        infoMessage = request;
-        return { status, infoMessage };
     }
+
+    logger.log('Cleaning up tags...', 1);
+    for (let t of request.tags) {
+        delete t.dataValues.RequestTag;
+    }
+    logger.log(`Got request with id: ${requestId}, sending back...`, 1);
+    status = StatusCodes.OK;
+    infoMessage = request;
+    return { status, infoMessage };
 };
 
 const getOffersByQueryService = async (requestQuery) => {
@@ -726,16 +744,93 @@ const requestOfferService = async (requestId, offerId) => {
     });
     const offer = await db.offers.findOne({
         where: { id: offerId },
+        include: { model: db.requests },
     });
 
-    // 2. offer.addRequest(request)
-    offer.addRequest(request);
-
-    // 3. request.status = 'pending'
-    request.status = 'pending';
-
+    if (request === null || offer === null) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = { error: `Invalid requestId or offerId` };
+        return { status, infoMessage };
+    }
+    logger.log(`Checking if user is requesting its own Offer...`, 1);
+    if (request.ownerId === offer.ownerId) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = {
+            error: `User is requesting its own Offer`,
+        };
+        return { status, infoMessage };
+    }
+    logger.log(
+        `Checking if offer already has request as 'pendingRequests'...`,
+        1
+    );
+    for (let req of offer.Requests) {
+        if (req.dataValues.id == requestId) {
+            status = StatusCodes.BAD_REQUEST;
+            infoMessage = {
+                error: `Request with id: ${requestId} already requested to Offer with id: ${offerId}`,
+            };
+            return { status, infoMessage };
+        }
+    }
+    logger.log('Adding request to Offer...', 1);
+    await offer.addRequest(request);
+    logger.log('Added request to Offer...', 1);
+    logger.log(`Updating request' status to pending...`, 1);
+    await request.update({ status: 'pending' });
+    request.save();
+    logger.log(`Updated`, 1);
+    logger.log(
+        `Added request with id: ${requestId} to offer with id: ${offerId}`,
+        1
+    );
     status = StatusCodes.OK;
     infoMessage = `Added request with id: ${requestId} to offer with id: ${offerId}`;
+    return { status, infoMessage };
+};
+
+const acceptRequestService = async (offerId, requestId) => {
+    let status, infoMessage;
+
+    const [acceptedPost, created] = await db.acceptedPosts.findOrCreate({
+        where: {
+            offerId: offerId,
+        },
+        defaults: {
+            offerId: offerId,
+            requestId: requestId,
+        },
+    });
+    if (!created) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = { error: `This offer is already accepted` };
+        return { status, infoMessage };
+    }
+    logger.log(
+        `Offer with id: ${offerId} accepted Request with id: ${requestId}`,
+        1
+    );
+
+    const offer = await db.offers.findOne({
+        where: { id: offerId },
+        include: { model: db.requests },
+    });
+
+    for (let req of offer.Requests) {
+        const request = await db.requests.findOne({
+            where: { id: req.dataValues.id },
+        });
+        if (request.id != requestId) {
+            await request.update({ status: 'rejected' });
+            request.save();
+        } else {
+            await request.update({ status: 'accepted' });
+            request.save();
+        }
+    }
+
+    status = StatusCodes.OK;
+    infoMessage = `Offer with id: ${offerId} accepted Request with id: ${requestId}`;
     return { status, infoMessage };
 };
 
@@ -749,4 +844,5 @@ module.exports = {
     getOffersByQueryService,
     getRequestsByQueryService,
     requestOfferService,
+    acceptRequestService,
 };

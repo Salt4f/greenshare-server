@@ -1,6 +1,6 @@
 FROM debian:buster AS build-lib
 
-RUN apt-get update -y && apt-get install curl tar build-essential pkg-config libglib2.0-dev libexpat1-dev -y
+RUN apt-get update -y && apt-get install curl tar build-essential pkg-config libglib2.0-dev libexpat1-dev libjpeg62-turbo-dev -y
 
 RUN curl -fsSL https://github.com/libvips/libvips/releases/download/v8.11.4/vips-8.11.4.tar.gz -o vips.tar.gz
 
