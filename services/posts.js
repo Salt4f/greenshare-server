@@ -810,6 +810,25 @@ const acceptRequestService = async (offerId, requestId) => {
         `Offer with id: ${offerId} accepted Request with id: ${requestId}`,
         1
     );
+
+    const offer = await db.offers.findOne({
+        where: { id: offerId },
+        include: { model: db.requests },
+    });
+
+    for (let req of offer.Requests) {
+        const request = await db.requests.findOne({
+            where: { id: req.dataValues.id },
+        });
+        if (request.id != requestId) {
+            await request.update({ status: 'rejected' });
+            request.save();
+        } else {
+            await request.update({ status: 'accepted' });
+            request.save();
+        }
+    }
+
     status = StatusCodes.OK;
     infoMessage = `Offer with id: ${offerId} accepted Request with id: ${requestId}`;
     return { status, infoMessage };
