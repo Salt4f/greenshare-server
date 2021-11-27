@@ -519,9 +519,7 @@ const getRequestByIdService = async (requestId) => {
     for (let t of request.tags) {
         delete t.dataValues.RequestTag;
     }
-
     logger.log(`Got request with id: ${requestId}, sending back...`, 1);
-    console.log(request);
     status = StatusCodes.OK;
     infoMessage = request;
     return { status, infoMessage };
@@ -756,13 +754,12 @@ const requestOfferService = async (requestId, offerId) => {
     logger.log('Adding request to Offer...', 1);
     // 2. offer.addRequest(request)
     await offer.addRequest(request);
-    console.log(request.dataValues.status);
+    logger.log('Added request to Offer...', 1);
+    logger.log(`Updating request' status to pending...`, 1);
     // 3. request.status = 'pending'
-    request.dataValues.status = 'pending';
+    await request.update({ status: 'pending' });
     request.save();
-    console.log(request.dataValues);
-    console.log(request.dataValues.status);
-
+    logger.log(`Updated`, 1);
     logger.log(
         `Added request with id: ${requestId} to offer with id: ${offerId}`,
         1
