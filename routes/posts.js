@@ -35,7 +35,9 @@ router
     .route('/offers/:offerId/request/:requestId')
     .post(authenticateUser, requestOwnerAuth, requestOffer);
 
-router.route('/offers/:offerId/request/:requestId/accept').post(acceptRequest);
+router
+    .route('/offers/:offerId/request/:requestId/accept')
+    .post(authenticateUser, offerOwnerAuth, acceptRequest);
 
 router
     .route('/requests')
