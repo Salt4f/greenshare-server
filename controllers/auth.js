@@ -67,7 +67,7 @@ const tokenValidation = async (req, res) => {
 
     try {
         const { status } = await tokenValidationService(req.body);
-        res.status(status);
+        res.status(status).send();
     } catch (e) {
         logger.log(e.message, 0);
 
