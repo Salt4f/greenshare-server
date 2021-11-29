@@ -625,6 +625,12 @@ const getOffersByQueryService = async (requestQuery) => {
         }
     }
 
+    if (offersFinal.length === 0) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = `There's no offer(s) with such parameters`;
+        return { status, infoMessage };
+    }
+
     offersFinal.sort((a, b) => {
         return b.dataValues.distance - a.dataValues.distance;
     });
@@ -717,6 +723,12 @@ const getRequestsByQueryService = async (requestQuery) => {
                 requestsFinal.push(request);
             }
         }
+    }
+
+    if (requestsFinal === null) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = `There's no request(s) with such parameters`;
+        return { status, infoMessage };
     }
 
     requestsFinal.sort((a, b) => {
