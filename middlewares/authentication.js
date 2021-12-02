@@ -1,20 +1,23 @@
 const { StatusCodes } = require('http-status-codes');
-const { tokenValidationRequest } = require('../requests/user-service');
+const { tokenValidationRequest } = require('../requests/stubs/user-service');
 const logger = require('../utils/logger');
 const db = require('../db/connect');
 
 const authenticateUser = async (req, res, next) => {
     logger.log(`Validating user...`, 1);
     try {
-        logger.log(`Sending request to tokenValidation...`, 1);
-        const response = await tokenValidationRequest(
-            req.body.id,
-            req.body.token
-        );
-        if (response.status == StatusCodes.CREATED) {
-            // check id in our db
-            const user = await db.users.findOne({ where: { id: req.body.id } });
-            if (user != null) {
+        logger.log(`Checking if user exists in back-end database...`, 1);
+        const user = await db.users.findOne({ where: { id: req.body.id } });
+        if (user != null) {
+            logger.log(
+                `Got user, sending request to tokenValidation of UserService...`,
+                1
+            );
+            const response = await tokenValidationRequest(
+                req.body.id,
+                req.body.token
+            );
+            if (response.status == StatusCodes.CREATED) {
                 logger.log(
                     `User successfuly validated, sending response...`,
                     1
@@ -23,7 +26,7 @@ const authenticateUser = async (req, res, next) => {
                 next();
             } else {
                 logger.log(
-                    `No user with id: ${req.body.id} in back-end, sending response...`,
+                    `Invalid token or id on UserService, sending response...`,
                     1
                 );
                 res.status(StatusCodes.UNAUTHORIZED).send();
@@ -31,7 +34,7 @@ const authenticateUser = async (req, res, next) => {
             }
         } else {
             logger.log(
-                `Invalid token or id on UserService, sending response...`,
+                `No user with id: ${req.body.id} in back-end, sending response...`,
                 1
             );
             res.status(StatusCodes.UNAUTHORIZED).send();

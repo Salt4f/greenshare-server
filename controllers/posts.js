@@ -12,6 +12,7 @@ const {
     getRequestsByQueryService,
     requestOfferService,
     acceptRequestService,
+    rejectRequestService,
     completePostService,
 } = require('../services/posts');
 
@@ -171,6 +172,22 @@ const acceptRequest = async (req, res) => {
     }
 };
 
+const rejectRequest = async (req, res) => {
+    logger.log('Received rejectRequest request...', 1);
+    try {
+        const { status, infoMessage } = await rejectRequestService(
+            req.params.offerId,
+            req.params.requestId
+        );
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
+    }
+};
+
 const completePost = async (req, res) => {
     logger.log('Received completePost request...', 1);
     try {
@@ -198,5 +215,6 @@ module.exports = {
     getRequestsByQuery,
     requestOffer,
     acceptRequest,
+    rejectRequest,
     completePost,
 };

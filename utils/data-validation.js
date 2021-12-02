@@ -256,7 +256,7 @@ function offer(
     }
 
     passed = true;
-    message = `validation passed`;
+    message = `Validation passed`;
 
     return { passed, message };
 }
@@ -293,7 +293,7 @@ function request(_id, _name, _description, _terminateAt, _location, _tags) {
     }
 
     passed = true;
-    message = `validation passed`;
+    message = `Validation passed`;
 
     return { passed, message };
 }
@@ -328,7 +328,7 @@ function register(_email, _password, _nickname, _dni, _birthDate, _fullName) {
     }
 
     passed = true;
-    message = 'validation passed';
+    message = 'Validation passed';
 
     return { passed, message };
 }
@@ -347,7 +347,7 @@ function login(_email, _password) {
     }
 
     passed = true;
-    message = 'validation passed';
+    message = 'Validation passed';
 
     return { passed, message };
 }
@@ -366,7 +366,7 @@ function tokenValidation(_id, _token) {
     }
 
     passed = true;
-    message = 'validation passed';
+    message = 'Validation passed';
 
     return { passed, message };
 }

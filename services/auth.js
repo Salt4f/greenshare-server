@@ -3,7 +3,7 @@ const {
     registerRequest,
     loginRequest,
     tokenValidationRequest,
-} = require('../requests/user-service');
+} = require('../requests/stubs/user-service');
 // const { createUser } = require('../db/models/users');
 const db = require('../db/connect');
 const validate = require('../utils/data-validation');
@@ -103,6 +103,15 @@ const loginService = async (requestBody) => {
     }
     logger.log(message, 1);
 
+    logger.log('Checking if user exists in back-end db...', 1);
+    const user = await db.users.findOne({ where: { email: email } });
+    if (user == null) {
+        logger.log(`User does not exist in back-end, sending response...`, 1);
+        status = StatusCodes.UNAUTHORIZED;
+        infoMessage = `User does not exist in back-end, sending response...`;
+        return { status, infoMessage };
+    }
+
     logger.log('Sending loginRequest...', 1);
     const response = await loginRequest(email, password);
     logger.log('Received loginRequest, checking response...', 1);
@@ -128,7 +137,7 @@ const loginService = async (requestBody) => {
 
 const tokenValidationService = async (requestBody) => {
     const { id, token } = requestBody;
-    let status;
+    let status, infoMessage;
 
     /////////////// VALIDATION ///////////////
     logger.log(`Starting token validation...`, 1);
@@ -142,6 +151,15 @@ const tokenValidationService = async (requestBody) => {
         return;
     }
     logger.log(message, 1);
+
+    logger.log('Checking if user exists in back-end db...', 1);
+    const user = await db.users.findOne({ where: { id: id } });
+    if (user == null) {
+        logger.log(`User does not exist in back-end, sending response...`, 1);
+        status = StatusCodes.UNAUTHORIZED;
+        infoMessage = `User does not exist in back-end, sending response...`;
+        return { status, infoMessage };
+    }
 
     logger.log(`Sending tokenValidationRequest...`, 1);
     const response = await tokenValidationRequest(id, token);
@@ -160,10 +178,12 @@ const tokenValidationService = async (requestBody) => {
     if (response.status == StatusCodes.CREATED) {
         logger.log(`Token successfuly validated, sending response...`, 1);
         status = StatusCodes.OK;
+        infoMessage = 'Token successfuly validated';
         return { status };
     } else {
         logger.log(`Invalid token, sending response...`, 1);
         status = StatusCodes.UNAUTHORIZED;
+        infoMessage = 'Invalid token';
         return { status };
     }
 };
