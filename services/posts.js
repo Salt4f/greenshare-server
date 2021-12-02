@@ -846,6 +846,48 @@ const acceptRequestService = async (offerId, requestId) => {
     return { status, infoMessage };
 };
 
+const rejectRequestService = async (offerId, requestId) => {
+    let status, infoMessage;
+    logger.log(`Searching offer...`, 1);
+    const offer = await db.offers.findOne({
+        where: { id: offerId },
+        include: { model: db.requests },
+    });
+    logger.log(`Got offer, checking its pending requests...`, 1);
+    let found = false;
+    let newPendingRequests = [];
+    for (let req of offer.Requests) {
+        if (req.dataValues.id == requestId) {
+            found = true;
+            const request = await db.requests.findOne({
+                where: { id: req.dataValues.id },
+            });
+            await request.update({ status: 'rejected' });
+            request.save();
+            logger.log(
+                `Updated Request with id: ${req.dataValues.id} to 'rejected'`,
+                1
+            );
+        }
+        newPendingRequests.push(req);
+    }
+
+    if (!found) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = {
+            error: `Offer with id: ${offerId} doesn't have Request with id: ${requestId} as pending`,
+        };
+        return { status, infoMessage };
+    }
+
+    offer.setRequests(newPendingRequests);
+    logger.log(`Updated Offers' pending requests`, 1);
+
+    status = StatusCodes.OK;
+    infoMessage = `Offer with id: ${offerId} rejected Request with id: ${requestId}`;
+    return { status, infoMessage };
+};
+
 const completePostService = async (requestId, offerId) => {
     let status, infoMessage;
 
@@ -902,5 +944,6 @@ module.exports = {
     getRequestsByQueryService,
     requestOfferService,
     acceptRequestService,
+    rejectRequestService,
     completePostService,
 };
