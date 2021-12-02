@@ -868,8 +868,9 @@ const rejectRequestService = async (offerId, requestId) => {
                 `Updated Request with id: ${req.dataValues.id} to 'rejected'`,
                 1
             );
+        } else {
+            newPendingRequests.push(req);
         }
-        newPendingRequests.push(req);
     }
 
     if (!found) {
@@ -881,7 +882,7 @@ const rejectRequestService = async (offerId, requestId) => {
     }
 
     offer.setRequests(newPendingRequests);
-    logger.log(`Updated Offers' pending requests`, 1);
+    logger.log(`Updated Offers' pending requests, sending response...`, 1);
 
     status = StatusCodes.OK;
     infoMessage = `Offer with id: ${offerId} rejected Request with id: ${requestId}`;

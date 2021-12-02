@@ -66,8 +66,8 @@ const tokenValidation = async (req, res) => {
     logger.log('Received tokenValidation request', 1);
 
     try {
-        const { status } = await tokenValidationService(req.body);
-        res.status(status);
+        const { status, infoMessage } = await tokenValidationService(req.body);
+        res.status(status).json(infoMessage);
     } catch (e) {
         logger.log(e.message, 0);
 
