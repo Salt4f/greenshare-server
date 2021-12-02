@@ -69,11 +69,7 @@ function token(_token) {
 }
 
 function underAge(birthday) {
-    // it will accept two types of format yyyy-mm-dd and yyyy/mm/dd
-    var optimizedBirthday = birthday.replace(/-/g, '/');
-
-    //set date based on birthday at 00:00:00 hours (CET)
-    var myBirthday = new Date(optimizedBirthday);
+    let myBirthday = new Date(birthday);
 
     // set current day on 00:00:00 hours (CET)
     var currentDate = new Date().toJSON().slice(0, 10) + ' 00:00:00';
