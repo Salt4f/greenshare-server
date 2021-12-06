@@ -13,6 +13,7 @@ const {
     requestOfferService,
     acceptRequestService,
     rejectRequestService,
+    offerRequestService,
     completePostService,
 } = require('../services/posts');
 
@@ -188,6 +189,22 @@ const rejectRequest = async (req, res) => {
     }
 };
 
+const offerRequest = async (req, res) => {
+    logger.log('Received offerRequest request...', 1);
+    try {
+        const { status, infoMessage } = await offerRequestService(
+            req.params.requestId,
+            req.params.offerId
+        );
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
+    }
+};
+
 const completePost = async (req, res) => {
     logger.log('Received completePost request...', 1);
     try {
@@ -217,4 +234,5 @@ module.exports = {
     acceptRequest,
     rejectRequest,
     completePost,
+    offerRequest,
 };

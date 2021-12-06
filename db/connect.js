@@ -40,6 +40,9 @@ db.completedPosts = require('./models/CompletedPost')(sequelize, Sequelize);
 db.tags = require('./models/Tag')(sequelize, Sequelize);
 db.photos = require('./models/Photo')(sequelize, Sequelize);
 
+db.pendingOffers = require('./models/PendingOffer')(sequelize, Sequelize);
+db.pendingRequests = require('./models/PendingRequest')(sequelize, Sequelize);
+
 // Relations
 db.offers.belongsTo(db.users, { foreignKey: 'ownerId' });
 db.requests.belongsTo(db.users, { foreignKey: 'ownerId' });
@@ -48,6 +51,21 @@ db.users.hasMany(db.requests, { foreignKey: 'ownerId' });
 
 db.offers.hasMany(db.requests);
 db.requests.belongsTo(db.offers);
+
+// db.offers.belongsToMany(db.requests, {
+//     through: 'Pendings',
+//     as: 'pendingRequests',
+// });
+// db.requests.belongsToMany(db.offers, {
+//     through: 'Pendings',
+//     as: 'pendingOffers',
+// });
+
+// db.pendingOffers.hasMany(db.offers);
+// db.pendingOffers.belongsTo(db.requests);
+
+// db.pendingRequests.hasMany(db.requests);
+// db.pendingRequests.belongsTo(db.offers);
 
 db.completedPosts.belongsTo(db.acceptedPosts, { foreignKey: 'acceptedPostId' });
 

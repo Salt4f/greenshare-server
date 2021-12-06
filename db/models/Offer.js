@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
             ecoImpact: DataTypes.INTEGER,
             icon: DataTypes.BLOB('long'),
             ownerId: DataTypes.INTEGER,
+            status: {
+                type: DataTypes.STRING,
+                defaultValue: 'idle',
+            },
         },
         {
             // Other model options go here

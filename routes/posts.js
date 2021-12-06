@@ -22,6 +22,7 @@ const {
     acceptRequest,
     completePost,
     rejectRequest,
+    offerRequest,
 } = require('../controllers/posts');
 
 router
@@ -57,5 +58,9 @@ router
     .route('/requests/:requestId')
     .put(authenticateUser, requestOwnerAuth, editRequest)
     .get(getRequestById);
+
+router
+    .route('/requests/:requestId/offer/:offerId')
+    .post(authenticateUser, offerOwnerAuth, offerRequest);
 
 module.exports = router;

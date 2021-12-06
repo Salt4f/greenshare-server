@@ -443,6 +443,7 @@ const getOfferByIdService = async (offerId) => {
                 attributes: ['image'],
             },
             {
+                association: 'pendingRequests',
                 model: db.requests,
                 attributes: ['id', 'location', 'name', 'ownerId'],
             },
@@ -501,6 +502,11 @@ const getRequestByIdService = async (requestId) => {
                 association: 'tags',
                 model: db.tags,
                 attributes: ['name', 'isOfficial', 'color'],
+            },
+            {
+                association: 'pendingOffers',
+                model: db.offers,
+                attributes: ['id', 'location', 'name', 'ownerId'],
             },
         ],
     });
@@ -753,10 +759,11 @@ const requestOfferService = async (requestId, offerId) => {
     // 1. find offer & request
     const request = await db.requests.findOne({
         where: { id: requestId },
+        include: 'pendingOffers',
     });
     const offer = await db.offers.findOne({
         where: { id: offerId },
-        include: { model: db.requests },
+        include: 'pendingRequests',
     });
 
     if (request === null || offer === null) {
@@ -776,7 +783,7 @@ const requestOfferService = async (requestId, offerId) => {
         `Checking if offer already has request as 'pendingRequests'...`,
         1
     );
-    for (let req of offer.Requests) {
+    for (let req of offer.pendingRequests) {
         if (req.dataValues.id == requestId) {
             status = StatusCodes.BAD_REQUEST;
             infoMessage = {
@@ -786,12 +793,19 @@ const requestOfferService = async (requestId, offerId) => {
         }
     }
     logger.log('Adding request to Offer...', 1);
-    await offer.addRequest(request);
+    await offer.addPendingRequest(request);
     logger.log('Added request to Offer...', 1);
     logger.log(`Updating request' status to pending...`, 1);
     await request.update({ status: 'pending' });
     request.save();
     logger.log(`Updated`, 1);
+
+    for (let pendingOffer of request.pendingOffers) {
+        if (pendingOffer.id == offerId) {
+            delete request.pendingOffers.pendingOffer;
+        }
+    }
+
     logger.log(
         `Added request with id: ${requestId} to offer with id: ${offerId}`,
         1
@@ -889,6 +903,60 @@ const rejectRequestService = async (offerId, requestId) => {
     return { status, infoMessage };
 };
 
+const offerRequestService = async (requestId, offerId) => {
+    let status, infoMessage;
+    // 1. find offer & request
+    const request = await db.requests.findOne({
+        where: { id: requestId },
+        include: 'pendingOffers',
+    });
+    const offer = await db.offers.findOne({
+        where: { id: offerId },
+        include: 'pendingRequests',
+    });
+
+    if (request === null || offer === null) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = { error: `Invalid requestId or offerId` };
+        return { status, infoMessage };
+    }
+    logger.log(`Checking if user is requesting its own Offer...`, 1);
+    if (request.ownerId === offer.ownerId) {
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = {
+            error: `User is offering its own Request`,
+        };
+        return { status, infoMessage };
+    }
+    logger.log(
+        `Checking if request already has offer as 'pendingOffers'...`,
+        1
+    );
+    for (let off of request.Offers) {
+        if (off.dataValues.id == offerId) {
+            status = StatusCodes.BAD_REQUEST;
+            infoMessage = {
+                error: `Offer with id: ${offerId} already offered to Request with id: ${requestId}`,
+            };
+            return { status, infoMessage };
+        }
+    }
+    logger.log('Adding offer to Request...', 1);
+    await request.addOffer(offer);
+    logger.log('Added offer to Request...', 1);
+    logger.log(`Updating offers' status to pending...`, 1);
+    await offer.update({ status: 'pending' });
+    offer.save();
+    logger.log(`Updated`, 1);
+    logger.log(
+        `Added offer with id: ${offerId} to request with id: ${requestId}`,
+        1
+    );
+    status = StatusCodes.OK;
+    infoMessage = `Added offer with id: ${offerId} to request with id: ${requestId}`;
+    return { status, infoMessage };
+};
+
 const completePostService = async (requestId, offerId) => {
     let status, infoMessage;
 
@@ -946,5 +1014,6 @@ module.exports = {
     requestOfferService,
     acceptRequestService,
     rejectRequestService,
+    offerRequestService,
     completePostService,
 };
