@@ -90,7 +90,7 @@ const createOfferService = async (requestBody) => {
         );
     }
 
-    logger.log('Successfully created offer, sending response...', 1);
+    logger.log('Successfully created offer, sending back response...', 1);
     status = StatusCodes.CREATED;
     infoMessage = {
         id: offer.id,
@@ -154,7 +154,7 @@ const createRequestService = async (requestBody) => {
         );
     }
 
-    logger.log('Successfully created request, sending response...', 1);
+    logger.log('Successfully created request, sending back response...', 1);
     status = StatusCodes.CREATED;
     infoMessage = {
         id: request.id,
@@ -169,12 +169,14 @@ const editRequestService = async (requestBody, requestId) => {
 
     logger.log('Starting data validation of id and requestId...', 1);
     if (!validate.id(id)) {
+        logger.log(`Invalid id`, 1);
         infoMessage = { error: `Invalid id` };
         status = StatusCodes.BAD_REQUEST;
         return { status, infoMessage };
     }
 
     if (!validate.id(requestId)) {
+        logger.log(`Invalid requestId`, 1);
         infoMessage = { error: `Invalid requestId` };
         status = StatusCodes.BAD_REQUEST;
         return { status, infoMessage };
@@ -192,7 +194,7 @@ const editRequestService = async (requestBody, requestId) => {
 
     if (request == undefined) {
         logger.log(
-            `request with id: ${requestId} not found, sending response...`,
+            `Request with id: ${requestId} not found, sending response...`,
             1
         );
         infoMessage = { error: `Request with given id not found` };
@@ -204,6 +206,7 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.name(name)) {
             request.name = name;
         } else {
+            logger.log(`Invalid name`, 1);
             infoMessage = { error: `Invalid name` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
@@ -214,6 +217,7 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.description(description)) {
             request.description = description;
         } else {
+            logger.log(`Invalid description`, 1);
             infoMessage = { error: `Invalid description` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
@@ -224,6 +228,7 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.terminateAt(terminateAt)) {
             request.terminateAt = terminateAt;
         } else {
+            logger.log(`Invalid terminateAt date`, 1);
             infoMessage = { error: `Invalid terminateAt date` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
@@ -234,6 +239,7 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.location(location)) {
             request.location = location;
         } else {
+            logger.log(`Invalid location`, 1);
             infoMessage = { error: `Invalid location` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
@@ -265,9 +271,11 @@ const editRequestService = async (requestBody, requestId) => {
                 newTags.push(newTag);
             }
         }
+        logger.log(`Setting new tags`, 1);
         request.setTags(newTags);
     }
     request.save();
+    logger.log(`Successfully edited Request`, 1);
     infoMessage = `Successfully edited Request`;
     status = StatusCodes.OK;
     return { status, infoMessage };
@@ -280,12 +288,14 @@ const editOfferService = async (requestBody, offerId) => {
     logger.log('Starting data validation of id and offerId...', 1);
 
     if (!validate.id(id)) {
+        logger.log('Invalid id', 1);
         infoMessage = { error: `Invalid id` };
         status = StatusCodes.BAD_REQUEST;
         return { status, infoMessage };
     }
 
     if (!validate.id(offerId)) {
+        logger.log('Invalid offerId', 1);
         infoMessage = { error: `Invalid offerId` };
         status = StatusCodes.BAD_REQUEST;
         return { status, infoMessage };
@@ -314,6 +324,7 @@ const editOfferService = async (requestBody, offerId) => {
         if (validate.name(name)) {
             offer.name = name;
         } else {
+            logger.log('Invalid name', 1);
             infoMessage = { error: `Invalid name` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
@@ -324,6 +335,7 @@ const editOfferService = async (requestBody, offerId) => {
         if (validate.description(description)) {
             offer.description = description;
         } else {
+            logger.log('Invalid description', 1);
             infoMessage = `Invalid description`;
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
@@ -334,6 +346,7 @@ const editOfferService = async (requestBody, offerId) => {
         if (validate.terminateAt(terminateAt)) {
             offer.terminateAt = terminateAt;
         } else {
+            logger.log(`Invalid terminateAt date`, 1);
             infoMessage = { error: `Invalid terminateAt date` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
@@ -344,6 +357,7 @@ const editOfferService = async (requestBody, offerId) => {
         if (validate.location(location)) {
             offer.location = location;
         } else {
+            logger.log(`Invalid location`, 1);
             infoMessage = { error: `Invalid location` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
@@ -375,6 +389,7 @@ const editOfferService = async (requestBody, offerId) => {
                 newTags.push(newTag);
             }
         }
+        logger.log('Setting new tags', 1);
         offer.setTags(newTags);
     }
     if (photos != undefined) {
@@ -398,7 +413,8 @@ const editOfferService = async (requestBody, offerId) => {
             offer.setPhotos(newPhotos);
             logger.log(`Photos updated`, 1);
         } else {
-            infoMessage = { error: `missing photos` };
+            logger.log(`Missing photos`, 1);
+            infoMessage = { error: `Missing photos` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
         }
@@ -413,6 +429,7 @@ const editOfferService = async (requestBody, offerId) => {
             const compressedIcon = await compressIcon(parsedIcon);
             offer.icon = compressedIcon;
         } else {
+            logger.log(`Missing icon`, 1);
             infoMessage = { error: `missing icon` };
             status = StatusCodes.BAD_REQUEST;
             return { status, infoMessage };
@@ -443,7 +460,6 @@ const getOfferByIdService = async (offerId) => {
                 attributes: ['image'],
             },
             {
-                association: 'pendingRequests',
                 model: db.requests,
                 attributes: ['id', 'location', 'name', 'ownerId'],
             },
@@ -484,6 +500,7 @@ const getOfferByIdService = async (offerId) => {
     logger.log('Encoded photos to base64...', 1);
     offer.dataValues.photos = photosArray;
     delete offer.dataValues.Photos;
+    logger.log(`Sending back offer with id: ${offerId}...`, 1);
 
     status = StatusCodes.OK;
     infoMessage = offer;
@@ -504,7 +521,6 @@ const getRequestByIdService = async (requestId) => {
                 attributes: ['name', 'isOfficial', 'color'],
             },
             {
-                association: 'pendingOffers',
                 model: db.offers,
                 attributes: ['id', 'location', 'name', 'ownerId'],
             },
@@ -632,6 +648,7 @@ const getOffersByQueryService = async (requestQuery) => {
     }
 
     if (offersFinal.length === 0) {
+        logger.log(`There's no offer(s) with such parameters`, 1);
         status = StatusCodes.BAD_REQUEST;
         infoMessage = `There's no offer(s) with such parameters`;
         return { status, infoMessage };
@@ -732,6 +749,7 @@ const getRequestsByQueryService = async (requestQuery) => {
     }
 
     if (requestsFinal === null) {
+        logger.log(`There's no request(s) with such parameters`, 1);
         status = StatusCodes.BAD_REQUEST;
         infoMessage = `There's no request(s) with such parameters`;
         return { status, infoMessage };
@@ -757,22 +775,25 @@ const getRequestsByQueryService = async (requestQuery) => {
 const requestOfferService = async (requestId, offerId) => {
     let status, infoMessage;
     // 1. find offer & request
+    logger.log(`Searching Offer and Request in db...`, 1);
     const request = await db.requests.findOne({
         where: { id: requestId },
-        include: 'pendingOffers',
+        include: { model: db.offers },
     });
     const offer = await db.offers.findOne({
         where: { id: offerId },
-        include: 'pendingRequests',
+        include: { model: db.requests },
     });
-
+    logger.log(`Checking if they exist...`, 1);
     if (request === null || offer === null) {
+        logger.log(`Invalid requestId or offerId`, 1);
         status = StatusCodes.BAD_REQUEST;
         infoMessage = { error: `Invalid requestId or offerId` };
         return { status, infoMessage };
     }
     logger.log(`Checking if user is requesting its own Offer...`, 1);
     if (request.ownerId === offer.ownerId) {
+        logger.log(`User is requesting its own Offer`, 1);
         status = StatusCodes.BAD_REQUEST;
         infoMessage = {
             error: `User is requesting its own Offer`,
@@ -783,8 +804,12 @@ const requestOfferService = async (requestId, offerId) => {
         `Checking if offer already has request as 'pendingRequests'...`,
         1
     );
-    for (let req of offer.pendingRequests) {
+    for (let req of offer.Requests) {
         if (req.dataValues.id == requestId) {
+            logger.log(
+                `Request with id: ${requestId} already requested to Offer with id: ${offerId}`,
+                1
+            );
             status = StatusCodes.BAD_REQUEST;
             infoMessage = {
                 error: `Request with id: ${requestId} already requested to Offer with id: ${offerId}`,
@@ -793,19 +818,12 @@ const requestOfferService = async (requestId, offerId) => {
         }
     }
     logger.log('Adding request to Offer...', 1);
-    await offer.addPendingRequest(request);
+    await offer.addRequest(request);
     logger.log('Added request to Offer...', 1);
     logger.log(`Updating request' status to pending...`, 1);
     await request.update({ status: 'pending' });
     request.save();
-    logger.log(`Updated`, 1);
-
-    for (let pendingOffer of request.pendingOffers) {
-        if (pendingOffer.id == offerId) {
-            delete request.pendingOffers.pendingOffer;
-        }
-    }
-
+    logger.log(`Updated Request' status`, 1);
     logger.log(
         `Added request with id: ${requestId} to offer with id: ${offerId}`,
         1
@@ -906,22 +924,25 @@ const rejectRequestService = async (offerId, requestId) => {
 const offerRequestService = async (requestId, offerId) => {
     let status, infoMessage;
     // 1. find offer & request
+    logger.log(`Searching Request and Offer in db...`, 1);
     const request = await db.requests.findOne({
         where: { id: requestId },
-        include: 'pendingOffers',
+        include: { model: db.offers },
     });
     const offer = await db.offers.findOne({
         where: { id: offerId },
-        include: 'pendingRequests',
+        include: { model: db.requests },
     });
-
+    logger.log(`Checking if they exist...`, 1);
     if (request === null || offer === null) {
+        logger.log(`Invalid requestId or offerId`, 1);
         status = StatusCodes.BAD_REQUEST;
         infoMessage = { error: `Invalid requestId or offerId` };
         return { status, infoMessage };
     }
     logger.log(`Checking if user is requesting its own Offer...`, 1);
     if (request.ownerId === offer.ownerId) {
+        logger.log(`User is offering its own Request`, 1);
         status = StatusCodes.BAD_REQUEST;
         infoMessage = {
             error: `User is offering its own Request`,
@@ -934,6 +955,10 @@ const offerRequestService = async (requestId, offerId) => {
     );
     for (let off of request.Offers) {
         if (off.dataValues.id == offerId) {
+            logger.log(
+                `Offer with id: ${offerId} already offered to Request with id: ${requestId}`,
+                1
+            );
             status = StatusCodes.BAD_REQUEST;
             infoMessage = {
                 error: `Offer with id: ${offerId} already offered to Request with id: ${requestId}`,
@@ -947,7 +972,7 @@ const offerRequestService = async (requestId, offerId) => {
     logger.log(`Updating offers' status to pending...`, 1);
     await offer.update({ status: 'pending' });
     offer.save();
-    logger.log(`Updated`, 1);
+    logger.log(`Updated Offer' status`, 1);
     logger.log(
         `Added offer with id: ${offerId} to request with id: ${requestId}`,
         1
