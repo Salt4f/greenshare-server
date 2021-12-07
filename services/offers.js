@@ -613,7 +613,7 @@ const rejectRequestService = async (offerId, requestId) => {
     return { status, infoMessage };
 };
 
-const completeRequestService = async (requestId, offerId) => {
+const completeRequestService = async (requestId, offerId, valoration) => {
     let status, infoMessage;
 
     const acceptedPost = await db.acceptedPosts.findOne({
@@ -641,6 +641,12 @@ const completeRequestService = async (requestId, offerId) => {
         status = StatusCodes.BAD_REQUEST;
         infoMessage = { error: `This post is already completed` };
         return { status, infoMessage };
+    }
+    if (valoration) {
+        logger.log(`Adding valoration to completedPost`, 1);
+        await completedPost.update({ valoration: valoration });
+        completedPost.save();
+        logger.log(`Added valoration to completedPost`, 1);
     }
     logger.log('Created completedPost', 1);
     status = StatusCodes.OK;
