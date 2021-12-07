@@ -791,6 +791,16 @@ const requestOfferService = async (requestId, offerId) => {
         infoMessage = { error: `Invalid requestId or offerId` };
         return { status, infoMessage };
     }
+    logger.log(`Validating status...`, 1);
+    if (request.status != 'idle' || offer.status != 'idle') {
+        logger.log(`Invalid request.status or offer.status (not idle)`, 1);
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = {
+            error: `Invalid request.status or offer.status (not idle)`,
+        };
+        return { status, infoMessage };
+    }
+
     logger.log(`Checking if user is requesting its own Offer...`, 1);
     if (request.ownerId === offer.ownerId) {
         logger.log(`User is requesting its own Offer`, 1);
@@ -829,7 +839,7 @@ const requestOfferService = async (requestId, offerId) => {
         1
     );
     status = StatusCodes.OK;
-    infoMessage = `Added request with id: ${requestId} to offer with id: ${offerId}`;
+    infoMessage = `Added Request with id: ${requestId} to Offer with id: ${offerId}`;
     return { status, infoMessage };
 };
 
@@ -846,6 +856,7 @@ const acceptRequestService = async (offerId, requestId) => {
         },
     });
     if (!created) {
+        logger.log(`This offer is already accepted`, 1);
         status = StatusCodes.BAD_REQUEST;
         infoMessage = { error: `This offer is already accepted` };
         return { status, infoMessage };
@@ -854,12 +865,11 @@ const acceptRequestService = async (offerId, requestId) => {
         `Offer with id: ${offerId} accepted Request with id: ${requestId}`,
         1
     );
-
     const offer = await db.offers.findOne({
         where: { id: offerId },
         include: { model: db.requests },
     });
-
+    logger.log(`Updating others request' status from pendingRequests...`, 1);
     for (let req of offer.Requests) {
         const request = await db.requests.findOne({
             where: { id: req.dataValues.id },
@@ -870,8 +880,16 @@ const acceptRequestService = async (offerId, requestId) => {
         } else {
             await request.update({ status: 'accepted' });
             request.save();
+            logger.log('Deactivating request...', 1);
+            await request.update({ active: false });
+            request.save();
+            logger.log('Request deactivated...', 1);
         }
     }
+    logger.log('Deactivating offer...', 1);
+    await offer.update({ active: false });
+    offer.save();
+    logger.log('Offer deactivated...', 1);
 
     status = StatusCodes.OK;
     infoMessage = `Offer with id: ${offerId} accepted Request with id: ${requestId}`;
@@ -885,7 +903,7 @@ const rejectRequestService = async (offerId, requestId) => {
         where: { id: offerId },
         include: { model: db.requests },
     });
-    logger.log(`Got offer, checking its pending requests...`, 1);
+    logger.log(`Got offer, checking its pendingRequests...`, 1);
     let found = false;
     let newPendingRequests = [];
     for (let req of offer.Requests) {
@@ -906,6 +924,10 @@ const rejectRequestService = async (offerId, requestId) => {
     }
 
     if (!found) {
+        logger.log(
+            `Offer with id: ${offerId} doesn't have Request with id: ${requestId} as pending`,
+            1
+        );
         status = StatusCodes.BAD_REQUEST;
         infoMessage = {
             error: `Offer with id: ${offerId} doesn't have Request with id: ${requestId} as pending`,
@@ -918,6 +940,41 @@ const rejectRequestService = async (offerId, requestId) => {
 
     status = StatusCodes.OK;
     infoMessage = `Offer with id: ${offerId} rejected Request with id: ${requestId}`;
+    return { status, infoMessage };
+};
+
+const completeRequestService = async (requestId, offerId) => {
+    let status, infoMessage;
+
+    const acceptedPost = await db.acceptedPosts.findOne({
+        where: {
+            offerId: offerId,
+        },
+    });
+    logger.log(`Checking if AcceptedPost is valid...`, 1);
+    if (acceptedPost === null) {
+        logger.log(`Not accepted yet`, 1);
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = `Not accepted yet`;
+        return { status, infoMessage };
+    }
+    const [completedPost, created] = await db.completedPosts.findOrCreate({
+        where: {
+            acceptedPostId: acceptedPost.id,
+        },
+        defaults: {
+            acceptedPostId: acceptedPost.id,
+        },
+    });
+    if (!created) {
+        logger.log(`This post is already completed`, 1);
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = { error: `This post is already completed` };
+        return { status, infoMessage };
+    }
+    logger.log('Created completedPost', 1);
+    status = StatusCodes.OK;
+    infoMessage = `Request with id: ${requestId} confirmed transaction`;
     return { status, infoMessage };
 };
 
@@ -938,6 +995,15 @@ const offerRequestService = async (requestId, offerId) => {
         logger.log(`Invalid requestId or offerId`, 1);
         status = StatusCodes.BAD_REQUEST;
         infoMessage = { error: `Invalid requestId or offerId` };
+        return { status, infoMessage };
+    }
+    logger.log(`Validating status...`, 1);
+    if (request.status != 'idle' || offer.status != 'idle') {
+        logger.log(`Invalid request.status or offer.status (not idle)`, 1);
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = {
+            error: `Invalid request.status or offer.status (not idle)`,
+        };
         return { status, infoMessage };
     }
     logger.log(`Checking if user is requesting its own Offer...`, 1);
@@ -982,20 +1048,122 @@ const offerRequestService = async (requestId, offerId) => {
     return { status, infoMessage };
 };
 
-const completePostService = async (requestId, offerId) => {
+const acceptOfferService = async (requestId, offerId) => {
+    let status, infoMessage;
+
+    const [acceptedPost, created] = await db.acceptedPosts.findOrCreate({
+        where: {
+            requestId: requestId,
+        },
+        defaults: {
+            offerId: offerId,
+            requestId: requestId,
+        },
+    });
+    if (!created) {
+        logger.log(`This request is already accepted`, 1);
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = { error: `This request is already accepted` };
+        return { status, infoMessage };
+    }
+    logger.log(
+        `Request with id: ${requestId} accepted Offer with id: ${offerId}`,
+        1
+    );
+    const request = await db.requests.findOne({
+        where: { id: requestId },
+        include: { model: db.offers },
+    });
+    logger.log(`Updating others offer' status from pendingOffers...`, 1);
+    for (let off of request.Offers) {
+        const offer = await db.offers.findOne({
+            where: { id: off.dataValues.id },
+        });
+        if (offer.id != offerId) {
+            await offer.update({ status: 'rejected' });
+            offer.save();
+        } else {
+            await offer.update({ status: 'accepted' });
+            offer.save();
+            logger.log('Deactivating offer...', 1);
+            await offer.update({ active: false });
+            offer.save();
+            logger.log('Offer deactivated...', 1);
+        }
+    }
+    logger.log('Deactivating Request...', 1);
+    await request.update({ active: false });
+    request.save();
+    logger.log('Request deactivated...', 1);
+
+    status = StatusCodes.OK;
+    infoMessage = `Request with id: ${requestId} accepted Offer with id: ${offerId}`;
+    return { status, infoMessage };
+};
+
+const rejectOfferService = async (requestId, offerId) => {
+    let status, infoMessage;
+    logger.log(`Searching Request...`, 1);
+    const request = await db.requests.findOne({
+        where: { id: requestId },
+        include: { model: db.offers },
+    });
+    logger.log(`Got Request, checking its pendingOffers...`, 1);
+    let found = false;
+    let newPendingOffers = [];
+    for (let off of request.Offers) {
+        if (off.dataValues.id == offerId) {
+            found = true;
+            const offer = await db.offers.findOne({
+                where: { id: off.dataValues.id },
+            });
+            await offer.update({ status: 'rejected' });
+            offer.save();
+            logger.log(
+                `Updated Offer with id: ${off.dataValues.id} to 'rejected'`,
+                1
+            );
+        } else {
+            newPendingOffers.push(off);
+        }
+    }
+
+    if (!found) {
+        logger.log(
+            `Request with id: ${requestId} doesn't have Offer with id: ${offerId} as pending`,
+            1
+        );
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = {
+            error: `Request with id: ${requestId} doesn't have Offer with id: ${offerId} as pending`,
+        };
+        return { status, infoMessage };
+    }
+
+    request.setOffers(newPendingOffers);
+    logger.log(`Updated Request's pending Offers, sending response...`, 1);
+
+    status = StatusCodes.OK;
+    infoMessage = `Request with id: ${requestId} rejected Offer with id: ${offerId}`;
+    return { status, infoMessage };
+};
+
+const completeOfferService = async (requestId, offerId) => {
     let status, infoMessage;
 
     const acceptedPost = await db.acceptedPosts.findOne({
         where: {
-            offerId: offerId,
+            requestId: requestId,
         },
     });
+    logger.log(`Checking if AcceptedPost is valid...`, 1);
     if (acceptedPost === null) {
+        logger.log(`Not accepted yet`, 1);
         status = StatusCodes.BAD_REQUEST;
         infoMessage = `Not accepted yet`;
         return { status, infoMessage };
     }
-    const [competedPost, created] = await db.completedPosts.findOrCreate({
+    const [completedPost, created] = await db.completedPosts.findOrCreate({
         where: {
             acceptedPostId: acceptedPost.id,
         },
@@ -1004,26 +1172,17 @@ const completePostService = async (requestId, offerId) => {
         },
     });
     if (!created) {
+        logger.log(`This post is already completed`, 1);
         status = StatusCodes.BAD_REQUEST;
         infoMessage = { error: `This post is already completed` };
         return { status, infoMessage };
     }
-    logger.log('Deactivating offer...', 1);
-    const offer = await db.offers.findOne({
-        where: { id: offerId },
-    });
-    await offer.update({ active: false });
-    logger.log('Offer deactivated...', 1);
-    logger.log('Deactivating request...', 1);
-    const request = await db.requests.findOne({
-        where: { id: requestId },
-    });
-    await request.update({ active: false });
-    logger.log('Request deactivated...', 1);
-
-    logger.log('Created completedPost', 1);
+    logger.log(
+        `Created completedPost, Offer with id: ${offerId} confirmed transaction`,
+        1
+    );
     status = StatusCodes.OK;
-    infoMessage = `Request with id: ${requestId} confirmed transaction`;
+    infoMessage = `Offer with id: ${offerId} confirmed transaction`;
     return { status, infoMessage };
 };
 
@@ -1040,5 +1199,8 @@ module.exports = {
     acceptRequestService,
     rejectRequestService,
     offerRequestService,
-    completePostService,
+    completeRequestService,
+    acceptOfferService,
+    rejectOfferService,
+    completeOfferService,
 };

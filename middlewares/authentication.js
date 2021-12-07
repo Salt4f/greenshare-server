@@ -63,11 +63,11 @@ const offerOwnerAuth = async (req, res, next) => {
             next();
         } else {
             logger.log(
-                `User with id: ${req.body.id} is trying to edit someone else's offer..`,
+                `User with id: ${req.body.id} is trying to edit someone else's Offer..`,
                 1
             );
             res.status(StatusCodes.UNAUTHORIZED).json({
-                error: `User with id: ${req.body.id} is trying with someone else's offer..`,
+                error: `User with id: ${req.body.id} is trying with someone else's Offer..`,
             });
             throw new Error('UNAUTHORIZED');
         }
@@ -94,11 +94,11 @@ const requestOwnerAuth = async (req, res, next) => {
             next();
         } else {
             logger.log(
-                `User with id: ${req.body.id} is trying to edit someone else's request..`,
+                `User with id: ${req.body.id} is trying to edit someone else's Request..`,
                 1
             );
             res.status(StatusCodes.UNAUTHORIZED).json({
-                error: `User with id: ${req.body.id} is trying with someone else's request..`,
+                error: `User with id: ${req.body.id} is trying with someone else's Request..`,
             });
             throw new Error('UNAUTHORIZED');
         }
