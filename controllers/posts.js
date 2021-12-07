@@ -3,22 +3,25 @@ const logger = require('../utils/logger');
 
 const {
     createOfferService,
-    createRequestService,
-    editRequestService,
     editOfferService,
     getOfferByIdService,
-    getRequestByIdService,
     getOffersByQueryService,
-    getRequestsByQueryService,
-    requestOfferService,
+    offerRequestService,
     acceptRequestService,
     rejectRequestService,
-    offerRequestService,
     completeRequestService,
+} = require('../services/offers');
+
+const {
+    createRequestService,
+    editRequestService,
+    getRequestByIdService,
+    getRequestsByQueryService,
+    requestOfferService,
     acceptOfferService,
     rejectOfferService,
     completeOfferService,
-} = require('../services/posts');
+} = require('../services/requests');
 
 const createOffer = async (req, res) => {
     logger.log('Received createOffer request...', 1);
