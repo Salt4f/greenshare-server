@@ -51,16 +51,23 @@ const offerOwnerAuth = async (req, res, next) => {
         const offerId = req.params.offerId;
         const offer = await db.offers.findOne({ where: { id: offerId } });
 
+        if (offer === null) {
+            res.status(StatusCodes.NOT_FOUND).json({
+                error: `Offer with id ${offerId} not exists in back-end db`,
+            });
+            throw new Error('NOT FOUND');
+        }
+
         if (offer.dataValues.ownerId == req.body.id) {
             logger.log(`OfferOwnerAuth validated..`, 1);
             next();
         } else {
             logger.log(
-                `User with id: ${req.body.id} is trying to edit someone else's offer..`,
+                `User with id: ${req.body.id} is trying to edit someone else's Offer..`,
                 1
             );
             res.status(StatusCodes.UNAUTHORIZED).json({
-                error: `User with id: ${req.body.id} is trying with someone else's offer..`,
+                error: `User with id: ${req.body.id} is trying with someone else's Offer..`,
             });
             throw new Error('UNAUTHORIZED');
         }
@@ -75,16 +82,23 @@ const requestOwnerAuth = async (req, res, next) => {
         const requestId = req.params.requestId;
         const request = await db.requests.findOne({ where: { id: requestId } });
 
+        if (request === null) {
+            res.status(StatusCodes.NOT_FOUND).json({
+                error: `Request with id ${requestId} not exists in back-end db`,
+            });
+            throw new Error('NOT FOUND');
+        }
+
         if (request.dataValues.ownerId == req.body.id) {
             logger.log(`requestOwnerAuth validated..`, 1);
             next();
         } else {
             logger.log(
-                `User with id: ${req.body.id} is trying to edit someone else's request..`,
+                `User with id: ${req.body.id} is trying to edit someone else's Request..`,
                 1
             );
             res.status(StatusCodes.UNAUTHORIZED).json({
-                error: `User with id: ${req.body.id} is trying with someone else's request..`,
+                error: `User with id: ${req.body.id} is trying with someone else's Request..`,
             });
             throw new Error('UNAUTHORIZED');
         }

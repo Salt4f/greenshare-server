@@ -13,7 +13,11 @@ const {
     requestOfferService,
     acceptRequestService,
     rejectRequestService,
-    completePostService,
+    offerRequestService,
+    completeRequestService,
+    acceptOfferService,
+    rejectOfferService,
+    completeOfferService,
 } = require('../services/posts');
 
 const createOffer = async (req, res) => {
@@ -188,10 +192,74 @@ const rejectRequest = async (req, res) => {
     }
 };
 
-const completePost = async (req, res) => {
-    logger.log('Received completePost request...', 1);
+const completeRequest = async (req, res) => {
+    logger.log('Received completeRequest request...', 1);
     try {
-        const { status, infoMessage } = await completePostService(
+        const { status, infoMessage } = await completeRequestService(
+            req.params.requestId,
+            req.params.offerId
+        );
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
+    }
+};
+
+const offerRequest = async (req, res) => {
+    logger.log('Received offerRequest request...', 1);
+    try {
+        const { status, infoMessage } = await offerRequestService(
+            req.params.requestId,
+            req.params.offerId
+        );
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
+    }
+};
+
+const acceptOffer = async (req, res) => {
+    logger.log('Received acceptOffer request...', 1);
+    try {
+        const { status, infoMessage } = await acceptOfferService(
+            req.params.requestId,
+            req.params.offerId
+        );
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
+    }
+};
+
+const rejectOffer = async (req, res) => {
+    logger.log('Received rejectOffer request...', 1);
+    try {
+        const { status, infoMessage } = await rejectOfferService(
+            req.params.requestId,
+            req.params.offerId
+        );
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            error: 'Something went wrong',
+        });
+    }
+};
+
+const completeOffer = async (req, res) => {
+    logger.log('Received completeOffer request...', 1);
+    try {
+        const { status, infoMessage } = await completeOfferService(
             req.params.requestId,
             req.params.offerId
         );
@@ -216,5 +284,9 @@ module.exports = {
     requestOffer,
     acceptRequest,
     rejectRequest,
-    completePost,
+    completeRequest,
+    offerRequest,
+    acceptOffer,
+    rejectOffer,
+    completeOffer,
 };

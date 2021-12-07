@@ -46,34 +46,33 @@ db.requests.belongsTo(db.users, { foreignKey: 'ownerId' });
 db.users.hasMany(db.offers, { foreignKey: 'ownerId' });
 db.users.hasMany(db.requests, { foreignKey: 'ownerId' });
 
-db.offers.hasMany(db.requests);
-db.requests.belongsTo(db.offers);
+// db.offers.hasMany(db.requests);
+// db.requests.belongsTo(db.offers);
 
 db.completedPosts.belongsTo(db.acceptedPosts, { foreignKey: 'acceptedPostId' });
 
 db.tags.belongsToMany(db.offers, {
     through: 'OfferTag',
     as: 'offersUsing',
-    // foreignKey: 'offer_id',
 });
 db.offers.belongsToMany(db.tags, {
     through: 'OfferTag',
     as: 'tags',
-    // foreignKey: 'tag_id',
 });
 db.tags.belongsToMany(db.requests, {
     through: 'RequestTag',
     as: 'requestsUsing',
-    // foreignKey: 'request_id',
 });
 db.requests.belongsToMany(db.tags, {
     through: 'RequestTag',
     as: 'tags',
-    // foreignKey: 'tag_id',
 });
 
 db.offers.hasMany(db.photos, { foreignKey: 'offerId' });
 db.photos.belongsTo(db.offers, { foreignKey: 'offerId' });
+
+db.offers.hasMany(db.requests, { constraints: false });
+db.requests.hasMany(db.offers, { constraints: false });
 
 // Sync with the db
 sequelize.sync({ force: false });
