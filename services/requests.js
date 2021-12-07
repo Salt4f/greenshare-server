@@ -331,42 +331,16 @@ const getRequestsByQueryService = async (requestQuery) => {
 
 const requestOfferService = async (requestId, offerId) => {
     let status, infoMessage;
-    // 1. find offer & request
-    logger.log(`Searching Offer and Request in db...`, 1);
-    const request = await db.requests.findOne({
-        where: { id: requestId },
-        include: { model: db.offers },
-    });
-    const offer = await db.offers.findOne({
-        where: { id: offerId },
-        include: { model: db.requests },
-    });
-    logger.log(`Checking if they exist...`, 1);
-    if (request === null || offer === null) {
-        logger.log(`Invalid requestId or offerId`, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = { error: `Invalid requestId or offerId` };
-        return { status, infoMessage };
-    }
-    logger.log(`Validating status...`, 1);
-    if (request.status != 'idle' || offer.status != 'idle') {
-        logger.log(`Invalid request.status or offer.status (not idle)`, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = {
-            error: `Invalid request.status or offer.status (not idle)`,
-        };
-        return { status, infoMessage };
-    }
+    logger.log(`Starting postsValidation...`, 1);
+    const { statusValidation, messageValidation, request, offer } =
+        await postsValidation(offerId, requestId);
 
-    logger.log(`Checking if user is requesting its own Offer...`, 1);
-    if (request.ownerId === offer.ownerId) {
-        logger.log(`User is requesting its own Offer`, 1);
+    if (statusValidation == false) {
         status = StatusCodes.BAD_REQUEST;
-        infoMessage = {
-            error: `User is requesting its own Offer`,
-        };
+        infoMessage = messageValidation;
         return { status, infoMessage };
     }
+    logger.log(messageValidation, 1);
     logger.log(
         `Checking if offer already has request as 'pendingRequests'...`,
         1
@@ -383,6 +357,15 @@ const requestOfferService = async (requestId, offerId) => {
             };
             return { status, infoMessage };
         }
+    }
+    logger.log(`Validating status...`, 1);
+    if (request.status != 'idle' || offer.status != 'idle') {
+        logger.log(`Invalid request.status or offer.status (not idle)`, 1);
+        status = StatusCodes.BAD_REQUEST;
+        infoMessage = {
+            error: `Invalid request.status or offer.status (not idle)`,
+        };
+        return { status, infoMessage };
     }
     logger.log('Adding request to Offer...', 1);
     await offer.addRequest(request);
@@ -402,34 +385,16 @@ const requestOfferService = async (requestId, offerId) => {
 
 const acceptOfferService = async (requestId, offerId) => {
     let status, infoMessage;
+    logger.log(`Starting postsValidation...`, 1);
+    const { statusValidation, messageValidation, request } =
+        await postsValidation(offerId, requestId);
 
-    logger.log(`Searching Request and Offer in db...`, 1);
-    const request = await db.requests.findOne({
-        where: { id: requestId },
-        include: { model: db.offers },
-    });
-    const offer = await db.offers.findOne({
-        where: { id: offerId },
-        include: { model: db.requests },
-    });
-    logger.log(`Checking if they exist...`, 1);
-    if (request === null || offer === null) {
-        logger.log(`Invalid requestId or offerId`, 1);
+    if (statusValidation == false) {
         status = StatusCodes.BAD_REQUEST;
-        infoMessage = { error: `Invalid requestId or offerId` };
+        infoMessage = messageValidation;
         return { status, infoMessage };
     }
-
-    logger.log(`Checking if user is requesting its own Offer...`, 1);
-    if (request.ownerId === offer.ownerId) {
-        logger.log(`User is offering its own Request`, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = {
-            error: `User is offering its own Request`,
-        };
-        return { status, infoMessage };
-    }
-
+    logger.log(messageValidation, 1);
     const [acceptedPost, created] = await db.acceptedPosts.findOrCreate({
         where: {
             requestId: requestId,
@@ -449,10 +414,10 @@ const acceptOfferService = async (requestId, offerId) => {
         `Request with id: ${requestId} accepted Offer with id: ${offerId}`,
         1
     );
-    const request = await db.requests.findOne({
-        where: { id: requestId },
-        include: { model: db.offers },
-    });
+    // const request = await db.requests.findOne({
+    //     where: { id: requestId },
+    //     include: { model: db.offers },
+    // });
     logger.log(`Updating others offer' status from pendingOffers...`, 1);
     for (let off of request.Offers) {
         const offer = await db.offers.findOne({
@@ -482,32 +447,16 @@ const acceptOfferService = async (requestId, offerId) => {
 
 const rejectOfferService = async (requestId, offerId) => {
     let status, infoMessage;
-    logger.log(`Searching Request and Offer in db...`, 1);
-    const request = await db.requests.findOne({
-        where: { id: requestId },
-        include: { model: db.offers },
-    });
-    const offer = await db.offers.findOne({
-        where: { id: offerId },
-        include: { model: db.requests },
-    });
-    logger.log(`Checking if they exist...`, 1);
-    if (request === null || offer === null) {
-        logger.log(`Invalid requestId or offerId`, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = { error: `Invalid requestId or offerId` };
-        return { status, infoMessage };
-    }
+    logger.log(`Starting postsValidation...`, 1);
+    const { statusValidation, messageValidation, request } =
+        await postsValidation(offerId, requestId);
 
-    logger.log(`Checking if user is requesting its own Offer...`, 1);
-    if (request.ownerId === offer.ownerId) {
-        logger.log(`User is offering its own Request`, 1);
+    if (statusValidation == false) {
         status = StatusCodes.BAD_REQUEST;
-        infoMessage = {
-            error: `User is offering its own Request`,
-        };
+        infoMessage = messageValidation;
         return { status, infoMessage };
     }
+    logger.log(messageValidation, 1);
     logger.log(`Checking Request's pendingOffers...`, 1);
     let found = false;
     let newPendingOffers = [];
