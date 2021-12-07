@@ -497,7 +497,7 @@ const rejectOfferService = async (requestId, offerId) => {
     return { status, infoMessage };
 };
 
-const completeOfferService = async (requestId, offerId) => {
+const completeOfferService = async (requestId, offerId, valoration) => {
     let status, infoMessage;
 
     const acceptedPost = await db.acceptedPosts.findOne({
@@ -526,6 +526,14 @@ const completeOfferService = async (requestId, offerId) => {
         infoMessage = { error: `This post is already completed` };
         return { status, infoMessage };
     }
+
+    if (valoration) {
+        logger.log(`Adding valoration to completedPost`, 1);
+        await completedPost.update({ valoration: valoration });
+        completedPost.save();
+        logger.log(`Added valoration to completedPost`, 1);
+    }
+
     logger.log(
         `Created completedPost, Offer with id: ${offerId} confirmed transaction`,
         1

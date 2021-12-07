@@ -198,9 +198,11 @@ const rejectRequest = async (req, res) => {
 const completeRequest = async (req, res) => {
     logger.log('Received completeRequest request...', 1);
     try {
+        const { valoration } = req.body;
         const { status, infoMessage } = await completeRequestService(
             req.params.requestId,
-            req.params.offerId
+            req.params.offerId,
+            valoration
         );
         res.status(status).json(infoMessage);
     } catch (error) {
@@ -262,9 +264,11 @@ const rejectOffer = async (req, res) => {
 const completeOffer = async (req, res) => {
     logger.log('Received completeOffer request...', 1);
     try {
+        const { valoration } = req.body;
         const { status, infoMessage } = await completeOfferService(
             req.params.requestId,
-            req.params.offerId
+            req.params.offerId,
+            valoration
         );
         res.status(status).json(infoMessage);
     } catch (error) {
