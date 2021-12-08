@@ -1,7 +1,13 @@
 const { StatusCodes } = require('http-status-codes');
-const { tokenValidationRequest } = require('../requests/user-service');
+const { tokenValidationRequest } = require('../requests/stubs/user-service');
 const logger = require('../utils/logger');
 const db = require('../db/connect');
+const {
+    BadRequestError,
+    UnauthenticatedError,
+    InternalServerError,
+    NotFoundError,
+} = require('../errors');
 
 const authenticateUser = async (req, res, next) => {
     logger.log(`Validating user...`, 1);
@@ -25,23 +31,18 @@ const authenticateUser = async (req, res, next) => {
 
                 next();
             } else {
-                logger.log(
-                    `Invalid token or id on UserService, sending response...`,
-                    1
+                throw new UnauthenticatedError(
+                    'Invalid token or id on UserService'
                 );
-                res.status(StatusCodes.UNAUTHORIZED).send();
-                throw new Error('UNAUTHORIZED');
             }
         } else {
-            logger.log(
-                `No user with id: ${req.body.id} in back-end, sending response...`,
-                1
+            throw new UnauthenticatedError(
+                `No user with id: ${req.body.id} in back-end`
             );
-            res.status(StatusCodes.UNAUTHORIZED).send();
-            throw new Error('UNAUTHORIZED');
         }
     } catch (error) {
         logger.log(error.message, 0);
+        next(error);
     }
 };
 
@@ -52,27 +53,22 @@ const offerOwnerAuth = async (req, res, next) => {
         const offer = await db.offers.findOne({ where: { id: offerId } });
 
         if (offer === null) {
-            res.status(StatusCodes.NOT_FOUND).json({
-                error: `Offer with id ${offerId} not exists in back-end db`,
-            });
-            throw new Error('NOT FOUND');
+            throw new NotFoundError(
+                `Offer with id ${offerId} not exists in back-end db`
+            );
         }
 
         if (offer.dataValues.ownerId == req.body.id) {
             logger.log(`OfferOwnerAuth validated..`, 1);
             next();
         } else {
-            logger.log(
-                `User with id: ${req.body.id} is trying to edit someone else's Offer..`,
-                1
+            throw new UnauthenticatedError(
+                `User with id: ${req.body.id} is trying to edit someone else's Offer`
             );
-            res.status(StatusCodes.UNAUTHORIZED).json({
-                error: `User with id: ${req.body.id} is trying with someone else's Offer..`,
-            });
-            throw new Error('UNAUTHORIZED');
         }
     } catch (error) {
         logger.log(error.message, 0);
+        next(error);
     }
 };
 
@@ -83,27 +79,22 @@ const requestOwnerAuth = async (req, res, next) => {
         const request = await db.requests.findOne({ where: { id: requestId } });
 
         if (request === null) {
-            res.status(StatusCodes.NOT_FOUND).json({
-                error: `Request with id ${requestId} not exists in back-end db`,
-            });
-            throw new Error('NOT FOUND');
+            throw new NotFoundError(
+                `Request with id ${requestId} not exists in back-end db`
+            );
         }
 
         if (request.dataValues.ownerId == req.body.id) {
             logger.log(`requestOwnerAuth validated..`, 1);
             next();
         } else {
-            logger.log(
-                `User with id: ${req.body.id} is trying to edit someone else's Request..`,
-                1
+            throw new UnauthenticatedError(
+                `User with id: ${req.body.id} is trying to edit someone else's Request`
             );
-            res.status(StatusCodes.UNAUTHORIZED).json({
-                error: `User with id: ${req.body.id} is trying with someone else's Request..`,
-            });
-            throw new Error('UNAUTHORIZED');
         }
     } catch (error) {
         logger.log(error.message, 0);
+        next(error);
     }
 };
 

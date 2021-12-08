@@ -1,9 +1,3 @@
-const { StatusCodes } = require('http-status-codes');
-const {
-    BadRequestError,
-    UnauthenticatedError,
-    InternalServerError,
-} = require('../errors');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
 const {
@@ -12,7 +6,7 @@ const {
     tokenValidationService,
 } = require('../services/auth');
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
     logger.log('Received register request', 1);
 
     try {
@@ -20,24 +14,11 @@ const register = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (e) {
         logger.log(e.message, 0);
-
-        // logger.log(
-        //     `Register request error, checking... ${inspect(
-        //         e,
-        //         false,
-        //         null,
-        //         false
-        //     )}`,
-        //     2
-        // );
-
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: `Internal server error`,
-        });
+        next(e);
     }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
     logger.log('Received login request', 1);
 
     try {
@@ -45,24 +26,11 @@ const login = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (e) {
         logger.log(e.message, 0);
-
-        // logger.log(
-        //     `Login request error, checking... ${inspect(
-        //         e,
-        //         false,
-        //         null,
-        //         false
-        //     )}`,
-        //     2
-        // );
-
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: `Internal server error`,
-        });
+        next(e);
     }
 };
 
-const tokenValidation = async (req, res) => {
+const tokenValidation = async (req, res, next) => {
     logger.log('Received tokenValidation request', 1);
 
     try {
@@ -70,20 +38,7 @@ const tokenValidation = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (e) {
         logger.log(e.message, 0);
-
-        // logger.log(
-        //     `TokenValidation request error, checking... ${inspect(
-        //         e,
-        //         false,
-        //         null,
-        //         false
-        //     )}`,
-        //     2
-        // );
-
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: `Internal server error`,
-        });
+        next(e);
     }
 };
 

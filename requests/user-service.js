@@ -5,6 +5,13 @@ const logger = require('../utils/logger');
 
 require('dotenv').config();
 
+const {
+    BadRequestError,
+    UnauthenticatedError,
+    InternalServerError,
+    NotFoundError,
+} = require('../errors');
+
 const registerRequest = async (email, password, nickname) => {
     try {
         logger.log('Sending register request to UserService with axios...', 1);
@@ -20,9 +27,7 @@ const registerRequest = async (email, password, nickname) => {
         });
         return response;
     } catch (e) {
-        logger.log(e.message, 0);
-
-        throw new Error(e);
+        throw new BadRequestError(`Email already registered in User Service`);
     }
 };
 
@@ -41,9 +46,7 @@ const loginRequest = async (email, password) => {
         });
         return response;
     } catch (e) {
-        logger.log(e.message, 0);
-
-        throw new Error(e);
+        throw new BadRequestError('Login failed, invalid credentials');
     }
 };
 
@@ -65,14 +68,7 @@ const tokenValidationRequest = async (id, token) => {
         });
         return response;
     } catch (e) {
-        logger.log(e.message, 0);
-
-        console.log(
-            `[WARNING]: Returning false at token validation because caught exception. This should be caused by a 404 response if token is invalid (please response to a 400 in user validation).`
-        );
-        return {
-            status: 400,
-        };
+        throw new BadRequestError('Invalid token');
     }
 };
 
