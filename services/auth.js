@@ -9,6 +9,12 @@ const db = require('../db/connect');
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
+const {
+    BadRequestError,
+    UnauthenticatedError,
+    InternalServerError,
+    NotFoundError,
+} = require('../errors');
 
 const registerService = async (requestBody) => {
     const { email, password, nickname, dni, birthDate, fullName } = requestBody;
@@ -27,26 +33,13 @@ const registerService = async (requestBody) => {
     );
 
     if (!passed) {
-        logger.log(message, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = message;
-        return { status, infoMessage };
+        throw new BadRequestError(message);
     }
     logger.log(message, 1);
 
     logger.log('Sending register request to UserService...', 1);
     const response = await registerRequest(email, password, nickname);
     logger.log('Received register response from UserService, checking...', 1);
-
-    // logger.log(
-    //     `Received register response from UserService, checking... ${inspect(
-    //         response,
-    //         false,
-    //         null,
-    //         false
-    //     )}`,
-    //     2
-    // );
 
     if (response.status == StatusCodes.CREATED) {
         logger.log(
@@ -77,13 +70,9 @@ const registerService = async (requestBody) => {
         };
         return { status, infoMessage };
     } else if (response.status == StatusCodes.BAD_REQUEST) {
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = { error: `Email already registered` };
-        return { status, infoMessage };
+        throw new BadRequestError(`Email already registered`);
     } else {
-        status = StatusCodes.INTERNAL_SERVER_ERROR;
-        infoMessage = { error: `User service error` };
-        return { status, infoMessage };
+        throw new InternalServerError(`User Service error`);
     }
 };
 
@@ -96,20 +85,14 @@ const loginService = async (requestBody) => {
     const { passed, message } = validate.login(email, password);
 
     if (!passed) {
-        logger.log(message, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = message;
-        return { status, infoMessage };
+        throw new BadRequestError(message);
     }
     logger.log(message, 1);
 
     logger.log('Checking if user exists in back-end db...', 1);
     const user = await db.users.findOne({ where: { email: email } });
     if (user == null) {
-        logger.log(`User does not exist in back-end, sending response...`, 1);
-        status = StatusCodes.UNAUTHORIZED;
-        infoMessage = `User does not exist in back-end, sending response...`;
-        return { status, infoMessage };
+        throw new UnauthenticatedError('User does not exist in back-end');
     }
 
     logger.log('Sending loginRequest...', 1);
@@ -126,12 +109,7 @@ const loginService = async (requestBody) => {
         };
         return { status, infoMessage };
     } else {
-        logger.log('Login failed, invalid credentials, sending response...', 1);
-        status = StatusCodes.UNAUTHORIZED;
-        infoMessage = {
-            error: `Invalid credentials`,
-        };
-        return { status, infoMessage };
+        throw new UnauthenticatedError('Login failed, invalid credentials');
     }
 };
 
@@ -144,36 +122,19 @@ const tokenValidationService = async (requestBody) => {
     const { passed, message } = validate.tokenValidation(id, token);
 
     if (!passed) {
-        logger.log(message, 1);
-        res.status(StatusCodes.BAD_REQUEST).json({
-            error: message,
-        });
-        return;
+        throw new BadRequestError(message);
     }
     logger.log(message, 1);
 
     logger.log('Checking if user exists in back-end db...', 1);
     const user = await db.users.findOne({ where: { id: id } });
     if (user == null) {
-        logger.log(`User does not exist in back-end, sending response...`, 1);
-        status = StatusCodes.UNAUTHORIZED;
-        infoMessage = `User does not exist in back-end, sending response...`;
-        return { status, infoMessage };
+        throw new UnauthenticatedError('User does not exist in back-end');
     }
 
     logger.log(`Sending tokenValidationRequest...`, 1);
     const response = await tokenValidationRequest(id, token);
     logger.log(`Received tokenValidationRequest response, checking...`, 1);
-
-    // logger.log(
-    //     `Received login response from UserService, checking... ${inspect(
-    //         response,
-    //         false,
-    //         null,
-    //         false
-    //     )}`,
-    //     2
-    // );
 
     if (response.status == StatusCodes.CREATED) {
         logger.log(`Token successfuly validated, sending response...`, 1);
@@ -181,10 +142,7 @@ const tokenValidationService = async (requestBody) => {
         infoMessage = 'Token successfuly validated';
         return { status };
     } else {
-        logger.log(`Invalid token, sending response...`, 1);
-        status = StatusCodes.UNAUTHORIZED;
-        infoMessage = 'Invalid token';
-        return { status };
+        throw new UnauthenticatedError('Invalid token,');
     }
 };
 module.exports = { registerService, loginService, tokenValidationService };
