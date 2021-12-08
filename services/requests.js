@@ -5,6 +5,12 @@ const { distanceBetweenPoints } = require('../utils/math');
 const db = require('../db/connect');
 const { StatusCodes } = require('http-status-codes');
 const { postsValidation } = require('../utils/posts-validation');
+const {
+    BadRequestError,
+    UnauthenticatedError,
+    InternalServerError,
+    NotFoundError,
+} = require('../errors');
 
 const createRequestService = async (requestBody) => {
     const { id, name, description, terminateAt, location, tags } = requestBody;
@@ -21,10 +27,7 @@ const createRequestService = async (requestBody) => {
     );
 
     if (!passed) {
-        logger.log(message, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = message;
-        return { status, infoMessage };
+        throw new BadRequestError(message);
     }
     logger.log(message, 1);
     logger.log('Creating request...', 1);
@@ -76,17 +79,11 @@ const editRequestService = async (requestBody, requestId) => {
 
     logger.log('Starting data validation of id and requestId...', 1);
     if (!validate.id(id)) {
-        logger.log(`Invalid id`, 1);
-        infoMessage = { error: `Invalid id` };
-        status = StatusCodes.BAD_REQUEST;
-        return { status, infoMessage };
+        throw new BadRequestError(`Invalid id`);
     }
 
     if (!validate.id(requestId)) {
-        logger.log(`Invalid requestId`, 1);
-        infoMessage = { error: `Invalid requestId` };
-        status = StatusCodes.BAD_REQUEST;
-        return { status, infoMessage };
+        throw new BadRequestError(`Invalid requestId`);
     }
     logger.log(
         'Data validation of id and requestId passed, finding request..',
@@ -100,23 +97,16 @@ const editRequestService = async (requestBody, requestId) => {
     });
 
     if (request == undefined) {
-        logger.log(
-            `Request with id: ${requestId} not found, sending response...`,
-            1
+        throw new BadRequestError(
+            `Request with id: ${requestId} not found, sending response...`
         );
-        infoMessage = { error: `Request with given id not found` };
-        status = StatusCodes.NOT_FOUND;
-        return { status, infoMessage };
     }
     logger.log(`Request found, starting...`, 1);
     if (name != undefined) {
         if (validate.name(name)) {
             request.name = name;
         } else {
-            logger.log(`Invalid name`, 1);
-            infoMessage = { error: `Invalid name` };
-            status = StatusCodes.BAD_REQUEST;
-            return { status, infoMessage };
+            throw new BadRequestError(`Invalid name`);
         }
     }
 
@@ -124,10 +114,7 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.description(description)) {
             request.description = description;
         } else {
-            logger.log(`Invalid description`, 1);
-            infoMessage = { error: `Invalid description` };
-            status = StatusCodes.BAD_REQUEST;
-            return { status, infoMessage };
+            throw new BadRequestError(`Invalid description`);
         }
     }
 
@@ -135,10 +122,7 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.terminateAt(terminateAt)) {
             request.terminateAt = terminateAt;
         } else {
-            logger.log(`Invalid terminateAt date`, 1);
-            infoMessage = { error: `Invalid terminateAt date` };
-            status = StatusCodes.BAD_REQUEST;
-            return { status, infoMessage };
+            throw new BadRequestError(`Invalid terminateAt date`);
         }
     }
 
@@ -146,10 +130,7 @@ const editRequestService = async (requestBody, requestId) => {
         if (validate.location(location)) {
             request.location = location;
         } else {
-            logger.log(`Invalid location`, 1);
-            infoMessage = { error: `Invalid location` };
-            status = StatusCodes.BAD_REQUEST;
-            return { status, infoMessage };
+            throw new BadRequestError(`Invalid location`);
         }
     }
 
@@ -209,13 +190,7 @@ const getRequestByIdService = async (requestId) => {
     });
 
     if (request == null) {
-        logger.log(
-            `request with id: ${requestId} not found, sending response...`,
-            1
-        );
-        status = StatusCodes.NOT_FOUND;
-        infoMessage = { error: `request with id: ${requestId} not found` };
-        return { status, infoMessage };
+        throw new NotFoundError(`Request with id: ${requestId} not found`);
     }
 
     logger.log('Cleaning up tags...', 1);
@@ -306,10 +281,7 @@ const getRequestsByQueryService = async (requestQuery) => {
     }
 
     if (requestsFinal === null) {
-        logger.log(`There's no request(s) with such parameters`, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = `There's no request(s) with such parameters`;
-        return { status, infoMessage };
+        throw new NotFoundError(`There's no request(s) with such parameters`);
     }
 
     requestsFinal.sort((a, b) => {
@@ -336,9 +308,7 @@ const requestOfferService = async (requestId, offerId) => {
         await postsValidation(offerId, requestId);
 
     if (statusValidation == false) {
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = messageValidation;
-        return { status, infoMessage };
+        throw new BadRequestError(messageValidation);
     }
     logger.log(messageValidation, 1);
     logger.log(
@@ -347,25 +317,16 @@ const requestOfferService = async (requestId, offerId) => {
     );
     for (let req of offer.Requests) {
         if (req.dataValues.id == requestId) {
-            logger.log(
-                `Request with id: ${requestId} already requested to Offer with id: ${offerId}`,
-                1
+            throw new BadRequestError(
+                `Request with id: ${requestId} already requested to Offer with id: ${offerId}`
             );
-            status = StatusCodes.BAD_REQUEST;
-            infoMessage = {
-                error: `Request with id: ${requestId} already requested to Offer with id: ${offerId}`,
-            };
-            return { status, infoMessage };
         }
     }
     logger.log(`Validating status...`, 1);
     if (request.status != 'idle' || offer.status != 'idle') {
-        logger.log(`Invalid request.status or offer.status (not idle)`, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = {
-            error: `Invalid request.status or offer.status (not idle)`,
-        };
-        return { status, infoMessage };
+        throw new BadRequestError(
+            `Invalid request.status or offer.status (not idle)`
+        );
     }
     logger.log('Adding request to Offer...', 1);
     await offer.addRequest(request);
@@ -390,9 +351,7 @@ const acceptOfferService = async (requestId, offerId) => {
         await postsValidation(offerId, requestId);
 
     if (statusValidation == false) {
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = messageValidation;
-        return { status, infoMessage };
+        throw new BadRequestError(messageValidation);
     }
     logger.log(messageValidation, 1);
     const [acceptedPost, created] = await db.acceptedPosts.findOrCreate({
@@ -405,19 +364,12 @@ const acceptOfferService = async (requestId, offerId) => {
         },
     });
     if (!created) {
-        logger.log(`This request is already accepted`, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = { error: `This request is already accepted` };
-        return { status, infoMessage };
+        throw new BadRequestError(`This request is already accepted`);
     }
     logger.log(
         `Request with id: ${requestId} accepted Offer with id: ${offerId}`,
         1
     );
-    // const request = await db.requests.findOne({
-    //     where: { id: requestId },
-    //     include: { model: db.offers },
-    // });
     logger.log(`Updating others offer' status from pendingOffers...`, 1);
     for (let off of request.Offers) {
         const offer = await db.offers.findOne({
@@ -452,9 +404,7 @@ const rejectOfferService = async (requestId, offerId) => {
         await postsValidation(offerId, requestId);
 
     if (statusValidation == false) {
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = messageValidation;
-        return { status, infoMessage };
+        throw new BadRequestError(messageValidation);
     }
     logger.log(messageValidation, 1);
     logger.log(`Checking Request's pendingOffers...`, 1);
@@ -478,15 +428,9 @@ const rejectOfferService = async (requestId, offerId) => {
     }
 
     if (!found) {
-        logger.log(
-            `Request with id: ${requestId} doesn't have Offer with id: ${offerId} as pending`,
-            1
+        throw new BadRequestError(
+            `Request with id: ${requestId} doesn't have Offer with id: ${offerId} as pending`
         );
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = {
-            error: `Request with id: ${requestId} doesn't have Offer with id: ${offerId} as pending`,
-        };
-        return { status, infoMessage };
     }
 
     request.setOffers(newPendingOffers);
@@ -507,10 +451,7 @@ const completeOfferService = async (requestId, offerId, valoration) => {
     });
     logger.log(`Checking if AcceptedPost is valid...`, 1);
     if (acceptedPost === null) {
-        logger.log(`Not accepted yet`, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = `Not accepted yet`;
-        return { status, infoMessage };
+        throw new BadRequestError(`Not accepted yet`);
     }
     const [completedPost, created] = await db.completedPosts.findOrCreate({
         where: {
@@ -521,10 +462,7 @@ const completeOfferService = async (requestId, offerId, valoration) => {
         },
     });
     if (!created) {
-        logger.log(`This post is already completed`, 1);
-        status = StatusCodes.BAD_REQUEST;
-        infoMessage = { error: `This post is already completed` };
-        return { status, infoMessage };
+        throw new BadRequestError(`This post is already completed`);
     }
 
     if (valoration) {

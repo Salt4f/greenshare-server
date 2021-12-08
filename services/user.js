@@ -1,6 +1,12 @@
 const { StatusCodes } = require('http-status-codes');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
+const {
+    BadRequestError,
+    UnauthenticatedError,
+    InternalServerError,
+    NotFoundError,
+} = require('../errors');
 
 const getUserAllInfo = async (requestUserId, paramsUserId) => {
     let user, status, infoMessage;
@@ -12,15 +18,9 @@ const getUserAllInfo = async (requestUserId, paramsUserId) => {
             },
         });
     } else {
-        logger.log(
-            `User with id ${requestUserId} is trying to get someone else's info...`,
-            1
+        throw new UnauthenticatedError(
+            `User with id ${requestUserId} is trying to get someone else's info`
         );
-        status = StatusCodes.UNAUTHORIZED;
-        infoMessage = {
-            error: `User with id ${requestUserId} is trying to get someone else's info...`,
-        };
-        return { status, infoMessage };
     }
     logger.log(`Got user with id: ${paramsUserId}, sending response...`, 1);
     infoMessage = user;
@@ -37,15 +37,7 @@ const getUserNickname = async (userId) => {
         attributes: ['nickname'],
     });
     if (user === null) {
-        logger.log(
-            `No user with id: ${userId} in back-end, sending response...`,
-            1
-        );
-        infoMessage = {
-            error: `No user with id: ${userId} in back-end`,
-        };
-        status = StatusCodes.BAD_REQUEST;
-        return { status, infoMessage };
+        throw new NotFoundError(`No user with id: ${userId} in back-end`);
     }
     logger.log(`Got user with id: ${userId}, sending response...`, 1);
     infoMessage = user;

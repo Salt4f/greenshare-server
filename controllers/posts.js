@@ -23,7 +23,7 @@ const {
     completeOfferService,
 } = require('../services/requests');
 
-const createOffer = async (req, res) => {
+const createOffer = async (req, res, next) => {
     logger.log('Received createOffer request...', 1);
 
     try {
@@ -31,13 +31,11 @@ const createOffer = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const createRequest = async (req, res) => {
+const createRequest = async (req, res, next) => {
     logger.log('Received createRequest request...', 1);
 
     try {
@@ -45,13 +43,11 @@ const createRequest = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const editOffer = async (req, res) => {
+const editOffer = async (req, res, next) => {
     logger.log('Received editOffer request, editing...', 1);
 
     try {
@@ -62,13 +58,11 @@ const editOffer = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const editRequest = async (req, res) => {
+const editRequest = async (req, res, next) => {
     logger.log('Received editRequest request, editing...', 1);
 
     try {
@@ -79,13 +73,11 @@ const editRequest = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const getOfferById = async (req, res) => {
+const getOfferById = async (req, res, next) => {
     logger.log(`Received getOfferById request`, 1);
 
     try {
@@ -95,13 +87,11 @@ const getOfferById = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const getRequestById = async (req, res) => {
+const getRequestById = async (req, res, next) => {
     logger.log(`Received getRequestById request`, 1);
 
     try {
@@ -111,13 +101,11 @@ const getRequestById = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const getOffersByQuery = async (req, res) => {
+const getOffersByQuery = async (req, res, next) => {
     logger.log(`Received getOffersByQuery request`, 1);
     try {
         const { status, infoMessage } = await getOffersByQueryService(
@@ -126,13 +114,11 @@ const getOffersByQuery = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const getRequestsByQuery = async (req, res) => {
+const getRequestsByQuery = async (req, res, next) => {
     logger.log(`Received getRequestsByQuery request`, 1);
     try {
         const { status, infoMessage } = await getRequestsByQueryService(
@@ -141,13 +127,11 @@ const getRequestsByQuery = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const requestOffer = async (req, res) => {
+const requestOffer = async (req, res, next) => {
     logger.log('Received requestOffer request...', 1);
     try {
         const { status, infoMessage } = await requestOfferService(
@@ -157,13 +141,11 @@ const requestOffer = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const acceptRequest = async (req, res) => {
+const acceptRequest = async (req, res, next) => {
     logger.log('Received acceptRequest request...', 1);
     try {
         const { status, infoMessage } = await acceptRequestService(
@@ -173,13 +155,11 @@ const acceptRequest = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const rejectRequest = async (req, res) => {
+const rejectRequest = async (req, res, next) => {
     logger.log('Received rejectRequest request...', 1);
     try {
         const { status, infoMessage } = await rejectRequestService(
@@ -189,13 +169,11 @@ const rejectRequest = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const completeRequest = async (req, res) => {
+const completeRequest = async (req, res, next) => {
     logger.log('Received completeRequest request...', 1);
     try {
         const { valoration } = req.body;
@@ -207,13 +185,11 @@ const completeRequest = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const offerRequest = async (req, res) => {
+const offerRequest = async (req, res, next) => {
     logger.log('Received offerRequest request...', 1);
     try {
         const { status, infoMessage } = await offerRequestService(
@@ -223,13 +199,11 @@ const offerRequest = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const acceptOffer = async (req, res) => {
+const acceptOffer = async (req, res, next) => {
     logger.log('Received acceptOffer request...', 1);
     try {
         const { status, infoMessage } = await acceptOfferService(
@@ -239,13 +213,11 @@ const acceptOffer = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const rejectOffer = async (req, res) => {
+const rejectOffer = async (req, res, next) => {
     logger.log('Received rejectOffer request...', 1);
     try {
         const { status, infoMessage } = await rejectOfferService(
@@ -255,13 +227,11 @@ const rejectOffer = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
-const completeOffer = async (req, res) => {
+const completeOffer = async (req, res, next) => {
     logger.log('Received completeOffer request...', 1);
     try {
         const { valoration } = req.body;
@@ -273,9 +243,7 @@ const completeOffer = async (req, res) => {
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            error: 'Something went wrong',
-        });
+        next(error);
     }
 };
 
