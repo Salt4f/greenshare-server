@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-    version: '1.3'
+    version: '1.5'
     title: GreenShare
     description: 'This is the Open API documentation for the REST API of the **back-end** of GreenShare.'
 
@@ -64,6 +64,7 @@ paths:
                 '404':
                     description: 'User does not exist in back-end'
             deprecated: false
+
     /user/{userId}:
         get:
             tags:
@@ -88,6 +89,7 @@ paths:
                 '401':
                     description: 'If logged and authenticated and requesting other users'
             deprecated: false
+
     /posts/offers:
         post:
             tags:
@@ -203,8 +205,11 @@ paths:
                 required: true
             responses:
                 '200':
-                    description: ''
-                    headers: {}
+                    description: 'Successfully edited Offer'
+                '400':
+                    description: 'Invalid fields'
+                '404':
+                    description: 'Offer not found'
             deprecated: false
         get:
             tags:
@@ -223,128 +228,18 @@ paths:
                       example: 9
             responses:
                 '200':
-                    description: ''
-                    headers: {}
+                    description: 'Got Offer with given offerId'
+                '404':
+                    description: 'Offer not found'
             deprecated: false
-    /posts/requests:
+    /posts/requests/{requestId}/offer/{offerId}:
         post:
             tags:
-                - Requests
-            summary: Create Request
-            operationId: CreateRequest
-            parameters: []
-            requestBody:
-                description: ''
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateRequestRequest'
-                        example:
-                            id: 2
-                            token: '2'
-                            name: Testing1
-                            description: This is the description
-                            terminateAt: 2022-03-21
-                            location: 32,3225525;13,4877472
-                            tags:
-                                - name: hogar
-                                  color: '#FFFF0000'
-                required: true
-            responses:
-                '200':
-                    description: ''
-                    headers: {}
-            deprecated: false
-        get:
-            tags:
-                - Requests
-            summary: Get Requests by Query params
-            operationId: GetRequestsbyQueryparams
-            parameters:
-                - name: location
-                  in: query
-                  description: ''
-                  required: true
-                  style: form
-                  explode: true
-                  schema:
-                      type: string
-                      example: 32,3225525;13,4877472
-                - name: ownerId
-                  in: query
-                  description: ''
-                  required: true
-                  style: form
-                  explode: true
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 4
-            responses:
-                '200':
-                    description: ''
-                    headers: {}
-            deprecated: false
-    /posts/requests/{requestId}:
-        put:
-            tags:
-                - Requests
-            summary: Edit Request
-            operationId: EditRequest
+                - Offers
+            summary: Offer to a Request
+            operationId: OffertoaRequest
             parameters:
                 - name: requestId
-                  in: path
-                  description: ''
-                  required: true
-                  style: simple
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 1
-            requestBody:
-                description: ''
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/EditRequestRequest'
-                        example:
-                            id: 5
-                            token: '21092381098'
-                            name: Hello
-                required: true
-            responses:
-                '200':
-                    description: ''
-                    headers: {}
-            deprecated: false
-        get:
-            tags:
-                - Requests
-            summary: Get Request by Id
-            operationId: GetRequestbyId
-            parameters:
-                - name: requestId
-                  in: path
-                  description: ''
-                  required: true
-                  style: simple
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 9
-            responses:
-                '200':
-                    description: ''
-                    headers: {}
-            deprecated: false
-    /posts/offers/{offerId}/request/{requestId}:
-        post:
-            tags:
-                - Requests
-            summary: Request an Offer
-            operationId: RequestanOffer
-            parameters:
-                - name: offerId
                   in: path
                   description: ''
                   required: true
@@ -353,7 +248,7 @@ paths:
                       type: integer
                       format: int32
                       example: 6
-                - name: requestId
+                - name: offerId
                   in: path
                   description: ''
                   required: true
@@ -361,27 +256,28 @@ paths:
                   schema:
                       type: integer
                       format: int32
-                      example: 5
+                      example: 7
             requestBody:
                 description: ''
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/RequestanOfferRequest'
+                            $ref: '#/components/schemas/OffertoaRequestRequest'
                         example:
-                            id: 2
-                            token: '2'
+                            id: 1
+                            token: '1'
                 required: true
             responses:
                 '200':
-                    description: ''
-                    headers: {}
+                    description: 'Added offer with id: offerId to request with id: requestId'
+                '400':
+                    description: 'Validation failed, Offer already offered, status not idle'
             deprecated: false
     /posts/offers/{offerId}/request/{requestId}/accept:
         post:
             tags:
                 - Offers
-            summary: Accept Request
+            summary: Accept Request from pendingRequests
             operationId: AcceptRequest
             parameters:
                 - name: offerId
@@ -414,8 +310,9 @@ paths:
                 required: true
             responses:
                 '200':
-                    description: ''
-                    headers: {}
+                    description: 'Offer accepted Request'
+                '400':
+                    description: 'Validation error, Offer already accepted'
             deprecated: false
     /posts/offers/{offerId}/request/{requestId}/reject:
         post:
@@ -454,8 +351,310 @@ paths:
                 required: true
             responses:
                 '200':
-                    description: ''
-                    headers: {}
+                    description: 'Offer rejected Request'
+                '400':
+                    description: 'Validation error, Offer doesnt have this Request as pending'
+            deprecated: false
+    /posts/requests/{requestId}/offer/{offerId}/completed:
+        post:
+            tags:
+                - Offers
+            summary: Completed Post from Offer
+            operationId: CompletedPostfromOffer
+            parameters:
+                - name: requestId
+                  in: path
+                  description: ''
+                  required: true
+                  style: simple
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 6
+                - name: offerId
+                  in: path
+                  description: ''
+                  required: true
+                  style: simple
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 7
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CompletedPostfromOfferRequest'
+                        example:
+                            id: 1
+                            token: '1'
+                required: true
+            responses:
+                '200':
+                    description: 'Offer confirmed transaction'
+                '400':
+                    description: 'Post already completed'
+            deprecated: false
+
+    /posts/requests:
+        post:
+            tags:
+                - Requests
+            summary: Create Request
+            operationId: CreateRequest
+            parameters: []
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateRequestRequest'
+                        example:
+                            id: 2
+                            token: '2'
+                            name: Testing1
+                            description: This is the description
+                            terminateAt: 2022-03-21
+                            location: 32,3225525;13,4877472
+                            tags:
+                                - name: hogar
+                                  color: '#FFFF0000'
+                required: true
+            responses:
+                '200':
+                    description: 'Successfully created Request'
+                '400':
+                    description: 'Validation error'
+            deprecated: false
+        get:
+            tags:
+                - Requests
+            summary: Get Requests by Query params
+            operationId: GetRequestsbyQueryparams
+            parameters:
+                - name: location
+                  in: query
+                  description: ''
+                  required: true
+                  style: form
+                  explode: true
+                  schema:
+                      type: string
+                      example: 32,3225525;13,4877472
+                - name: distance
+                  in: query
+                  description: ''
+                  explode: true
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 20
+                - name: ownerId
+                  in: query
+                  description: ''
+                  explode: true
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 1
+                - name: tags
+                  in: query
+                  description: ''
+                  explode: true
+                  schema:
+                      type: string
+                      example: primera-necesidad;bicicleta
+                - name: quantity
+                  in: query
+                  description: ''
+                  explode: true
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 25
+            responses:
+                '200':
+                    description: 'Got request(s)'
+                '404':
+                    description: 'There`s no request(s) with such parameters'
+            deprecated: false
+    /posts/requests/{requestId}:
+        put:
+            tags:
+                - Requests
+            summary: Edit Request
+            operationId: EditRequest
+            parameters:
+                - name: requestId
+                  in: path
+                  description: ''
+                  required: true
+                  style: simple
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 1
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/EditRequestRequest'
+                        example:
+                            id: 5
+                            token: '21092381098'
+                            name: Hello
+                required: true
+            responses:
+                '200':
+                    description: 'Successfully edited Request'
+                '400':
+                    description: 'Invalid fields'
+            deprecated: false
+        get:
+            tags:
+                - Requests
+            summary: Get Request by Id
+            operationId: GetRequestbyId
+            parameters:
+                - name: requestId
+                  in: path
+                  description: ''
+                  required: true
+                  style: simple
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 9
+            responses:
+                '200':
+                    description: 'Got Request'
+                '404':
+                    description: 'No request with given requestId'
+            deprecated: false
+    /posts/offers/{offerId}/request/{requestId}:
+        post:
+            tags:
+                - Requests
+            summary: Request an Offer
+            operationId: RequestanOffer
+            parameters:
+                - name: offerId
+                  in: path
+                  description: ''
+                  required: true
+                  style: simple
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 6
+                - name: requestId
+                  in: path
+                  description: ''
+                  required: true
+                  style: simple
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 5
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RequestanOfferRequest'
+                        example:
+                            id: 2
+                            token: '2'
+                required: true
+            responses:
+                '200':
+                    description: 'Request successfully requested to Offer'
+                '400':
+                    description: 'Validation failed, Request already requested, status not idle'
+            deprecated: false
+    /posts/requests/{requestId}/offer/{offerId}/accept:
+        post:
+            tags:
+                - Requests
+            summary: Accept Offer
+            operationId: AcceptOffer
+            parameters:
+                - name: requestId
+                  in: path
+                  description: ''
+                  required: true
+                  style: simple
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 6
+                - name: offerId
+                  in: path
+                  description: ''
+                  required: true
+                  style: simple
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 7
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AcceptOfferRequest'
+                        example:
+                            id: 2
+                            token: '2'
+                required: true
+            responses:
+                '200':
+                    description: 'Successfully accepted Offer'
+                '400':
+                    description: 'Validation error, Request already accepted'
+            deprecated: false
+    /posts/requests/{requestId}/offer/{offerId}/reject:
+        post:
+            tags:
+                - Requests
+            summary: Reject Offer
+            operationId: RejectOffer
+            parameters:
+                - name: requestId
+                  in: path
+                  description: ''
+                  required: true
+                  style: simple
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 5
+                - name: offerId
+                  in: path
+                  description: ''
+                  required: true
+                  style: simple
+                  schema:
+                      type: integer
+                      format: int32
+                      example: 5
+            requestBody:
+                description: ''
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RejectOfferRequest'
+                        example:
+                            id: 1
+                            token: '1'
+                required: true
+            responses:
+                '200':
+                    description: 'Request successfully rejected Offer'
+                '400':
+                    description: 'Validation error, Request doesnt have this Offer as pending'
             deprecated: false
     /posts/offers/{offerId}/request/{requestId}/completed:
         post:
@@ -495,169 +694,11 @@ paths:
                 required: true
             responses:
                 '200':
-                    description: ''
-                    headers: {}
+                    description: 'Request confirmed transaction'
+                '400':
+                    description: 'Post already completed'
             deprecated: false
-    /posts/requests/{requestId}/offer/{offerId}:
-        post:
-            tags:
-                - Offers
-            summary: Offer to a Request
-            operationId: OffertoaRequest
-            parameters:
-                - name: requestId
-                  in: path
-                  description: ''
-                  required: true
-                  style: simple
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 6
-                - name: offerId
-                  in: path
-                  description: ''
-                  required: true
-                  style: simple
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 7
-            requestBody:
-                description: ''
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/OffertoaRequestRequest'
-                        example:
-                            id: 1
-                            token: '1'
-                required: true
-            responses:
-                '200':
-                    description: ''
-                    headers: {}
-            deprecated: false
-    /posts/requests/{requestId}/offer/{offerId}/accept:
-        post:
-            tags:
-                - Requests
-            summary: Accept Offer
-            operationId: AcceptOffer
-            parameters:
-                - name: requestId
-                  in: path
-                  description: ''
-                  required: true
-                  style: simple
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 6
-                - name: offerId
-                  in: path
-                  description: ''
-                  required: true
-                  style: simple
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 7
-            requestBody:
-                description: ''
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/AcceptOfferRequest'
-                        example:
-                            id: 2
-                            token: '2'
-                required: true
-            responses:
-                '200':
-                    description: ''
-                    headers: {}
-            deprecated: false
-    /posts/requests/{requestId}/offer/{offerId}/reject:
-        post:
-            tags:
-                - Requests
-            summary: Reject Offer
-            operationId: RejectOffer
-            parameters:
-                - name: requestId
-                  in: path
-                  description: ''
-                  required: true
-                  style: simple
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 5
-                - name: offerId
-                  in: path
-                  description: ''
-                  required: true
-                  style: simple
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 5
-            requestBody:
-                description: ''
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/RejectOfferRequest'
-                        example:
-                            id: 1
-                            token: '1'
-                required: true
-            responses:
-                '200':
-                    description: ''
-                    headers: {}
-            deprecated: false
-    /posts/requests/{requestId}/offer/{offerId}/completed:
-        post:
-            tags:
-                - Offers
-            summary: Completed Post from Offer
-            operationId: CompletedPostfromOffer
-            parameters:
-                - name: requestId
-                  in: path
-                  description: ''
-                  required: true
-                  style: simple
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 6
-                - name: offerId
-                  in: path
-                  description: ''
-                  required: true
-                  style: simple
-                  schema:
-                      type: integer
-                      format: int32
-                      example: 7
-            requestBody:
-                description: ''
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CompletedPostfromOfferRequest'
-                        example:
-                            id: 1
-                            token: '1'
-                required: true
-            responses:
-                '200':
-                    description: ''
-                    headers: {}
-            deprecated: false
+
 components:
     schemas:
         RegisterUserRequest:
