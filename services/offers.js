@@ -190,9 +190,9 @@ const editOfferService = async (requestBody, offerId) => {
                 );
                 newTags.push(newTag);
             }
+            logger.log('Setting new tags', 1);
+            offer.setTags(newTags);
         }
-        logger.log('Setting new tags', 1);
-        offer.setTags(newTags);
     }
     if (photos != undefined) {
         if (validate.photos(photos)) {
