@@ -158,9 +158,9 @@ const editRequestService = async (requestBody, requestId) => {
                 );
                 newTags.push(newTag);
             }
+            logger.log(`Setting new tags`, 1);
+            request.setTags(newTags);
         }
-        logger.log(`Setting new tags`, 1);
-        request.setTags(newTags);
     }
     request.save();
     logger.log(`Successfully edited Request`, 1);
