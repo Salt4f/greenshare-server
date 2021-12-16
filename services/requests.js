@@ -280,10 +280,6 @@ const getRequestsByQueryService = async (requestQuery) => {
         }
     }
 
-    if (requestsFinal === null) {
-        throw new NotFoundError(`There's no request(s) with such parameters`);
-    }
-
     requestsFinal.sort((a, b) => {
         return b.dataValues.distance - a.dataValues.distance;
     });
@@ -295,7 +291,16 @@ const getRequestsByQueryService = async (requestQuery) => {
     } else {
         requestsSlice = requestsFinal;
     }
-    logger.log(`Got request(s), sending back response...`, 1);
+
+    if (requestsSlice.length === 0) {
+        logger.log(
+            `There's no request(s) with such parameters, sending back an empty array`,
+            1
+        );
+    } else {
+        logger.log(`Got request(s), sending back response...`, 1);
+    }
+
     status = StatusCodes.OK;
     infoMessage = requestsSlice;
     return { status, infoMessage };
