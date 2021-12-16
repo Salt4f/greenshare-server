@@ -397,10 +397,6 @@ const getOffersByQueryService = async (requestQuery) => {
         }
     }
 
-    if (offersFinal.length === 0) {
-        throw new NotFoundError(`There's no offer(s) with such parameters`);
-    }
-
     offersFinal.sort((a, b) => {
         return b.dataValues.distance - a.dataValues.distance;
     });
@@ -412,7 +408,16 @@ const getOffersByQueryService = async (requestQuery) => {
     } else {
         offersSlice = offersFinal;
     }
-    logger.log(`Got offer(s), sending back response...`, 1);
+
+    if (offersSlice.length === 0) {
+        logger.log(
+            `There's no offer(s) with such parameters, sending back an empty array`,
+            1
+        );
+    } else {
+        logger.log(`Got offer(s), sending back response...`, 1);
+    }
+
     status = StatusCodes.OK;
     infoMessage = offersSlice;
     return { status, infoMessage };
