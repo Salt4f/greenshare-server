@@ -45,4 +45,73 @@ const getUserNickname = async (userId) => {
     return { status, infoMessage };
 };
 
-module.exports = { getUserAllInfo, getUserNickname };
+const getUserOffers = async (userId) => {
+    let status, infoMessage;
+
+    logger.log(`Searching offers...`, 1);
+    const offers = await db.offers.findAll({
+        where: { ownerId: userId },
+        attributes: ['id', 'active', 'name', 'description', 'status'],
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial', 'color'],
+            },
+        ],
+    });
+    if (offers.length === 0) {
+        logger.log(`User hasn't created any offer yet`, 1);
+    } else {
+        logger.log('Cleaning up tags...', 1);
+        for (const offer of offers) {
+            for (let t of offer.tags) {
+                delete t.dataValues.OfferTag;
+            }
+        }
+        logger.log('Tags cleaned...', 1);
+        logger.log(`Got offer(s), sending back...`, 1);
+    }
+    status = StatusCodes.OK;
+    infoMessage = offers;
+    return { status, infoMessage };
+};
+
+const getUserRequests = async (userId) => {
+    let status, infoMessage;
+
+    logger.log(`Searching requests...`, 1);
+    const requests = await db.requests.findAll({
+        where: { ownerId: userId },
+        attributes: ['id', 'active', 'name', 'description', 'status'],
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial', 'color'],
+            },
+        ],
+    });
+    if (requests.length === 0) {
+        logger.log(`User hasn't created any request yet`, 1);
+    } else {
+        logger.log('Cleaning up tags...', 1);
+        for (const request of requests) {
+            for (let t of request.tags) {
+                delete t.dataValues.RequestTag;
+            }
+        }
+        logger.log('Tags cleaned...', 1);
+        logger.log(`Got request(s), sending back...`, 1);
+    }
+    status = StatusCodes.OK;
+    infoMessage = requests;
+    return { status, infoMessage };
+};
+
+module.exports = {
+    getUserAllInfo,
+    getUserNickname,
+    getUserOffers,
+    getUserRequests,
+};

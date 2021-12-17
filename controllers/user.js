@@ -1,6 +1,11 @@
 const { StatusCodes } = require('http-status-codes');
 const logger = require('../utils/logger');
-const { getUserAllInfo, getUserNickname } = require('../services/user');
+const {
+    getUserAllInfo,
+    getUserNickname,
+    getUserOffers,
+    getUserRequests,
+} = require('../services/user');
 const { tokenValidationService } = require('../services/auth');
 const {
     BadRequestError,
@@ -37,4 +42,27 @@ const getUser = async (req, res, next) => {
     }
 };
 
-module.exports = { getUser };
+const getUserPosts = async (req, res, next) => {
+    logger.log(`Received getUserPosts request`, 1);
+    try {
+        logger.log(`Authenticating user info....`, 1);
+        await tokenValidationService(req.body);
+        logger.log(`User authenticated, checking type...`, 1);
+        if (req.query.type === 'offers') {
+            const { status, infoMessage } = await getUserOffers(
+                req.params.userId
+            );
+            res.status(status).json(infoMessage);
+        } else if (req.query.type === 'requests') {
+            const { status, infoMessage } = await getUserRequests(
+                req.params.userId
+            );
+            res.status(status).json(infoMessage);
+        }
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+module.exports = { getUser, getUserPosts };
