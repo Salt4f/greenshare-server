@@ -39,7 +39,10 @@ const createRequest = async (req, res, next) => {
     logger.log('Received createRequest request...', 1);
 
     try {
-        const { status, infoMessage } = await createRequestService(req.body);
+        const { status, infoMessage } = await createRequestService(
+            req.get('id'),
+            req.body
+        );
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
