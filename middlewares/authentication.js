@@ -11,17 +11,18 @@ const {
 
 const authenticateUser = async (req, res, next) => {
     logger.log(`Validating user...`, 1);
+    console.log(typeof req.get('id'), typeof req.get('token'));
     try {
         logger.log(`Checking if user exists in back-end database...`, 1);
-        const user = await db.users.findOne({ where: { id: req.body.id } });
+        const user = await db.users.findOne({ where: { id: req.get('id') } });
         if (user != null) {
             logger.log(
                 `Got user, sending request to tokenValidation of UserService...`,
                 1
             );
             const response = await tokenValidationRequest(
-                req.body.id,
-                req.body.token
+                req.get('id'),
+                req.get('token')
             );
             if (response.status == StatusCodes.CREATED) {
                 logger.log(

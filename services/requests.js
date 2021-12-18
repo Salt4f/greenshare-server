@@ -12,13 +12,13 @@ const {
     NotFoundError,
 } = require('../errors');
 
-const createRequestService = async (requestBody) => {
-    const { id, name, description, terminateAt, location, tags } = requestBody;
+const createRequestService = async (userId, requestBody) => {
+    const { name, description, terminateAt, location, tags } = requestBody;
     let status, infoMessage;
 
     logger.log('Starting data validation...', 1);
     const { passed, message } = validate.request(
-        id,
+        userId,
         name,
         description,
         terminateAt,
@@ -36,7 +36,7 @@ const createRequestService = async (requestBody) => {
         description,
         terminateAt,
         location,
-        ownerId: id,
+        ownerId: userId,
     });
 
     logger.log('Created request, setting up tags...', 1);
@@ -192,7 +192,6 @@ const getRequestByIdService = async (requestId) => {
     if (request == null) {
         throw new NotFoundError(`Request with id: ${requestId} not found`);
     }
-
     logger.log('Cleaning up tags...', 1);
     for (let t of request.tags) {
         delete t.dataValues.RequestTag;
