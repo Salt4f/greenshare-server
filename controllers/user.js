@@ -7,20 +7,16 @@ const {
     getUserRequests,
 } = require('../services/user');
 const { tokenValidationService } = require('../services/auth');
-const {
-    BadRequestError,
-    UnauthenticatedError,
-    InternalServerError,
-    NotFoundError,
-} = require('../errors');
+const { BadRequestError } = require('../errors');
 
 const getUser = async (req, res, next) => {
     logger.log(`Received getUser request`, 1);
-    const { id, token } = req.body;
+    const id = req.get('id');
+    const token = req.get('token');
     try {
         if (id != undefined && token != undefined) {
             logger.log(`Authenticating user info....`, 1);
-            const response = await tokenValidationService(req.body);
+            const response = await tokenValidationService(id, token);
             if (response.status != StatusCodes.OK) {
                 throw new BadRequestError('Invalid user');
             }
@@ -45,9 +41,7 @@ const getUser = async (req, res, next) => {
 const getUserPosts = async (req, res, next) => {
     logger.log(`Received getUserPosts request`, 1);
     try {
-        logger.log(`Authenticating user info....`, 1);
-        await tokenValidationService(req.body);
-        logger.log(`User authenticated, checking type...`, 1);
+        logger.log(`Checking type...`, 1);
         if (req.query.type === 'offers') {
             const { status, infoMessage } = await getUserOffers(
                 req.params.userId

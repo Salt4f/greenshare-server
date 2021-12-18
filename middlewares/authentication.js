@@ -2,16 +2,11 @@ const { StatusCodes } = require('http-status-codes');
 const { tokenValidationRequest } = require('../requests/user-service');
 const logger = require('../utils/logger');
 const db = require('../db/connect');
-const {
-    BadRequestError,
-    UnauthenticatedError,
-    InternalServerError,
-    NotFoundError,
-} = require('../errors');
+const { UnauthenticatedError, NotFoundError } = require('../errors');
 
 const authenticateUser = async (req, res, next) => {
+    logger.log(`Starting authenticateUser...`, 1);
     logger.log(`Validating user...`, 1);
-    console.log(typeof req.get('id'), typeof req.get('token'));
     try {
         logger.log(`Checking if user exists in back-end database...`, 1);
         const user = await db.users.findOne({ where: { id: req.get('id') } });
@@ -38,7 +33,7 @@ const authenticateUser = async (req, res, next) => {
             }
         } else {
             throw new UnauthenticatedError(
-                `No user with id: ${req.body.id} in back-end`
+                `No user with id: ${req.get('id')} in back-end`
             );
         }
     } catch (error) {
@@ -59,12 +54,14 @@ const offerOwnerAuth = async (req, res, next) => {
             );
         }
 
-        if (offer.dataValues.ownerId == req.body.id) {
+        if (offer.dataValues.ownerId == req.get('id')) {
             logger.log(`OfferOwnerAuth validated..`, 1);
             next();
         } else {
             throw new UnauthenticatedError(
-                `User with id: ${req.body.id} is trying to edit someone else's Offer`
+                `User with id: ${req.get(
+                    'id'
+                )} is trying to edit someone else's Offer`
             );
         }
     } catch (error) {
@@ -74,7 +71,7 @@ const offerOwnerAuth = async (req, res, next) => {
 };
 
 const requestOwnerAuth = async (req, res, next) => {
-    logger.log(`Validating user...`, 1);
+    logger.log(`Validating requestOwnerAuth...`, 1);
     try {
         const requestId = req.params.requestId;
         const request = await db.requests.findOne({ where: { id: requestId } });
@@ -85,12 +82,14 @@ const requestOwnerAuth = async (req, res, next) => {
             );
         }
 
-        if (request.dataValues.ownerId == req.body.id) {
+        if (request.dataValues.ownerId == req.get('id')) {
             logger.log(`requestOwnerAuth validated..`, 1);
             next();
         } else {
             throw new UnauthenticatedError(
-                `User with id: ${req.body.id} is trying to edit someone else's Request`
+                `User with id: ${req.get(
+                    'id'
+                )} is trying to edit someone else's Request`
             );
         }
     } catch (error) {

@@ -1,9 +1,6 @@
-const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
 const { inspect } = require('util');
-const { distanceBetweenPoints } = require('../utils/math');
 const db = require('../db/connect');
-const { StatusCodes } = require('http-status-codes');
 
 const postsValidation = async (offerId, requestId) => {
     let statusValidation, messageValidation;

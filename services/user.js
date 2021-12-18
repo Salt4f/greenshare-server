@@ -1,12 +1,7 @@
 const { StatusCodes } = require('http-status-codes');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
-const {
-    BadRequestError,
-    UnauthenticatedError,
-    InternalServerError,
-    NotFoundError,
-} = require('../errors');
+const { UnauthenticatedError, NotFoundError } = require('../errors');
 
 const getUserAllInfo = async (requestUserId, paramsUserId) => {
     let user, status, infoMessage;

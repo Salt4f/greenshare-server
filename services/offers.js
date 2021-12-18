@@ -3,26 +3,20 @@ const logger = require('../utils/logger');
 const { inspect } = require('util');
 const { distanceBetweenPoints } = require('../utils/math');
 const dataEncoding = require('../utils/data');
-const sharp = require('sharp');
 const { compressIcon, compressPhoto } = require('../utils/images');
 const db = require('../db/connect');
 const { StatusCodes } = require('http-status-codes');
 const { postsValidation } = require('../utils/posts-validation');
-const {
-    BadRequestError,
-    UnauthenticatedError,
-    InternalServerError,
-    NotFoundError,
-} = require('../errors');
+const { BadRequestError, NotFoundError } = require('../errors');
 
-const createOfferService = async (requestBody) => {
-    const { id, name, description, terminateAt, location, icon, photos, tags } =
+const createOfferService = async (userId, requestBody) => {
+    const { name, description, terminateAt, location, icon, photos, tags } =
         requestBody;
     let status, infoMessage;
 
     logger.log('Starting data validation...', 1);
     const { passed, message } = validate.offer(
-        id,
+        userId,
         name,
         description,
         terminateAt,
@@ -50,7 +44,7 @@ const createOfferService = async (requestBody) => {
         terminateAt,
         location,
         icon: compressedIcon,
-        ownerId: id,
+        ownerId: userId,
     });
     logger.log('Created offer, setting up photos...', 1);
 
@@ -104,20 +98,16 @@ const createOfferService = async (requestBody) => {
 };
 
 const editOfferService = async (requestBody, offerId) => {
-    const { id, name, description, terminateAt, location, tags, icon, photos } =
+    const { name, description, terminateAt, location, tags, icon, photos } =
         requestBody;
     let status, infoMessage;
-    logger.log('Starting data validation of id and offerId...', 1);
-
-    if (!validate.id(id)) {
-        throw new BadRequestError(`Invalid id`);
-    }
+    logger.log('Starting data validation of offerId...', 1);
 
     if (!validate.id(offerId)) {
         throw new BadRequestError(`Invalid offerId`);
     }
 
-    logger.log('Data validation of id and offerId passed, finding Offer...', 1);
+    logger.log('Data validation of offerId passed, finding Offer...', 1);
     const offer = await db.offers.findOne({
         where: {
             id: offerId,

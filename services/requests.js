@@ -5,12 +5,7 @@ const { distanceBetweenPoints } = require('../utils/math');
 const db = require('../db/connect');
 const { StatusCodes } = require('http-status-codes');
 const { postsValidation } = require('../utils/posts-validation');
-const {
-    BadRequestError,
-    UnauthenticatedError,
-    InternalServerError,
-    NotFoundError,
-} = require('../errors');
+const { BadRequestError, NotFoundError } = require('../errors');
 
 const createRequestService = async (userId, requestBody) => {
     const { name, description, terminateAt, location, tags } = requestBody;
@@ -74,21 +69,14 @@ const createRequestService = async (userId, requestBody) => {
 };
 
 const editRequestService = async (requestBody, requestId) => {
-    const { id, name, description, terminateAt, location, tags } = requestBody;
+    const { name, description, terminateAt, location, tags } = requestBody;
     let status, infoMessage;
 
-    logger.log('Starting data validation of id and requestId...', 1);
-    if (!validate.id(id)) {
-        throw new BadRequestError(`Invalid id`);
-    }
-
+    logger.log('Starting data validation of requestId...', 1);
     if (!validate.id(requestId)) {
         throw new BadRequestError(`Invalid requestId`);
     }
-    logger.log(
-        'Data validation of id and requestId passed, finding request..',
-        1
-    );
+    logger.log('Data validation of requestId passed, finding request..', 1);
     const request = await db.requests.findOne({
         where: {
             id: requestId,
