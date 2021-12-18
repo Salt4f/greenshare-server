@@ -1,4 +1,3 @@
-const { StatusCodes } = require('http-status-codes');
 const logger = require('../utils/logger');
 
 const {
@@ -27,7 +26,10 @@ const createOffer = async (req, res, next) => {
     logger.log('Received createOffer request...', 1);
 
     try {
-        const { status, infoMessage } = await createOfferService(req.body);
+        const { status, infoMessage } = await createOfferService(
+            req.get('id'),
+            req.body
+        );
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
