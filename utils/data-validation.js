@@ -218,45 +218,45 @@ function offer(
     let message = '';
 
     if (!id(_id)) {
-        message = `invalid id`;
+        message = `Invalid id`;
         return { passed, message };
     }
 
     if (!name(_name).passed) {
-        message = `invalid name`;
+        message = `Invalid name`;
         return { passed, message };
     }
     if (!description(_description).passed) {
-        message = `invalid description`;
+        message = `Invalid description`;
         return { passed, message };
     }
     if (_terminateAt != undefined) {
         if (!terminateAt(_terminateAt).passed) {
-            message = `invalid terminateAt date`;
+            message = `Invalid terminateAt date`;
             return { passed, message };
         }
     }
     if (_photos != undefined) {
         if (!photos(_photos).passed) {
-            message = `invalid photos (not an array)`;
+            message = `Invalid photos (not an array)`;
             return { passed, message };
         }
     }
     if (!location(_location).passed) {
-        message = `invalid location`;
+        message = `Invalid location`;
         return { passed, message };
     }
     if (!tags(_tags).passed) {
-        message = `missing tag(s) field or invalid tag`;
+        message = `Missing tag(s) field or invalid tag`;
         return { passed, message };
     }
     if (!icon(_icon).passed) {
-        message = `missing icon`;
+        message = `Missing icon`;
         return { passed, message };
     }
 
     passed = true;
-    message = `Validation passed`;
+    message = `Data validation passed`;
 
     return { passed, message };
 }
@@ -266,34 +266,34 @@ function request(_id, _name, _description, _terminateAt, _location, _tags) {
     let message = '';
 
     if (!id(_id)) {
-        message = `invalid id`;
+        message = `Invalid id`;
         return { passed, message };
     }
     if (!name(_name).passed) {
-        message = `invalid name`;
+        message = `Invalid name`;
         return { passed, message };
     }
     if (!description(_description).passed) {
-        message = `invalid description`;
+        message = `Invalid description`;
         return { passed, message };
     }
     if (_terminateAt != undefined) {
         if (!terminateAt(_terminateAt).passed) {
-            message = `invalid terminateAt date`;
+            message = `Invalid terminateAt date`;
             return { passed, message };
         }
     }
     if (!location(_location).passed) {
-        message = `invalid location`;
+        message = `Invalid location`;
         return { passed, message };
     }
     if (!tags(_tags).passed) {
-        message = `missing tag(s) field or invalid tag`;
+        message = `Missing tag(s) field or invalid tag`;
         return { passed, message };
     }
 
     passed = true;
-    message = `Validation passed`;
+    message = `Data validation passed`;
 
     return { passed, message };
 }
@@ -323,12 +323,12 @@ function register(_email, _password, _nickname, _dni, _birthDate, _fullName) {
         return { passed, message };
     }
     if (!name(_fullName).passed) {
-        message = `invalid fullName`;
+        message = `Wrong parameters: invalid fullName`;
         return { passed, message };
     }
 
     passed = true;
-    message = 'Validation passed';
+    message = 'Data validation passed';
 
     return { passed, message };
 }
@@ -347,7 +347,7 @@ function login(_email, _password) {
     }
 
     passed = true;
-    message = 'Validation passed';
+    message = 'Data validation passed';
 
     return { passed, message };
 }
@@ -357,7 +357,7 @@ function tokenValidation(_id, _token) {
     let message = '';
 
     if (!id(_id)) {
-        message = `invalid id`;
+        message = `Wrong parameters: invalid id`;
         return { passed, message };
     }
     if (token(_token) == false) {
@@ -366,7 +366,7 @@ function tokenValidation(_id, _token) {
     }
 
     passed = true;
-    message = 'Validation passed';
+    message = 'Data validation passed';
 
     return { passed, message };
 }

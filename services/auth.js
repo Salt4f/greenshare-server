@@ -12,7 +12,6 @@ const {
     BadRequestError,
     UnauthenticatedError,
     InternalServerError,
-    NotFoundError,
 } = require('../errors');
 
 const registerService = async (requestBody) => {
@@ -112,8 +111,7 @@ const loginService = async (requestBody) => {
     }
 };
 
-const tokenValidationService = async (requestBody) => {
-    const { id, token } = requestBody;
+const tokenValidationService = async (id, token) => {
     let status, infoMessage;
 
     /////////////// VALIDATION ///////////////

@@ -1,5 +1,4 @@
 const sharp = require('sharp');
-const logger = require('../utils/logger');
 
 const compressIcon = async (buff) => {
     let compressedIcon;

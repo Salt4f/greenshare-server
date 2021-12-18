@@ -1,16 +1,8 @@
-const { StatusCodes } = require('http-status-codes');
 const axios = require('axios');
-
 const logger = require('../utils/logger');
+const { BadRequestError } = require('../errors');
 
 require('dotenv').config();
-
-const {
-    BadRequestError,
-    UnauthenticatedError,
-    InternalServerError,
-    NotFoundError,
-} = require('../errors');
 
 const registerRequest = async (email, password, nickname) => {
     try {
