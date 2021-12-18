@@ -22,7 +22,6 @@ const createOfferService = async (userId, requestBody) => {
         terminateAt,
         location,
         icon,
-        photos,
         tags
     );
 
