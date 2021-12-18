@@ -159,6 +159,7 @@ function terminateAt(_terminateAt) {
 
     return { passed };
 }
+
 function tags(_tags) {
     let passed = false;
 
@@ -188,22 +189,6 @@ function icon(_icon) {
     return { passed };
 }
 
-function photos(_photos) {
-    let passed = false;
-
-    if (
-        _photos == undefined ||
-        !Array.isArray(_photos) ||
-        _photos.length == 0
-    ) {
-        return { passed };
-    }
-
-    passed = true;
-
-    return { passed };
-}
-
 function offer(
     _id,
     _name,
@@ -211,7 +196,6 @@ function offer(
     _terminateAt,
     _location,
     _icon,
-    _photos,
     _tags
 ) {
     let passed = false;
@@ -233,12 +217,6 @@ function offer(
     if (_terminateAt != undefined) {
         if (!terminateAt(_terminateAt).passed) {
             message = `Invalid terminateAt date`;
-            return { passed, message };
-        }
-    }
-    if (_photos != undefined) {
-        if (!photos(_photos).passed) {
-            message = `Invalid photos (not an array)`;
             return { passed, message };
         }
     }
