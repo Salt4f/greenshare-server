@@ -364,7 +364,6 @@ module.exports = {
     description,
     terminateAt,
     tags,
-    photos,
     icon,
     register,
     login,
