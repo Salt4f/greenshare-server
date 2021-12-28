@@ -98,4 +98,25 @@ const requestOwnerAuth = async (req, res, next) => {
     }
 };
 
-module.exports = { authenticateUser, offerOwnerAuth, requestOwnerAuth };
+const headersCheck = async (req, res, next) => {
+    logger.log(`Checking if request has headers...`, 1);
+    try {
+        if (req.get('id')) {
+            logger.log(`Request has headers`, 1);
+            await authenticateUser(req, res, next);
+        } else {
+            logger.log(`Request doesn't have headers`, 1);
+            next();
+        }
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+module.exports = {
+    authenticateUser,
+    offerOwnerAuth,
+    requestOwnerAuth,
+    headersCheck,
+};

@@ -6,6 +6,7 @@ const {
     authenticateUser,
     offerOwnerAuth,
     requestOwnerAuth,
+    headersCheck,
 } = require('../middlewares/authentication');
 
 // controller
@@ -31,7 +32,7 @@ const {
 router
     .route('/offers')
     .post(authenticateUser, createOffer)
-    .get(getOffersByQuery);
+    .get(headersCheck, getOffersByQuery);
 router
     .route('/offers/:offerId')
     .put(authenticateUser, offerOwnerAuth, editOffer)
@@ -61,7 +62,7 @@ router
 router
     .route('/requests')
     .post(authenticateUser, createRequest)
-    .get(getRequestsByQuery);
+    .get(headersCheck, getRequestsByQuery);
 
 router
     .route('/requests/:requestId')
