@@ -433,46 +433,6 @@ const rejectOfferService = async (requestId, offerId) => {
     return { status, infoMessage };
 };
 
-const completeOfferService = async (requestId, offerId, valoration) => {
-    let status, infoMessage;
-
-    const acceptedPost = await db.acceptedPosts.findOne({
-        where: {
-            requestId: requestId,
-        },
-    });
-    logger.log(`Checking if AcceptedPost is valid...`, 1);
-    if (acceptedPost === null) {
-        throw new BadRequestError(`Not accepted yet`);
-    }
-    const [completedPost, created] = await db.completedPosts.findOrCreate({
-        where: {
-            acceptedPostId: acceptedPost.id,
-        },
-        defaults: {
-            acceptedPostId: acceptedPost.id,
-        },
-    });
-    if (!created) {
-        throw new BadRequestError(`This post is already completed`);
-    }
-
-    if (valoration) {
-        logger.log(`Adding valoration to completedPost`, 1);
-        await completedPost.update({ valoration: valoration });
-        completedPost.save();
-        logger.log(`Added valoration to completedPost`, 1);
-    }
-
-    logger.log(
-        `Created completedPost, Offer with id: ${offerId} confirmed transaction`,
-        1
-    );
-    status = StatusCodes.OK;
-    infoMessage = `Offer with id: ${offerId} confirmed transaction`;
-    return { status, infoMessage };
-};
-
 module.exports = {
     createRequestService,
     editRequestService,
@@ -481,5 +441,4 @@ module.exports = {
     requestOfferService,
     acceptOfferService,
     rejectOfferService,
-    completeOfferService,
 };

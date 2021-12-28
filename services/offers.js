@@ -554,6 +554,11 @@ const rejectRequestService = async (offerId, requestId) => {
 const completeRequestService = async (requestId, offerId, valoration) => {
     let status, infoMessage;
 
+    if (!valoration) {
+        logger.log(`Valoration missing`, 1);
+        throw new BadRequestError(`Valoration missing`);
+    }
+
     const acceptedPost = await db.acceptedPosts.findOne({
         where: {
             offerId: offerId,
@@ -574,12 +579,12 @@ const completeRequestService = async (requestId, offerId, valoration) => {
     if (!created) {
         throw new BadRequestError(`This post is already completed`);
     }
-    if (valoration) {
-        logger.log(`Adding valoration to completedPost`, 1);
-        await completedPost.update({ valoration: valoration });
-        completedPost.save();
-        logger.log(`Added valoration to completedPost`, 1);
-    }
+
+    logger.log(`Adding valoration to completedPost`, 1);
+    await completedPost.update({ valoration: valoration });
+    completedPost.save();
+    logger.log(`Added valoration to completedPost`, 1);
+
     logger.log('Created completedPost', 1);
     status = StatusCodes.OK;
     infoMessage = `Request with id: ${requestId} confirmed transaction`;
