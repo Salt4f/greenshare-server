@@ -8,6 +8,7 @@ const db = require('../db/connect');
 const { StatusCodes } = require('http-status-codes');
 const { postsValidation } = require('../utils/posts-validation');
 const { BadRequestError, NotFoundError } = require('../errors');
+const { Op } = require('sequelize');
 
 const createOfferService = async (userId, requestBody) => {
     const { name, description, terminateAt, location, icon, photos, tags } =
@@ -286,8 +287,9 @@ const getOfferByIdService = async (offerId) => {
     return { status, infoMessage };
 };
 
-const getOffersByQueryService = async (requestQuery) => {
+const getOffersByQueryService = async (requestQuery, userId) => {
     const { location, owner, quantity } = requestQuery;
+    const { q } = requestQuery;
     let { tags, distance } = requestQuery;
     let tagsArray = [];
     let whereObject = {
@@ -303,8 +305,15 @@ const getOffersByQueryService = async (requestQuery) => {
         whereObject.ownerId = owner;
     }
 
+    if (q) {
+        logger.log(`This is a search request, q = ${q}`, 1);
+        whereObject.name = {
+            [Op.substring]: q,
+        };
+    }
+
     logger.log(
-        `Query params are: location: ${location}, distance: ${distance}, tags: ${tagsArray}, owner: ${owner}, quantity: ${quantity}`,
+        `Query params are: location: ${location}, distance: ${distance}, tags: ${tagsArray}, owner: ${owner}, quantity: ${quantity}, q: ${q}`,
         1
     );
 
@@ -333,6 +342,13 @@ const getOffersByQueryService = async (requestQuery) => {
     let numTags = tagsArray.length;
     logger.log(`Checking tags...`, 1);
     for (const offer of offers) {
+        if (userId && offer.ownerId == userId) {
+            logger.log(
+                `Excluding current Offer because it belongs to request user`,
+                1
+            );
+            continue;
+        }
         let count = 0;
         for (const tag of offer.tags) {
             for (const tagQuery of tagsArray) {
@@ -554,6 +570,11 @@ const rejectRequestService = async (offerId, requestId) => {
 const completeRequestService = async (requestId, offerId, valoration) => {
     let status, infoMessage;
 
+    if (!valoration) {
+        logger.log(`Valoration missing`, 1);
+        throw new BadRequestError(`Valoration missing`);
+    }
+
     const acceptedPost = await db.acceptedPosts.findOne({
         where: {
             offerId: offerId,
@@ -574,12 +595,12 @@ const completeRequestService = async (requestId, offerId, valoration) => {
     if (!created) {
         throw new BadRequestError(`This post is already completed`);
     }
-    if (valoration) {
-        logger.log(`Adding valoration to completedPost`, 1);
-        await completedPost.update({ valoration: valoration });
-        completedPost.save();
-        logger.log(`Added valoration to completedPost`, 1);
-    }
+
+    logger.log(`Adding valoration to completedPost`, 1);
+    await completedPost.update({ valoration: valoration });
+    completedPost.save();
+    logger.log(`Added valoration to completedPost`, 1);
+
     logger.log('Created completedPost', 1);
     status = StatusCodes.OK;
     infoMessage = `Request with id: ${requestId} confirmed transaction`;

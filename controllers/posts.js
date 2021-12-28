@@ -19,7 +19,6 @@ const {
     requestOfferService,
     acceptOfferService,
     rejectOfferService,
-    completeOfferService,
 } = require('../services/requests');
 
 const createOffer = async (req, res, next) => {
@@ -113,8 +112,10 @@ const getRequestById = async (req, res, next) => {
 const getOffersByQuery = async (req, res, next) => {
     logger.log(`Received getOffersByQuery request`, 1);
     try {
+        const userId = req.get('id');
         const { status, infoMessage } = await getOffersByQueryService(
-            req.query
+            req.query,
+            userId
         );
         res.status(status).json(infoMessage);
     } catch (error) {
@@ -126,8 +127,10 @@ const getOffersByQuery = async (req, res, next) => {
 const getRequestsByQuery = async (req, res, next) => {
     logger.log(`Received getRequestsByQuery request`, 1);
     try {
+        const userId = req.get('id');
         const { status, infoMessage } = await getRequestsByQueryService(
-            req.query
+            req.query,
+            userId
         );
         res.status(status).json(infoMessage);
     } catch (error) {
@@ -236,22 +239,6 @@ const rejectOffer = async (req, res, next) => {
     }
 };
 
-const completeOffer = async (req, res, next) => {
-    logger.log('Received completeOffer request...', 1);
-    try {
-        const { valoration } = req.body;
-        const { status, infoMessage } = await completeOfferService(
-            req.params.requestId,
-            req.params.offerId,
-            valoration
-        );
-        res.status(status).json(infoMessage);
-    } catch (error) {
-        logger.log(error.message, 0);
-        next(error);
-    }
-};
-
 module.exports = {
     createOffer,
     createRequest,
@@ -268,5 +255,4 @@ module.exports = {
     offerRequest,
     acceptOffer,
     rejectOffer,
-    completeOffer,
 };
