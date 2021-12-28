@@ -104,9 +104,45 @@ const getUserRequests = async (userId) => {
     return { status, infoMessage };
 };
 
+const getUserValorationsService = async (userId) => {
+    let status, infoMessage;
+    let valorationsArray = [];
+
+    const completedPosts = await db.completedPosts.findAll({
+        attributes: ['acceptedPostId', 'valoration'],
+    });
+
+    for (const completedPost of completedPosts) {
+        const acceptedPost = await db.acceptedPosts.findOne({
+            where: { id: completedPost.acceptedPostId },
+        });
+        const offer = await db.offers.findOne({
+            where: { id: acceptedPost.dataValues.offerId },
+        });
+        console.log(offer.dataValues.ownerId);
+        if (offer.dataValues.ownerId == userId) {
+            valorationsArray.push(completedPost.valoration);
+        }
+    }
+
+    if (valorationsArray.length === 0) {
+        status = StatusCodes.OK;
+        infoMessage = `User with id ${userId} hasn't been rated yet`;
+        return { status, infoMessage };
+    }
+
+    const sum = valorationsArray.reduce(add, 0) / valorationsArray.length;
+    logger.log(`Average valoration of user ${userId} is ${sum}`, 1);
+
+    status = StatusCodes.OK;
+    infoMessage = sum;
+    return { status, infoMessage };
+};
+
 module.exports = {
     getUserAllInfo,
     getUserNickname,
     getUserOffers,
     getUserRequests,
+    getUserValorationsService,
 };
