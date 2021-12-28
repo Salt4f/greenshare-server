@@ -6,6 +6,7 @@ const db = require('../db/connect');
 const { StatusCodes } = require('http-status-codes');
 const { postsValidation } = require('../utils/posts-validation');
 const { BadRequestError, NotFoundError } = require('../errors');
+const { Op } = require('sequelize');
 
 const createRequestService = async (userId, requestBody) => {
     const { name, description, terminateAt, location, tags } = requestBody;
@@ -191,7 +192,7 @@ const getRequestByIdService = async (requestId) => {
 };
 
 const getRequestsByQueryService = async (requestQuery) => {
-    const { location, owner, quantity } = requestQuery;
+    const { location, owner, quantity, q } = requestQuery;
     let { tags, distance } = requestQuery;
     let tagsArray = [];
     let whereObject = {
@@ -207,8 +208,15 @@ const getRequestsByQueryService = async (requestQuery) => {
         whereObject.ownerId = owner;
     }
 
+    if (q) {
+        logger.log(`This is a search request, q = ${q}`, 1);
+        whereObject.name = {
+            [Op.substring]: q,
+        };
+    }
+
     logger.log(
-        `Query params are: location: ${location}, distance: ${distance}, tags: ${tagsArray}, owner: ${owner}, quantity: ${quantity}`,
+        `Query params are: location: ${location}, distance: ${distance}, tags: ${tagsArray}, owner: ${owner}, quantity: ${quantity}, q: ${q}`,
         1
     );
 
