@@ -25,9 +25,9 @@ const {
     offerRequest,
     acceptOffer,
     rejectOffer,
-    completeOffer,
 } = require('../controllers/posts');
 
+// OFFERS
 router
     .route('/offers')
     .post(authenticateUser, createOffer)
@@ -37,43 +37,50 @@ router
     .put(authenticateUser, offerOwnerAuth, editOffer)
     .get(getOfferById);
 
-// REQUEST AN OFFER FROM A REQUEST
+// A Request is requesting to an Offer
 router
     .route('/offers/:offerId/request/:requestId')
     .post(authenticateUser, requestOwnerAuth, requestOffer);
-// ACCEPT A REQUEST OF PENDINGREQUESTS FROM AN OFFER
+
+// An Offer accepts a Request from its pendingRequests
 router
     .route('/offers/:offerId/request/:requestId/accept')
     .post(authenticateUser, offerOwnerAuth, acceptRequest);
-// REJECT A REQUEST FROM AN OFFER
+
+// An Offer rejects a Request from its pendingRequests
 router
     .route('/offers/:offerId/request/:requestId/reject')
     .post(authenticateUser, offerOwnerAuth, rejectRequest);
-// CONFIRM END OF TRANSACTION FROM A REQUEST
+
+// A Request confirms end of transaction (completed)
 router
     .route('/offers/:offerId/request/:requestId/completed')
     .post(authenticateUser, requestOwnerAuth, completeRequest);
 
+// REQUESTS
 router
     .route('/requests')
     .post(authenticateUser, createRequest)
     .get(getRequestsByQuery);
+
 router
     .route('/requests/:requestId')
     .put(authenticateUser, requestOwnerAuth, editRequest)
     .get(getRequestById);
-// OFFER TO A REQUEST FROM AN OFFER
+
+// An Offer is offering to a Request
 router
     .route('/requests/:requestId/offer/:offerId')
     .post(authenticateUser, offerOwnerAuth, offerRequest);
+
+// Accept an Offer of pendingOffers from a Request
 router
     .route('/requests/:requestId/offer/:offerId/accept')
     .post(authenticateUser, requestOwnerAuth, acceptOffer);
+
+// A Request rejects an Offer from its pendingOffers
 router
     .route('/requests/:requestId/offer/:offerId/reject')
     .post(authenticateUser, requestOwnerAuth, rejectOffer);
-router
-    .route('/requests/:requestId/offer/:offerId/completed')
-    .post(authenticateUser, offerOwnerAuth, completeOffer);
 
 module.exports = router;
