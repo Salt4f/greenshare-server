@@ -191,7 +191,7 @@ const getRequestByIdService = async (requestId) => {
     return { status, infoMessage };
 };
 
-const getRequestsByQueryService = async (requestQuery) => {
+const getRequestsByQueryService = async (requestQuery, userId) => {
     const { location, owner, quantity, q } = requestQuery;
     let { tags, distance } = requestQuery;
     let tagsArray = [];
@@ -241,6 +241,13 @@ const getRequestsByQueryService = async (requestQuery) => {
     let numTags = tagsArray.length;
     logger.log(`Checking tags...`, 1);
     for (const request of requests) {
+        if (userId && request.ownerId == userId) {
+            logger.log(
+                `Excluding current Request because it belongs to request user`,
+                1
+            );
+            continue;
+        }
         let count = 0;
         for (const tag of request.tags) {
             for (const tagQuery of tagsArray) {

@@ -287,7 +287,7 @@ const getOfferByIdService = async (offerId) => {
     return { status, infoMessage };
 };
 
-const getOffersByQueryService = async (requestQuery) => {
+const getOffersByQueryService = async (requestQuery, userId) => {
     const { location, owner, quantity } = requestQuery;
     const { q } = requestQuery;
     let { tags, distance } = requestQuery;
@@ -342,6 +342,13 @@ const getOffersByQueryService = async (requestQuery) => {
     let numTags = tagsArray.length;
     logger.log(`Checking tags...`, 1);
     for (const offer of offers) {
+        if (userId && offer.ownerId == userId) {
+            logger.log(
+                `Excluding current Offer because it belongs to request user`,
+                1
+            );
+            continue;
+        }
         let count = 0;
         for (const tag of offer.tags) {
             for (const tagQuery of tagsArray) {
