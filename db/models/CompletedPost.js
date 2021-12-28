@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
             },
             valoration: {
-                type: DataTypes.STRING,
+                type: DataTypes.INTEGER,
             },
             points: {
                 type: DataTypes.INTEGER,
