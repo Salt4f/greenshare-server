@@ -1,5 +1,5 @@
 const { StatusCodes } = require('http-status-codes');
-const { tokenValidationRequest } = require('../requests/stubs/user-service');
+const { tokenValidationRequest } = require('../requests/user-service');
 const logger = require('../utils/logger');
 const db = require('../db/connect');
 const { UnauthenticatedError, NotFoundError } = require('../errors');
