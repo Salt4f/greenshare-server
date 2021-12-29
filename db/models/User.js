@@ -32,6 +32,14 @@ module.exports = (sequelize, DataTypes) => {
             aboutMe: {
                 type: DataTypes.STRING,
             },
+            currentEcoPoints: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
+            },
+            totalEcoPoints: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
+            },
             banned: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: false,
