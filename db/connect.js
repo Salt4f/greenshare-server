@@ -39,6 +39,7 @@ db.acceptedPosts = require('./models/AcceptedPost')(sequelize, Sequelize);
 db.completedPosts = require('./models/CompletedPost')(sequelize, Sequelize);
 db.tags = require('./models/Tag')(sequelize, Sequelize);
 db.photos = require('./models/Photo')(sequelize, Sequelize);
+db.posts = require('./models/Post')(sequelize, Sequelize);
 
 // Relations
 db.offers.belongsTo(db.users, { foreignKey: 'ownerId' });

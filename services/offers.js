@@ -37,8 +37,12 @@ const createOfferService = async (userId, requestBody) => {
     const compressedIcon = await compressIcon(buff);
     logger.log('Compressed icon...', 1);
 
+    logger.log(`Creating Post...`, 1);
+    const post = await db.posts.create({});
+
     logger.log('Creating offer...', 1);
     const offer = await db.offers.create({
+        id: post.id,
         name,
         description,
         terminateAt,

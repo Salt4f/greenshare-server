@@ -4,6 +4,7 @@ const app = express();
 const auth = require('./routes/auth.js');
 const posts = require('./routes/posts');
 const user = require('./routes/user');
+const admin = require('./routes/admin');
 
 const logger = require('./utils/logger');
 
@@ -19,6 +20,7 @@ app.use(express.json({ limit: '200MB' }));
 app.use('/api/auth', auth);
 app.use('/api/posts', posts);
 app.use('/api/user', user);
+app.use('/api/admin', admin);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
