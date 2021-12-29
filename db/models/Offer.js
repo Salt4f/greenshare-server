@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
             // Model attributes are defined here
             id: {
                 type: DataTypes.INTEGER,
-                autoIncrement: true,
                 primaryKey: true,
             },
             active: {
