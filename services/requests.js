@@ -26,8 +26,13 @@ const createRequestService = async (userId, requestBody) => {
         throw new BadRequestError(message);
     }
     logger.log(message, 1);
+
+    logger.log('Creating Post...', 1);
+    const post = await db.posts.create({});
+
     logger.log('Creating request...', 1);
     const request = await db.requests.create({
+        id: post.id,
         name,
         description,
         terminateAt,
