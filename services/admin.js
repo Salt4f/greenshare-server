@@ -45,7 +45,8 @@ const reportService = async (itemId, type, reporterId, message) => {
     logger.log(`Successfully validated report`, 1);
     logger.log(`Creating report...`, 1);
     logger.log(
-        `Report info: itemId ${itemId}, type ${type}, reporterId ${reporterId}, message ${message}`
+        `Report info: itemId ${itemId}, type ${type}, reporterId ${reporterId}, message ${message}`,
+        1
     );
     const report = await db.reports.create({
         type,
@@ -57,25 +58,6 @@ const reportService = async (itemId, type, reporterId, message) => {
     status = StatusCodes.CREATED;
     infoMessage = { id: report.id, createdAt: report.createdAt };
     return { status, infoMessage };
-};
-
-const adminLoginService = async (requestBody) => {
-    let status, infoMessage;
-    const { email, password } = requestBody;
-
-    if (
-        email === process.env.ADMIN_EMAIL &&
-        password === process.env.ADMIN_PASSWORD
-    ) {
-        logger.log(`Admin successfully logged in`, 1);
-        status = StatusCodes.OK;
-        infoMessage = {
-            id: process.env.ADMIN_ID,
-            token: process.env.ADMIN_TOKEN,
-        };
-        return { status, infoMessage };
-    }
-    throw new ForbidenError(`Forbidden access`);
 };
 
 const getAllReportsService = async () => {
@@ -94,4 +76,63 @@ const getAllReportsService = async () => {
     return { status, infoMessage };
 };
 
-module.exports = { reportService, adminLoginService, getAllReportsService };
+const deactivatePostService = async (postId) => {
+    let status, infoMessage;
+
+    logger.log(`Current report type is Post`, 1);
+    const post = await db.posts.findOne({ where: { id: postId } });
+    console.log(post.type);
+    if (post.type === 'offer') {
+        logger.log(`Deactivating Offer with id: ${post.id}...`, 1);
+        const offer = await db.offers.findOne({
+            where: { id: post.id, active: true },
+        });
+
+        if (!offer) {
+            throw new BadRequestError(
+                `Offer with id: ${offer.id} is already deactivated`
+            );
+        }
+
+        await offer.update({ active: false });
+        offer.save();
+    } else {
+        logger.log(`Deactivating Request with id: ${post.id}...`, 1);
+        const request = await db.requests.findOne({
+            where: { id: post.id, active: true },
+        });
+
+        if (!request) {
+            throw new BadRequestError(
+                `Request with id: ${request.id} is already deactivated`
+            );
+        }
+
+        await request.update({ active: false });
+        request.save();
+    }
+
+    status = StatusCodes.OK;
+    infoMessage = `Successfully deactivated Post with id: ${post.id}, type: ${post.type}`;
+    return { status, infoMessage };
+};
+
+const solveReportService = async (reportId) => {
+    let status, infoMessage;
+
+    logger.log(`Finding report...`, 1);
+    const report = await db.reports.findOne({ where: { id: reportId } });
+    logger.log(`Updating Report with id: ${report.id} as solved...`, 1);
+    await report.update({ solved: true });
+
+    status = StatusCodes.OK;
+    infoMessage = `Report with id: ${report.id} solved`;
+    return { status, infoMessage };
+};
+
+module.exports = {
+    reportService,
+    getAllReportsService,
+    solveReportService,
+    deactivatePostService,
+};
