@@ -9,6 +9,9 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 primaryKey: true,
             },
+            type: {
+                type: DataTypes.STRING,
+            },
         },
         {
             // Other model options go here
