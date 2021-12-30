@@ -1,6 +1,6 @@
 require('dotenv').config;
 const { StatusCodes } = require('http-status-codes');
-const { tokenValidationRequest } = require('../requests/user-service');
+const { tokenValidationRequest } = require('../requests/stubs/user-service');
 const logger = require('../utils/logger');
 const db = require('../db/connect');
 const {
@@ -13,33 +13,43 @@ const authenticateUser = async (req, res, next) => {
     logger.log(`Starting authenticateUser...`, 1);
     logger.log(`Validating user...`, 1);
     try {
-        logger.log(`Checking if user exists in back-end database...`, 1);
-        const user = await db.users.findOne({ where: { id: req.get('id') } });
-        if (user != null) {
-            logger.log(
-                `Got user, sending request to tokenValidation of UserService...`,
-                1
-            );
-            const response = await tokenValidationRequest(
-                req.get('id'),
-                req.get('token')
-            );
-            if (response.status == StatusCodes.CREATED) {
+        if (
+            req.get('id') === process.env.ADMIN_ID &&
+            req.get('token') === process.env.ADMIN_TOKEN
+        ) {
+            logger.log(`Successfully authenticated Admin`, 1);
+            next();
+        } else {
+            logger.log(`Checking if user exists in back-end database...`, 1);
+            const user = await db.users.findOne({
+                where: { id: req.get('id') },
+            });
+            if (user != null) {
                 logger.log(
-                    `User successfuly validated, sending response...`,
+                    `Got user, sending request to tokenValidation of UserService...`,
                     1
                 );
+                const response = await tokenValidationRequest(
+                    req.get('id'),
+                    req.get('token')
+                );
+                if (response.status == StatusCodes.CREATED) {
+                    logger.log(
+                        `User successfuly validated, sending response...`,
+                        1
+                    );
 
-                next();
+                    next();
+                } else {
+                    throw new UnauthenticatedError(
+                        'Invalid token or id on UserService'
+                    );
+                }
             } else {
                 throw new UnauthenticatedError(
-                    'Invalid token or id on UserService'
+                    `No user with id: ${req.get('id')} in back-end`
                 );
             }
-        } else {
-            throw new UnauthenticatedError(
-                `No user with id: ${req.get('id')} in back-end`
-            );
         }
     } catch (error) {
         logger.log(error.message, 0);
@@ -55,19 +65,27 @@ const offerOwnerAuth = async (req, res, next) => {
 
         if (offer === null) {
             throw new NotFoundError(
-                `Offer with id ${offerId} not exists in back-end db`
+                `Offer with id ${offerId} does not exists in back-end db`
             );
         }
 
-        if (offer.dataValues.ownerId == req.get('id')) {
-            logger.log(`OfferOwnerAuth validated..`, 1);
+        if (
+            req.get('id') === process.env.ADMIN_ID &&
+            req.get('token') === process.env.ADMIN_TOKEN
+        ) {
+            logger.log(`Successfully authenticated Admin`, 1);
             next();
         } else {
-            throw new UnauthenticatedError(
-                `User with id: ${req.get(
-                    'id'
-                )} is trying to edit someone else's Offer`
-            );
+            if (offer.dataValues.ownerId == req.get('id')) {
+                logger.log(`OfferOwnerAuth validated..`, 1);
+                next();
+            } else {
+                throw new UnauthenticatedError(
+                    `User with id: ${req.get(
+                        'id'
+                    )} is trying to edit someone else's Offer`
+                );
+            }
         }
     } catch (error) {
         logger.log(error.message, 0);
@@ -79,23 +97,33 @@ const requestOwnerAuth = async (req, res, next) => {
     logger.log(`Validating requestOwnerAuth...`, 1);
     try {
         const requestId = req.params.requestId;
-        const request = await db.requests.findOne({ where: { id: requestId } });
+        const request = await db.requests.findOne({
+            where: { id: requestId },
+        });
 
         if (request === null) {
             throw new NotFoundError(
-                `Request with id ${requestId} not exists in back-end db`
+                `Request with id ${requestId} does not exists in back-end db`
             );
         }
 
-        if (request.dataValues.ownerId == req.get('id')) {
-            logger.log(`requestOwnerAuth validated..`, 1);
+        if (
+            req.get('id') === process.env.ADMIN_ID &&
+            req.get('token') === process.env.ADMIN_TOKEN
+        ) {
+            logger.log(`Successfully authenticated Admin`, 1);
             next();
         } else {
-            throw new UnauthenticatedError(
-                `User with id: ${req.get(
-                    'id'
-                )} is trying to edit someone else's Request`
-            );
+            if (request.dataValues.ownerId == req.get('id')) {
+                logger.log(`requestOwnerAuth validated..`, 1);
+                next();
+            } else {
+                throw new UnauthenticatedError(
+                    `User with id: ${req.get(
+                        'id'
+                    )} is trying to edit someone else's Request`
+                );
+            }
         }
     } catch (error) {
         logger.log(error.message, 0);
@@ -120,13 +148,12 @@ const headersCheck = async (req, res, next) => {
 };
 
 const authenticateAdmin = async (req, res, next) => {
-    logger.log(`Starting authenticateAdmin...`, 1);
     try {
         if (
             req.get('id') === process.env.ADMIN_ID &&
             req.get('token') === process.env.ADMIN_TOKEN
         ) {
-            logger.log(`Admin successfully validated`, 1);
+            logger.log(`Successfully authenticated Admin`, 1);
             next();
         } else {
             throw new ForbidenError(`Forbidden access`);

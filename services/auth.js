@@ -3,7 +3,7 @@ const {
     registerRequest,
     loginRequest,
     tokenValidationRequest,
-} = require('../requests/user-service');
+} = require('../requests/stubs/user-service');
 const db = require('../db/connect');
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
@@ -87,6 +87,19 @@ const loginService = async (requestBody) => {
     }
     logger.log(message, 1);
 
+    if (
+        email === process.env.ADMIN_EMAIL &&
+        password === process.env.ADMIN_PASSWORD
+    ) {
+        logger.log(`Admin successfully logged in`, 1);
+        status = StatusCodes.OK;
+        infoMessage = {
+            id: process.env.ADMIN_ID,
+            token: process.env.ADMIN_TOKEN,
+        };
+        return { status, infoMessage };
+    }
+
     logger.log('Checking if user exists in back-end db...', 1);
     const user = await db.users.findOne({ where: { email: email } });
     if (user == null) {
@@ -122,6 +135,13 @@ const tokenValidationService = async (id, token) => {
         throw new BadRequestError(message);
     }
     logger.log(message, 1);
+
+    if (id === process.env.ADMIN_ID && token === process.env.ADMIN_TOKEN) {
+        logger.log(`Admin successfully validated`, 1);
+        status = StatusCodes.OK;
+        infoMessage = `Admin successfully validated`;
+        return { status };
+    }
 
     logger.log('Checking if user exists in back-end db...', 1);
     const user = await db.users.findOne({ where: { id: id } });
