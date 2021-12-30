@@ -1,8 +1,13 @@
+require('dotenv').config;
 const { StatusCodes } = require('http-status-codes');
 const { tokenValidationRequest } = require('../requests/user-service');
 const logger = require('../utils/logger');
 const db = require('../db/connect');
-const { UnauthenticatedError, NotFoundError } = require('../errors');
+const {
+    UnauthenticatedError,
+    NotFoundError,
+    ForbidenError,
+} = require('../errors');
 
 const authenticateUser = async (req, res, next) => {
     logger.log(`Starting authenticateUser...`, 1);
@@ -114,9 +119,28 @@ const headersCheck = async (req, res, next) => {
     }
 };
 
+const authenticateAdmin = async (req, res, next) => {
+    logger.log(`Starting authenticateAdmin...`, 1);
+    try {
+        if (
+            req.get('id') === process.env.ADMIN_ID &&
+            req.get('token') === process.env.ADMIN_TOKEN
+        ) {
+            logger.log(`Admin successfully validated`, 1);
+            next();
+        } else {
+            throw new ForbidenError(`Forbidden access`);
+        }
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
 module.exports = {
     authenticateUser,
     offerOwnerAuth,
     requestOwnerAuth,
     headersCheck,
+    authenticateAdmin,
 };

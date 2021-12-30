@@ -1,12 +1,16 @@
 const { StatusCodes } = require('http-status-codes');
 const logger = require('../utils/logger');
-const { loginService, reportService } = require('../services/admin');
+const {
+    adminLoginService,
+    reportService,
+    getAllReportsService,
+} = require('../services/admin');
 const { BadRequestError } = require('../errors');
 
 const login = async (req, res, next) => {
     logger.log('Received login request', 1);
     try {
-        const { status, infoMessage } = await loginService(req.get('api-key'));
+        const { status, infoMessage } = await adminLoginService(req.body);
         res.status(status).json(infoMessage);
     } catch (error) {
         logger.log(error.message, 0);
@@ -39,4 +43,15 @@ const report = async (req, res, next) => {
     }
 };
 
-module.exports = { login, report };
+const getAllReports = async (req, res, next) => {
+    logger.log('Received getAllReports request', 1);
+    try {
+        const { status, infoMessage } = await getAllReportsService();
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+module.exports = { login, report, getAllReports };
