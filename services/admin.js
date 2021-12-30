@@ -1,3 +1,4 @@
+require('dotenv').config;
 const { StatusCodes } = require('http-status-codes');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
@@ -5,6 +6,7 @@ const {
     UnauthenticatedError,
     NotFoundError,
     BadRequestError,
+    ForbidenError,
 } = require('../errors');
 
 const reportService = async (itemId, type, reporterId, message) => {
@@ -57,4 +59,39 @@ const reportService = async (itemId, type, reporterId, message) => {
     return { status, infoMessage };
 };
 
-module.exports = { reportService };
+const adminLoginService = async (requestBody) => {
+    let status, infoMessage;
+    const { email, password } = requestBody;
+
+    if (
+        email === process.env.ADMIN_EMAIL &&
+        password === process.env.ADMIN_PASSWORD
+    ) {
+        logger.log(`Admin successfully logged in`, 1);
+        status = StatusCodes.OK;
+        infoMessage = {
+            id: process.env.ADMIN_ID,
+            token: process.env.ADMIN_TOKEN,
+        };
+        return { status, infoMessage };
+    }
+    throw new ForbidenError(`Forbidden access`);
+};
+
+const getAllReportsService = async () => {
+    let status, infoMessage;
+    logger.log(`Getting all reports...`, 1);
+    const reports = await db.reports.findAll({ where: { solved: false } });
+
+    if (!reports) {
+        status = StatusCodes.OK;
+        infoMessage = [];
+        return { status, infoMessage };
+    }
+
+    status = StatusCodes.OK;
+    infoMessage = reports;
+    return { status, infoMessage };
+};
+
+module.exports = { reportService, adminLoginService, getAllReportsService };
