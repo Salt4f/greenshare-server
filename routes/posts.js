@@ -28,6 +28,7 @@ const {
     rejectOffer,
 } = require('../controllers/posts');
 
+const { report } = require('../controllers/admin');
 // OFFERS
 router
     .route('/offers')
@@ -83,5 +84,8 @@ router
 router
     .route('/requests/:requestId/offer/:offerId/reject')
     .post(authenticateUser, requestOwnerAuth, rejectOffer);
+
+// REPORT
+router.route('/:postId/report').post(authenticateUser, report);
 
 module.exports = router;

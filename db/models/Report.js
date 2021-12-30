@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
-    const Post = sequelize.define(
+    const Report = sequelize.define(
         // modelName
-        'Posts',
+        'Reports',
         {
             // Model attributes are defined here
             id: {
@@ -11,6 +11,16 @@ module.exports = (sequelize, DataTypes) => {
             },
             type: {
                 type: DataTypes.STRING,
+                allowNull: false,
+            },
+            itemId: DataTypes.INTEGER,
+            reporterId: DataTypes.INTEGER,
+            message: {
+                type: DataTypes.STRING,
+            },
+            solved: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
             },
         },
         {
@@ -18,5 +28,5 @@ module.exports = (sequelize, DataTypes) => {
             timestamps: true,
         }
     );
-    return Post;
+    return Report;
 };

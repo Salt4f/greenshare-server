@@ -38,7 +38,9 @@ const createOfferService = async (userId, requestBody) => {
     logger.log('Compressed icon...', 1);
 
     logger.log(`Creating Post...`, 1);
-    const post = await db.posts.create({});
+    const post = await db.posts.create({
+        type: 'offer',
+    });
 
     logger.log('Creating offer...', 1);
     const offer = await db.offers.create({
