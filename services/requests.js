@@ -28,7 +28,9 @@ const createRequestService = async (userId, requestBody) => {
     logger.log(message, 1);
 
     logger.log('Creating Post...', 1);
-    const post = await db.posts.create({});
+    const post = await db.posts.create({
+        type: 'request',
+    });
 
     logger.log('Creating request...', 1);
     const request = await db.requests.create({

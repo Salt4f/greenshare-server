@@ -119,7 +119,6 @@ const getUserValorationsService = async (userId) => {
         const offer = await db.offers.findOne({
             where: { id: acceptedPost.dataValues.offerId },
         });
-        console.log(offer.dataValues.ownerId);
         if (offer.dataValues.ownerId == userId) {
             valorationsArray.push(completedPost.valoration);
         }
@@ -131,7 +130,8 @@ const getUserValorationsService = async (userId) => {
         return { status, infoMessage };
     }
 
-    const sum = valorationsArray.reduce(add, 0) / valorationsArray.length;
+    const sum =
+        valorationsArray.reduce((a, b) => a + b, 0) / valorationsArray.length;
     logger.log(`Average valoration of user ${userId} is ${sum}`, 1);
 
     status = StatusCodes.OK;
