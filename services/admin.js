@@ -81,7 +81,7 @@ const adminLoginService = async (requestBody) => {
 const getAllReportsService = async () => {
     let status, infoMessage;
     logger.log(`Getting all reports...`, 1);
-    const reports = await db.reports.findAll({});
+    const reports = await db.reports.findAll({ where: { solved: false } });
 
     if (!reports) {
         status = StatusCodes.OK;
