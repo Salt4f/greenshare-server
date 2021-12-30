@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const db = require('./db/connect');
 
 const auth = require('./routes/auth.js');
 const posts = require('./routes/posts');
@@ -29,9 +30,17 @@ const port = process.env.PORT || 13000;
 
 const start = async () => {
     try {
-        app.listen(port, () =>
-            console.log(`Server is listening on port ${port}...`)
-        );
+        app.listen(port, async () => {
+            const [admin, created] = await db.users.findOrCreate({
+                where: { id: process.env.ADMIN_ID },
+                defaults: {
+                    id: process.env.ADMIN_ID,
+                    email: process.env.ADMIN_EMAIL,
+                    nickname: 'admin',
+                },
+            });
+            console.log(`Server is listening on port ${port}...`);
+        });
     } catch (error) {
         logger.log(e.message, 0);
     }

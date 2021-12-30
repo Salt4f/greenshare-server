@@ -28,16 +28,23 @@ const {
     rejectOffer,
 } = require('../controllers/posts');
 
+const { deactivatePost } = require('../controllers/admin');
+
 const { report } = require('../controllers/admin');
 // OFFERS
 router
     .route('/offers')
     .post(authenticateUser, createOffer)
     .get(headersCheck, getOffersByQuery);
+
 router
     .route('/offers/:offerId')
     .put(authenticateUser, offerOwnerAuth, editOffer)
     .get(getOfferById);
+
+router
+    .route('/offers/:offerId/deactivate')
+    .post(authenticateUser, offerOwnerAuth, deactivatePost);
 
 // A Request is requesting to an Offer
 router
@@ -69,6 +76,10 @@ router
     .route('/requests/:requestId')
     .put(authenticateUser, requestOwnerAuth, editRequest)
     .get(getRequestById);
+
+router
+    .route('/requests/:requestId/deactivate')
+    .post(authenticateUser, requestOwnerAuth, deactivatePost);
 
 // An Offer is offering to a Request
 router

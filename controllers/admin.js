@@ -1,22 +1,12 @@
 const { StatusCodes } = require('http-status-codes');
 const logger = require('../utils/logger');
 const {
-    adminLoginService,
     reportService,
     getAllReportsService,
+    deactivatePostService,
+    solveReportService,
 } = require('../services/admin');
 const { BadRequestError } = require('../errors');
-
-const login = async (req, res, next) => {
-    logger.log('Received login request', 1);
-    try {
-        const { status, infoMessage } = await adminLoginService(req.body);
-        res.status(status).json(infoMessage);
-    } catch (error) {
-        logger.log(error.message, 0);
-        next(error);
-    }
-};
 
 const report = async (req, res, next) => {
     logger.log('Received report request', 1);
@@ -54,4 +44,31 @@ const getAllReports = async (req, res, next) => {
     }
 };
 
-module.exports = { login, report, getAllReports };
+const deactivatePost = async (req, res, next) => {
+    logger.log('Received deactivatePost request', 1);
+    try {
+        const postId = req.params.offerId || req.params.requestId;
+        console.log(postId);
+
+        const { status, infoMessage } = await deactivatePostService(postId);
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+const solveReport = async (req, res, next) => {
+    logger.log('Received solveReport request', 1);
+    try {
+        const { status, infoMessage } = await solveReportService(
+            req.params.reportId
+        );
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+module.exports = { report, getAllReports, deactivatePost, solveReport };
