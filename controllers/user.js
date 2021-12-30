@@ -12,15 +12,10 @@ const { BadRequestError } = require('../errors');
 
 const getUser = async (req, res, next) => {
     logger.log(`Received getUser request`, 1);
-    const id = req.get('id');
-    const token = req.get('token');
     try {
-        if (id != undefined && token != undefined) {
+        if (req.get('id') && req.get('token')) {
             logger.log(`Authenticating user info....`, 1);
-            const response = await tokenValidationService(id, token);
-            if (response.status != StatusCodes.OK) {
-                throw new BadRequestError('Invalid user');
-            }
+            await tokenValidationService(req.get('id'), req.get('token'));
             logger.log(`User authenticated, checking id's....`, 1);
             const { status, infoMessage } = await getUserAllInfo(
                 id,
