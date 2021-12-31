@@ -1,7 +1,8 @@
 require('dotenv').config;
 const { StatusCodes } = require('http-status-codes');
-const { tokenValidationRequest } = require('../requests/user-service');
+const { tokenValidationRequest } = require('../requests/stubs/user-service');
 const logger = require('../utils/logger');
+const { checkBannedUser } = require('../utils/banned');
 const db = require('../db/connect');
 const {
     UnauthenticatedError,
@@ -164,10 +165,27 @@ const authenticateAdmin = async (req, res, next) => {
     }
 };
 
+const bannedCheck = async (req, res, next) => {
+    try {
+        if (req.get('id')) {
+            if (await checkBannedUser(req.get('id')))
+                throw new ForbidenError(`User banned`);
+        } else if (req.body.email) {
+            if (await checkBannedUser(req.body.email))
+                throw new ForbidenError(`User banned`);
+        }
+        next();
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
 module.exports = {
     authenticateUser,
     offerOwnerAuth,
     requestOwnerAuth,
     headersCheck,
     authenticateAdmin,
+    bannedCheck,
 };
