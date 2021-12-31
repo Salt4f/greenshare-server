@@ -2,6 +2,7 @@ require('dotenv').config;
 const { StatusCodes } = require('http-status-codes');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
+const { addUser, checkUser } = require('../utils/banned');
 const {
     UnauthenticatedError,
     NotFoundError,
@@ -130,9 +131,31 @@ const solveReportService = async (reportId) => {
     return { status, infoMessage };
 };
 
+const banUserService = async (userId) => {
+    let status, infoMessage;
+
+    const user = await db.users.findOne({ where: { id: userId } });
+    if (!user)
+        throw new NotFoundError(`User with id ${userId} does not exist in db`);
+
+    if (user.banned === true)
+        throw new BadRequestError(`User with id ${userId} is already banned`);
+
+    logger.log(`Banning user...`, 1);
+    await user.update({ banned: true });
+    logger.log(`Successfully banned user with id: ${userId}`, 1);
+
+    await addUser(userId, user.email);
+
+    status = StatusCodes.OK;
+    infoMessage = `Successfully banned user with id: ${userId}`;
+    return { status, infoMessage };
+};
+
 module.exports = {
     reportService,
     getAllReportsService,
     solveReportService,
     deactivatePostService,
+    banUserService,
 };
