@@ -141,11 +141,55 @@ const banUserService = async (userId) => {
     if (user.banned === true)
         throw new BadRequestError(`User with id ${userId} is already banned`);
 
+    logger.log(`Deactivating Offers...`, 1);
+    const offers = await db.offers.findAll({ where: { ownerId: userId } });
+    for (const offer of offers) {
+        if (offer.status === 'pending') {
+            let request = await db.requests.findOne({
+                where: { id: offer.RequestId },
+                include: [
+                    {
+                        model: db.offers,
+                        attributes: ['id'],
+                    },
+                ],
+            });
+            const newPendingOffers = request.dataValues.Offers.filter(
+                (e) => e.id != offer.id
+            );
+
+            await request.setOffers(newPendingOffers);
+        }
+        await offer.update({ active: false });
+    }
+    logger.log(`Offers deactivated...`, 1);
+
+    logger.log(`Deactivating Requests...`, 1);
+    const requests = await db.requests.findAll({ where: { ownerId: userId } });
+    for (const request of requests) {
+        if (request.status === 'pending') {
+            let offer = await db.offers.findOne({
+                where: { id: request.OfferId },
+                include: [
+                    {
+                        model: db.requests,
+                        attributes: ['id'],
+                    },
+                ],
+            });
+            const newPendingRequests = offer.dataValues.Requests.filter(
+                (e) => e.id != request.id
+            );
+
+            await offer.setRequests(newPendingRequests);
+        }
+        await request.update({ active: false });
+    }
+    logger.log(`Requests deactivated...`, 1);
+
     logger.log(`Banning user...`, 1);
     await user.update({ banned: true });
     logger.log(`Successfully banned user with id: ${userId}`, 1);
-
-    await addUser(userId, user.email);
 
     status = StatusCodes.OK;
     infoMessage = `Successfully banned user with id: ${userId}`;
