@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { StatusCodes } = require('http-status-codes');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
@@ -6,7 +7,10 @@ const { UnauthenticatedError, NotFoundError } = require('../errors');
 const getUserAllInfo = async (requestUserId, paramsUserId) => {
     let user, status, infoMessage;
 
-    if (requestUserId == paramsUserId) {
+    if (
+        requestUserId === paramsUserId ||
+        requestUserId === process.env.ADMIN_ID
+    ) {
         user = await db.users.findOne({
             where: {
                 id: paramsUserId,
@@ -17,6 +21,12 @@ const getUserAllInfo = async (requestUserId, paramsUserId) => {
             `User with id ${requestUserId} is trying to get someone else's info`
         );
     }
+
+    logger.log(`Calculating user average valoration..`, 1);
+    const valoration = await getUserValorationsService(paramsUserId);
+    user.dataValues.valoration = valoration;
+    logger.log(`Got user average valoration..`, 1);
+
     logger.log(`Got user with id: ${paramsUserId}, sending response...`, 1);
     infoMessage = user;
     status = StatusCodes.OK;
@@ -105,7 +115,6 @@ const getUserRequests = async (userId) => {
 };
 
 const getUserValorationsService = async (userId) => {
-    let status, infoMessage;
     let valorationsArray = [];
 
     const completedPosts = await db.completedPosts.findAll({
@@ -123,20 +132,16 @@ const getUserValorationsService = async (userId) => {
             valorationsArray.push(completedPost.valoration);
         }
     }
+    let sum;
 
     if (valorationsArray.length === 0) {
-        status = StatusCodes.OK;
-        infoMessage = `User with id ${userId} hasn't been rated yet`;
-        return { status, infoMessage };
+        sum = 0;
+    } else {
+        valorationsArray.reduce((a, b) => a + b, 0) / valorationsArray.length;
+        logger.log(`Average valoration of user ${userId} is ${sum}`, 1);
     }
 
-    const sum =
-        valorationsArray.reduce((a, b) => a + b, 0) / valorationsArray.length;
-    logger.log(`Average valoration of user ${userId} is ${sum}`, 1);
-
-    status = StatusCodes.OK;
-    infoMessage = sum;
-    return { status, infoMessage };
+    return sum;
 };
 
 module.exports = {
@@ -144,5 +149,4 @@ module.exports = {
     getUserNickname,
     getUserOffers,
     getUserRequests,
-    getUserValorationsService,
 };

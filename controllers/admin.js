@@ -5,6 +5,7 @@ const {
     getAllReportsService,
     deactivatePostService,
     solveReportService,
+    banUserService,
 } = require('../services/admin');
 const { BadRequestError } = require('../errors');
 
@@ -71,4 +72,21 @@ const solveReport = async (req, res, next) => {
     }
 };
 
-module.exports = { report, getAllReports, deactivatePost, solveReport };
+const banUser = async (req, res, next) => {
+    logger.log('Received banUser request', 1);
+    try {
+        const { status, infoMessage } = await banUserService(req.params.userId);
+        res.status(status).json(infoMessage);
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+module.exports = {
+    report,
+    getAllReports,
+    deactivatePost,
+    solveReport,
+    banUser,
+};

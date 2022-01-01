@@ -5,7 +5,6 @@ const {
     getUserNickname,
     getUserOffers,
     getUserRequests,
-    getUserValorationsService,
 } = require('../services/user');
 const { tokenValidationService } = require('../services/auth');
 const { BadRequestError } = require('../errors');
@@ -18,7 +17,7 @@ const getUser = async (req, res, next) => {
             await tokenValidationService(req.get('id'), req.get('token'));
             logger.log(`User authenticated, checking id's....`, 1);
             const { status, infoMessage } = await getUserAllInfo(
-                id,
+                req.get('id'),
                 req.params.userId
             );
             res.status(status).json(infoMessage);
@@ -55,17 +54,4 @@ const getUserPosts = async (req, res, next) => {
     }
 };
 
-const getUserValorations = async (req, res, next) => {
-    logger.log(`Received getUserValorations request`, 1);
-    try {
-        const { status, infoMessage } = await getUserValorationsService(
-            req.params.userId
-        );
-        res.status(status).json(infoMessage);
-    } catch (error) {
-        logger.log(error.message, 0);
-        next(error);
-    }
-};
-
-module.exports = { getUser, getUserPosts, getUserValorations };
+module.exports = { getUser, getUserPosts };

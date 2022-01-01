@@ -164,10 +164,32 @@ const authenticateAdmin = async (req, res, next) => {
     }
 };
 
+const bannedCheck = async (req, res, next) => {
+    try {
+        if (req.get('id')) {
+            const user = await db.users.findOne({
+                where: { id: req.get('id') },
+            });
+            if (user.banned === true) throw new ForbidenError(`User banned`);
+        }
+        if (req.body.email) {
+            const user = await db.users.findOne({
+                where: { email: req.body.email },
+            });
+            if (user.banned === true) throw new ForbidenError(`User banned`);
+        }
+        next();
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
 module.exports = {
     authenticateUser,
     offerOwnerAuth,
     requestOwnerAuth,
     headersCheck,
     authenticateAdmin,
+    bannedCheck,
 };

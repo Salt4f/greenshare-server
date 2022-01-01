@@ -9,6 +9,7 @@ const admin = require('./routes/admin');
 
 const logger = require('./utils/logger');
 
+const { bannedCheck } = require('./middlewares/authentication');
 const notFoundMiddleware = require('./middlewares/not-found');
 const errorHandlerMiddleware = require('./middlewares/error-handler');
 
@@ -18,9 +19,9 @@ require('dotenv').config();
 app.use(express.json({ limit: '200MB' }));
 
 // Routes
-app.use('/api/auth', auth);
-app.use('/api/posts', posts);
-app.use('/api/user', user);
+app.use('/api/auth', bannedCheck, auth);
+app.use('/api/posts', bannedCheck, posts);
+app.use('/api/user', bannedCheck, user);
 app.use('/api/admin', admin);
 
 app.use(notFoundMiddleware);
@@ -39,6 +40,7 @@ const start = async () => {
                     nickname: 'admin',
                 },
             });
+
             console.log(`Server is listening on port ${port}...`);
         });
     } catch (error) {
