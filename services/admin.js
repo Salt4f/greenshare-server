@@ -2,7 +2,6 @@ require('dotenv').config;
 const { StatusCodes } = require('http-status-codes');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
-const { addUser, checkUser } = require('../utils/banned');
 const {
     UnauthenticatedError,
     NotFoundError,
