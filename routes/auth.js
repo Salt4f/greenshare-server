@@ -7,7 +7,7 @@ const { login, register, tokenValidation } = require('../controllers/auth');
 const { bannedCheck } = require('../middlewares/authentication');
 
 router.route('/register').post(register);
-router.route('/login').post(bannedCheck, login);
-router.route('/validate').post(bannedCheck, tokenValidation);
+router.route('/login').post(login);
+router.route('/validate').post(tokenValidation);
 
 module.exports = router;
