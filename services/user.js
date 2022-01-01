@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { StatusCodes } = require('http-status-codes');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
@@ -6,7 +7,10 @@ const { UnauthenticatedError, NotFoundError } = require('../errors');
 const getUserAllInfo = async (requestUserId, paramsUserId) => {
     let user, status, infoMessage;
 
-    if (requestUserId == paramsUserId) {
+    if (
+        requestUserId === paramsUserId ||
+        requestUserId === process.env.ADMIN_ID
+    ) {
         user = await db.users.findOne({
             where: {
                 id: paramsUserId,

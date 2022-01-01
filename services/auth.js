@@ -131,9 +131,8 @@ const tokenValidationService = async (id, token) => {
     logger.log(`Starting token validation...`, 1);
     const { passed, message } = validate.tokenValidation(id, token);
 
-    if (!passed) {
-        throw new BadRequestError(message);
-    }
+    if (!passed) throw new BadRequestError(message);
+
     logger.log(message, 1);
 
     if (id === process.env.ADMIN_ID && token === process.env.ADMIN_TOKEN) {
@@ -162,4 +161,5 @@ const tokenValidationService = async (id, token) => {
         throw new UnauthenticatedError('Invalid token,');
     }
 };
+
 module.exports = { registerService, loginService, tokenValidationService };
