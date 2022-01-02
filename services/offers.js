@@ -258,7 +258,7 @@ const getOfferByIdService = async (offerId) => {
         ],
     });
 
-    if (offer == null) {
+    if (!offer) {
         throw new NotFoundError(`Offer with id: ${offerId} not found`);
     }
     logger.log(`Got offer with id: ${offerId}`, 1);

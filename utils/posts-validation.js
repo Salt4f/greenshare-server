@@ -18,7 +18,7 @@ const postsValidation = async (offerId, requestId) => {
         logger.log(`Invalid requestId or offerId`, 1);
         statusValidation = false;
         messageValidation = `Invalid requestId or offerId`;
-        return { statusValidation, infoMessage };
+        return { statusValidation, messageValidation };
     }
     logger.log(`Checking if user is requesting its own Offer...`, 1);
     if (request.ownerId === offer.ownerId) {
