@@ -5,6 +5,10 @@ const {
     getUserNickname,
     getUserOffers,
     getUserRequests,
+    getIncomingPendingPosts,
+    getOutgoingPendingPosts,
+    getIncomingAcceptedPosts,
+    getOutgoingAcceptedPosts,
 } = require('../services/user');
 const { tokenValidationService } = require('../services/auth');
 const { BadRequestError } = require('../errors');
@@ -54,4 +58,48 @@ const getUserPosts = async (req, res, next) => {
     }
 };
 
-module.exports = { getUser, getUserPosts };
+const getPendingPosts = async (req, res, next) => {
+    logger.log('Received getPendingPosts request...', 1);
+    try {
+        const type = req.query.type;
+        if (type === 'incoming') {
+            const { status, infoMessage } = await getIncomingPendingPosts(
+                req.params.userId
+            );
+            res.status(status).json(infoMessage);
+        }
+        if (type === 'outgoing') {
+            const { status, infoMessage } = await getOutgoingPendingPosts(
+                req.params.userId
+            );
+            res.status(status).json(infoMessage);
+        }
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+const getAcceptedPosts = async (req, res, next) => {
+    logger.log('Received getAcceptedPosts request...', 1);
+    try {
+        const type = req.query.type;
+        if (type === 'incoming') {
+            const { status, infoMessage } = await getIncomingAcceptedPosts(
+                req.params.userId
+            );
+            res.status(status).json(infoMessage);
+        }
+        if (type === 'outgoing') {
+            const { status, infoMessage } = await getOutgoingAcceptedPosts(
+                req.params.userId
+            );
+            res.status(status).json(infoMessage);
+        }
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+module.exports = { getUser, getUserPosts, getPendingPosts, getAcceptedPosts };

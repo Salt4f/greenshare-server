@@ -144,9 +144,204 @@ const getUserValorationsService = async (userId) => {
     return sum;
 };
 
+const getIncomingPendingPosts = async (userId) => {
+    let status, infoMessage;
+    let pendingPosts = [];
+
+    logger.log(`Getting Offers...`, 1);
+    const offers = await db.offers.findAll({
+        where: { active: true, status: 'idle', ownerId: userId },
+        attributes: ['id', 'name'],
+        include: [
+            {
+                model: db.requests,
+                attributes: ['ownerId'],
+            },
+        ],
+    });
+    logger.log(`Checking Offers...`, 1);
+    for (const offer of offers) {
+        if (offer.dataValues.Requests.length > 0) {
+            const requests = offer.dataValues.Requests;
+            for (let request of requests) {
+                const user = await db.users.findOne({
+                    where: { id: request.ownerId },
+                    attributes: ['nickname'],
+                });
+                request.dataValues.nickname = user.nickname;
+            }
+            offer.dataValues.type = 'offer';
+            pendingPosts.push(offer);
+        }
+    }
+    logger.log(`Getting Requests...`, 1);
+    const requests = await db.requests.findAll({
+        where: { active: true, status: 'idle', ownerId: userId },
+        attributes: ['id', 'name'],
+        include: [
+            {
+                model: db.offers,
+                attributes: ['id', 'ownerId'],
+            },
+        ],
+    });
+    logger.log(`Checking Requests...`, 1);
+    for (const request of requests) {
+        if (request.dataValues.Offers.length > 0) {
+            const offers = request.dataValues.Offers;
+            for (let offer of offers) {
+                const user = await db.users.findOne({
+                    where: { id: offer.ownerId },
+                    attributes: ['nickname'],
+                });
+                offer.dataValues.nickname = user.nickname;
+            }
+            request.dataValues.type = 'request';
+            pendingPosts.push(request);
+        }
+    }
+    logger.log(
+        `Got all Incoming Pending Posts of user: ${userId}, sending back...`,
+        1
+    );
+    status = StatusCodes.OK;
+    infoMessage = pendingPosts;
+    return { status, infoMessage };
+};
+
+const getOutgoingPendingPosts = async (userId) => {
+    let status, infoMessage;
+    let pendingPosts = [];
+
+    logger.log(`Getting Offers...`, 1);
+    const offers = await db.offers.findAll({
+        where: { active: true, status: 'pending', ownerId: userId },
+        attributes: ['RequestId'],
+    });
+    logger.log(`Checking Offers...`, 1);
+    for (const offer of offers) {
+        const request = await db.requests.findOne({
+            where: { id: offer.RequestId },
+            attributes: ['name', 'ownerId'],
+        });
+        const user = await db.users.findOne({
+            where: { id: request.ownerId },
+            attributes: ['nickname'],
+        });
+        request.dataValues.nickname = user.nickname;
+        request.dataValues.type = 'request';
+        pendingPosts.push(request);
+    }
+
+    logger.log(`Getting Requests...`, 1);
+    const requests = await db.requests.findAll({
+        where: { active: true, status: 'pending', ownerId: userId },
+        attributes: ['OfferId'],
+    });
+    logger.log(`Checking Requests...`, 1);
+    for (const request of requests) {
+        const offer = await db.offers.findOne({
+            where: { id: request.OfferId },
+            attributes: ['name', 'ownerId'],
+        });
+        const user = await db.users.findOne({
+            where: { id: offer.ownerId },
+            attributes: ['nickname'],
+        });
+        offer.dataValues.nickname = user.nickname;
+        offer.dataValues.type = 'offer';
+        pendingPosts.push(offer);
+    }
+    logger.log(
+        `Got all Outgoing Pending Posts of user: ${userId}, sending back...`,
+        1
+    );
+    status = StatusCodes.OK;
+    infoMessage = pendingPosts;
+    return { status, infoMessage };
+};
+
+const getIncomingAcceptedPosts = async (userId) => {
+    let status, infoMessage;
+    let pendingAcceptedPosts = [];
+
+    logger.log(`Getting acceptedPosts...`, 1);
+    const acceptedPosts = await db.acceptedPosts.findAll({
+        attributes: ['offerId', 'requestId'],
+    });
+    logger.log(`Checking acceptedPosts...`, 1);
+    for (const acceptedPost of acceptedPosts) {
+        const request = await db.requests.findOne({
+            where: { id: acceptedPost.requestId },
+        });
+        if (request.ownerId == userId) {
+            const offer = await db.offers.findOne({
+                where: { id: acceptedPost.offerId },
+                attributes: ['name', 'ownerId'],
+            });
+            const user = await db.users.findOne({
+                where: { id: offer.ownerId },
+                attributes: ['nickname'],
+            });
+            offer.dataValues.nickname = user.nickname;
+
+            acceptedPost.dataValues.offer = offer;
+            pendingAcceptedPosts.push(acceptedPost);
+        }
+    }
+    logger.log(
+        `Got all incoming pending acceptedPosts of user ${userId}, sending back...`,
+        1
+    );
+    status = StatusCodes.OK;
+    infoMessage = pendingAcceptedPosts;
+    return { status, infoMessage };
+};
+
+const getOutgoingAcceptedPosts = async (userId) => {
+    let status, infoMessage;
+    let pendingAcceptedPosts = [];
+
+    logger.log(`Getting acceptedPosts...`, 1);
+    const acceptedPosts = await db.acceptedPosts.findAll({
+        attributes: ['offerId', 'requestId'],
+    });
+    logger.log(`Checking acceptedPosts...`, 1);
+    for (const acceptedPost of acceptedPosts) {
+        const offer = await db.offers.findOne({
+            where: { id: acceptedPost.offerId },
+            attributes: ['name', 'ownerId'],
+        });
+        if (offer.ownerId == userId) {
+            const request = await db.requests.findOne({
+                where: { id: acceptedPost.requestId },
+                attributes: ['ownerId'],
+            });
+            const user = await db.users.findOne({
+                where: { id: request.ownerId },
+                attributes: ['nickname'],
+            });
+            acceptedPost.dataValues.name = offer.name;
+            acceptedPost.dataValues.nickname = user.nickname;
+            pendingAcceptedPosts.push(acceptedPost);
+        }
+    }
+    logger.log(
+        `Got all outgoing pending acceptedPosts of user ${userId}, sending back...`,
+        1
+    );
+    status = StatusCodes.OK;
+    infoMessage = pendingAcceptedPosts;
+    return { status, infoMessage };
+};
+
 module.exports = {
     getUserAllInfo,
     getUserNickname,
     getUserOffers,
     getUserRequests,
+    getIncomingPendingPosts,
+    getOutgoingPendingPosts,
+    getIncomingAcceptedPosts,
+    getOutgoingAcceptedPosts,
 };
