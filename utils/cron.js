@@ -8,6 +8,7 @@ const job = nodeCron.schedule('*/30 * * * *', async () => {
         const now = new Date();
         if (offerTerminateAt < now) {
             await offer.update({ active: false });
+            offer.save();
         }
     }
     const requests = await db.requests.findAll({ where: { active: true } });
@@ -16,6 +17,7 @@ const job = nodeCron.schedule('*/30 * * * *', async () => {
         const now = new Date();
         if (requestTerminateAt < now) {
             await request.update({ active: false });
+            request.save();
         }
     }
 });
