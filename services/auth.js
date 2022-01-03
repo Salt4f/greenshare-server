@@ -16,11 +16,9 @@ const {
 
 const registerService = async (requestBody) => {
     const { email, password, nickname, dni, birthDate, fullName } = requestBody;
-    let status, infoMessage;
 
     /////////////// VALIDATION ///////////////
     logger.log(`Starting validation...`, 1);
-
     const { passed, message } = validate.register(
         email,
         password,
@@ -29,7 +27,6 @@ const registerService = async (requestBody) => {
         birthDate,
         fullName
     );
-
     if (!passed) {
         throw new BadRequestError(message);
     }
@@ -39,12 +36,11 @@ const registerService = async (requestBody) => {
     const response = await registerRequest(email, password, nickname);
     logger.log('Received register response from UserService, checking...', 1);
 
-    if (response.status == StatusCodes.CREATED) {
+    if (response.status === StatusCodes.CREATED) {
         logger.log(
             'UserService successfully registered user, creating user...',
             1
         );
-
         // CREATE USER TO OUR DATABSE
         await db.users.create({
             id: response.data.id,
@@ -55,19 +51,12 @@ const registerService = async (requestBody) => {
             birthDate: new Date(birthDate),
             fullName,
         });
-
         logger.log(
             'Successfully created user, sending response with id and token...',
             1
         );
-
-        status = StatusCodes.CREATED;
-        infoMessage = {
-            id: response.data.id,
-            token: response.data.token,
-        };
-        return { status, infoMessage };
-    } else if (response.status == StatusCodes.BAD_REQUEST) {
+        return response.data;
+    } else if (response.status === StatusCodes.BAD_REQUEST) {
         throw new BadRequestError(`Email already registered`);
     } else {
         throw new InternalServerError(`User Service error`);
@@ -76,8 +65,6 @@ const registerService = async (requestBody) => {
 
 const loginService = async (requestBody) => {
     const { email, password } = requestBody;
-    let status, infoMessage;
-
     /////////////// VALIDATION ///////////////
     logger.log(`Starting validation...`, 1);
     const { passed, message } = validate.login(email, password);
@@ -92,17 +79,16 @@ const loginService = async (requestBody) => {
         password === process.env.ADMIN_PASSWORD
     ) {
         logger.log(`Admin successfully logged in`, 1);
-        status = StatusCodes.OK;
-        infoMessage = {
+        const credentials = {
             id: process.env.ADMIN_ID,
             token: process.env.ADMIN_TOKEN,
         };
-        return { status, infoMessage };
+        return credentials;
     }
 
     logger.log('Checking if user exists in back-end db...', 1);
     const user = await db.users.findOne({ where: { email: email } });
-    if (user == null) {
+    if (!user) {
         throw new UnauthenticatedError('User does not exist in back-end');
     }
 
@@ -110,23 +96,19 @@ const loginService = async (requestBody) => {
     const response = await loginRequest(email, password);
     logger.log('Received loginRequest, checking response...', 1);
 
-    if (response.status == StatusCodes.CREATED) {
+    if (response.status === StatusCodes.CREATED) {
         logger.log('Successfully logged in, sending response...', 1);
-
-        status = StatusCodes.OK;
-        infoMessage = {
+        const credentials = {
             id: response.data.id,
             token: response.data.token,
         };
-        return { status, infoMessage };
+        return credentials;
     } else {
         throw new UnauthenticatedError('Login failed, invalid credentials');
     }
 };
 
 const tokenValidationService = async (id, token) => {
-    let status, infoMessage;
-
     /////////////// VALIDATION ///////////////
     logger.log(`Starting token validation...`, 1);
     const { passed, message } = validate.tokenValidation(id, token);
@@ -137,14 +119,12 @@ const tokenValidationService = async (id, token) => {
 
     if (id === process.env.ADMIN_ID && token === process.env.ADMIN_TOKEN) {
         logger.log(`Admin successfully validated`, 1);
-        status = StatusCodes.OK;
-        infoMessage = `Admin successfully validated`;
-        return { status };
+        return;
     }
 
     logger.log('Checking if user exists in back-end db...', 1);
     const user = await db.users.findOne({ where: { id: id } });
-    if (user == null) {
+    if (!user) {
         throw new UnauthenticatedError('User does not exist in back-end');
     }
 
@@ -152,11 +132,9 @@ const tokenValidationService = async (id, token) => {
     const response = await tokenValidationRequest(id, token);
     logger.log(`Received tokenValidationRequest response, checking...`, 1);
 
-    if (response.status == StatusCodes.CREATED) {
+    if (response.status === StatusCodes.CREATED) {
         logger.log(`Token successfuly validated, sending response...`, 1);
-        status = StatusCodes.OK;
-        infoMessage = 'Token successfuly validated';
-        return { status };
+        return;
     } else {
         throw new UnauthenticatedError('Invalid token,');
     }
