@@ -5,8 +5,7 @@ const logger = require('../utils/logger');
 const { UnauthenticatedError, NotFoundError } = require('../errors');
 
 const getUserAllInfo = async (requestUserId, paramsUserId) => {
-    let user, status, infoMessage;
-
+    let user;
     if (
         requestUserId === paramsUserId ||
         requestUserId === process.env.ADMIN_ID
@@ -28,31 +27,24 @@ const getUserAllInfo = async (requestUserId, paramsUserId) => {
     logger.log(`Got user average valoration..`, 1);
 
     logger.log(`Got user with id: ${paramsUserId}, sending response...`, 1);
-    infoMessage = user;
-    status = StatusCodes.OK;
-    return { status, infoMessage };
+    return user;
 };
 
 const getUserNickname = async (userId) => {
-    let status, infoMessage;
     const user = await db.users.findOne({
         where: {
             id: userId,
         },
         attributes: ['nickname'],
     });
-    if (user === null) {
+    if (!user) {
         throw new NotFoundError(`No user with id: ${userId} in back-end`);
     }
     logger.log(`Got user with id: ${userId}, sending response...`, 1);
-    infoMessage = user;
-    status = StatusCodes.OK;
-    return { status, infoMessage };
+    return user;
 };
 
 const getUserOffers = async (userId) => {
-    let status, infoMessage;
-
     logger.log(`Searching offers...`, 1);
     const offers = await db.offers.findAll({
         where: { ownerId: userId },
@@ -77,14 +69,10 @@ const getUserOffers = async (userId) => {
         logger.log('Tags cleaned...', 1);
         logger.log(`Got offer(s), sending back...`, 1);
     }
-    status = StatusCodes.OK;
-    infoMessage = offers;
-    return { status, infoMessage };
+    return offers;
 };
 
 const getUserRequests = async (userId) => {
-    let status, infoMessage;
-
     logger.log(`Searching requests...`, 1);
     const requests = await db.requests.findAll({
         where: { ownerId: userId },
@@ -109,9 +97,7 @@ const getUserRequests = async (userId) => {
         logger.log('Tags cleaned...', 1);
         logger.log(`Got request(s), sending back...`, 1);
     }
-    status = StatusCodes.OK;
-    infoMessage = requests;
-    return { status, infoMessage };
+    return requests;
 };
 
 const getUserValorationsService = async (userId) => {
@@ -145,7 +131,6 @@ const getUserValorationsService = async (userId) => {
 };
 
 const getIncomingPendingPosts = async (userId) => {
-    let status, infoMessage;
     let pendingPosts = [];
 
     logger.log(`Getting Offers...`, 1);
@@ -204,13 +189,10 @@ const getIncomingPendingPosts = async (userId) => {
         `Got all Incoming Pending Posts of user: ${userId}, sending back...`,
         1
     );
-    status = StatusCodes.OK;
-    infoMessage = pendingPosts;
-    return { status, infoMessage };
+    return pendingPosts;
 };
 
 const getOutgoingPendingPosts = async (userId) => {
-    let status, infoMessage;
     let pendingPosts = [];
 
     logger.log(`Getting Offers...`, 1);
@@ -256,13 +238,10 @@ const getOutgoingPendingPosts = async (userId) => {
         `Got all Outgoing Pending Posts of user: ${userId}, sending back...`,
         1
     );
-    status = StatusCodes.OK;
-    infoMessage = pendingPosts;
-    return { status, infoMessage };
+    return pendingPosts;
 };
 
 const getIncomingAcceptedPosts = async (userId) => {
-    let status, infoMessage;
     let pendingAcceptedPosts = [];
 
     logger.log(`Getting acceptedPosts...`, 1);
@@ -293,13 +272,10 @@ const getIncomingAcceptedPosts = async (userId) => {
         `Got all incoming pending acceptedPosts of user ${userId}, sending back...`,
         1
     );
-    status = StatusCodes.OK;
-    infoMessage = pendingAcceptedPosts;
-    return { status, infoMessage };
+    return pendingAcceptedPosts;
 };
 
 const getOutgoingAcceptedPosts = async (userId) => {
-    let status, infoMessage;
     let pendingAcceptedPosts = [];
 
     logger.log(`Getting acceptedPosts...`, 1);
@@ -330,9 +306,7 @@ const getOutgoingAcceptedPosts = async (userId) => {
         `Got all outgoing pending acceptedPosts of user ${userId}, sending back...`,
         1
     );
-    status = StatusCodes.OK;
-    infoMessage = pendingAcceptedPosts;
-    return { status, infoMessage };
+    return pendingAcceptedPosts;
 };
 
 module.exports = {
