@@ -20,16 +20,16 @@ const {
     acceptOfferService,
     rejectOfferService,
 } = require('../services/requests');
+const { StatusCodes } = require('http-status-codes');
 
 const createOffer = async (req, res, next) => {
     logger.log('Received createOffer request...', 1);
-
     try {
-        const { status, infoMessage } = await createOfferService(
-            req.get('id'),
-            req.body
-        );
-        res.status(status).json(infoMessage);
+        const offer = await createOfferService(req.get('id'), req.body);
+        res.status(StatusCodes.CREATED).json({
+            id: offer.id,
+            createdAt: offer.createdAt,
+        });
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -38,13 +38,12 @@ const createOffer = async (req, res, next) => {
 
 const createRequest = async (req, res, next) => {
     logger.log('Received createRequest request...', 1);
-
     try {
-        const { status, infoMessage } = await createRequestService(
-            req.get('id'),
-            req.body
-        );
-        res.status(status).json(infoMessage);
+        const request = await createRequestService(req.get('id'), req.body);
+        res.status(StatusCodes.CREATED).json({
+            id: request.id,
+            createdAt: request.createdAt,
+        });
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -53,13 +52,9 @@ const createRequest = async (req, res, next) => {
 
 const editOffer = async (req, res, next) => {
     logger.log('Received editOffer request, editing...', 1);
-
     try {
-        const { status, infoMessage } = await editOfferService(
-            req.body,
-            req.params.offerId
-        );
-        res.status(status).json(infoMessage);
+        await editOfferService(req.body, req.params.offerId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -68,13 +63,9 @@ const editOffer = async (req, res, next) => {
 
 const editRequest = async (req, res, next) => {
     logger.log('Received editRequest request, editing...', 1);
-
     try {
-        const { status, infoMessage } = await editRequestService(
-            req.body,
-            req.params.requestId
-        );
-        res.status(status).json(infoMessage);
+        await editRequestService(req.body, req.params.requestId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -83,12 +74,9 @@ const editRequest = async (req, res, next) => {
 
 const getOfferById = async (req, res, next) => {
     logger.log(`Received getOfferById request`, 1);
-
     try {
-        const { status, infoMessage } = await getOfferByIdService(
-            req.params.offerId
-        );
-        res.status(status).json(infoMessage);
+        const offer = await getOfferByIdService(req.params.offerId);
+        res.status(StatusCodes.OK).json(offer);
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -97,12 +85,9 @@ const getOfferById = async (req, res, next) => {
 
 const getRequestById = async (req, res, next) => {
     logger.log(`Received getRequestById request`, 1);
-
     try {
-        const { status, infoMessage } = await getRequestByIdService(
-            req.params.requestId
-        );
-        res.status(status).json(infoMessage);
+        const request = await getRequestByIdService(req.params.requestId);
+        res.status(StatusCodes.OK).json(request);
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -113,11 +98,8 @@ const getOffersByQuery = async (req, res, next) => {
     logger.log(`Received getOffersByQuery request`, 1);
     try {
         const userId = req.get('id');
-        const { status, infoMessage } = await getOffersByQueryService(
-            req.query,
-            userId
-        );
-        res.status(status).json(infoMessage);
+        const offers = await getOffersByQueryService(req.query, userId);
+        res.status(StatusCodes.OK).json(offers);
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -128,11 +110,8 @@ const getRequestsByQuery = async (req, res, next) => {
     logger.log(`Received getRequestsByQuery request`, 1);
     try {
         const userId = req.get('id');
-        const { status, infoMessage } = await getRequestsByQueryService(
-            req.query,
-            userId
-        );
-        res.status(status).json(infoMessage);
+        const requests = await getRequestsByQueryService(req.query, userId);
+        res.status(StatusCodes.OK).json(requests);
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -142,11 +121,8 @@ const getRequestsByQuery = async (req, res, next) => {
 const requestOffer = async (req, res, next) => {
     logger.log('Received requestOffer request...', 1);
     try {
-        const { status, infoMessage } = await requestOfferService(
-            req.params.requestId,
-            req.params.offerId
-        );
-        res.status(status).json(infoMessage);
+        await requestOfferService(req.params.requestId, req.params.offerId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -156,11 +132,8 @@ const requestOffer = async (req, res, next) => {
 const acceptRequest = async (req, res, next) => {
     logger.log('Received acceptRequest request...', 1);
     try {
-        const { status, infoMessage } = await acceptRequestService(
-            req.params.offerId,
-            req.params.requestId
-        );
-        res.status(status).json(infoMessage);
+        await acceptRequestService(req.params.offerId, req.params.requestId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -170,11 +143,8 @@ const acceptRequest = async (req, res, next) => {
 const rejectRequest = async (req, res, next) => {
     logger.log('Received rejectRequest request...', 1);
     try {
-        const { status, infoMessage } = await rejectRequestService(
-            req.params.offerId,
-            req.params.requestId
-        );
-        res.status(status).json(infoMessage);
+        await rejectRequestService(req.params.offerId, req.params.requestId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -185,12 +155,12 @@ const completeRequest = async (req, res, next) => {
     logger.log('Received completeRequest request...', 1);
     try {
         const { valoration } = req.body;
-        const { status, infoMessage } = await completeRequestService(
+        await completeRequestService(
             req.params.requestId,
             req.params.offerId,
             valoration
         );
-        res.status(status).json(infoMessage);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -200,11 +170,8 @@ const completeRequest = async (req, res, next) => {
 const offerRequest = async (req, res, next) => {
     logger.log('Received offerRequest request...', 1);
     try {
-        const { status, infoMessage } = await offerRequestService(
-            req.params.requestId,
-            req.params.offerId
-        );
-        res.status(status).json(infoMessage);
+        await offerRequestService(req.params.requestId, req.params.offerId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -214,11 +181,8 @@ const offerRequest = async (req, res, next) => {
 const acceptOffer = async (req, res, next) => {
     logger.log('Received acceptOffer request...', 1);
     try {
-        const { status, infoMessage } = await acceptOfferService(
-            req.params.requestId,
-            req.params.offerId
-        );
-        res.status(status).json(infoMessage);
+        await acceptOfferService(req.params.requestId, req.params.offerId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -228,11 +192,8 @@ const acceptOffer = async (req, res, next) => {
 const rejectOffer = async (req, res, next) => {
     logger.log('Received rejectOffer request...', 1);
     try {
-        const { status, infoMessage } = await rejectOfferService(
-            req.params.requestId,
-            req.params.offerId
-        );
-        res.status(status).json(infoMessage);
+        await rejectOfferService(req.params.requestId, req.params.offerId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);

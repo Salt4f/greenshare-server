@@ -9,7 +9,10 @@ const admin = require('./routes/admin');
 
 const logger = require('./utils/logger');
 
-const { bannedCheck } = require('./middlewares/authentication');
+const {
+    bannedCheck,
+    authenticateAdmin,
+} = require('./middlewares/authentication');
 const notFoundMiddleware = require('./middlewares/not-found');
 const errorHandlerMiddleware = require('./middlewares/error-handler');
 
@@ -22,7 +25,7 @@ app.use(express.json({ limit: '200MB' }));
 app.use('/api/auth', bannedCheck, auth);
 app.use('/api/posts', bannedCheck, posts);
 app.use('/api/user', bannedCheck, user);
-app.use('/api/admin', admin);
+app.use('/api/admin', authenticateAdmin, admin);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

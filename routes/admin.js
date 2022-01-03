@@ -4,13 +4,9 @@ const router = express.Router();
 
 // controller
 const { getAllReports, solveReport } = require('../controllers/admin');
-const {
-    authenticateUser,
-    authenticateAdmin,
-} = require('../middlewares/authentication');
 
-router.route('/reports').get(authenticateAdmin, getAllReports);
+router.route('/reports').get(getAllReports);
 
-router.route('/reports/:reportId').post(authenticateAdmin, solveReport);
+router.route('/reports/:reportId').post(solveReport);
 
 module.exports = router;

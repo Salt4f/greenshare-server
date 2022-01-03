@@ -21,13 +21,14 @@ const report = async (req, res, next) => {
             itemId = req.params.userId;
         }
         const { message } = req.body;
-        const { status, infoMessage } = await reportService(
+        const reportInfo = await reportService(
             itemId,
             type,
             req.get('id'),
             message
         );
-        res.status(status).json(infoMessage);
+        const response = { id: reportInfo.id, createdAt: reportInfo.createdAt };
+        res.status(StatusCodes.CREATED).json(response);
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -37,8 +38,8 @@ const report = async (req, res, next) => {
 const getAllReports = async (req, res, next) => {
     logger.log('Received getAllReports request', 1);
     try {
-        const { status, infoMessage } = await getAllReportsService();
-        res.status(status).json(infoMessage);
+        const allReports = await getAllReportsService();
+        res.status(StatusCodes.OK).json(allReports);
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -49,10 +50,8 @@ const deactivatePost = async (req, res, next) => {
     logger.log('Received deactivatePost request', 1);
     try {
         const postId = req.params.offerId || req.params.requestId;
-        console.log(postId);
-
-        const { status, infoMessage } = await deactivatePostService(postId);
-        res.status(status).json(infoMessage);
+        await deactivatePostService(postId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -62,10 +61,8 @@ const deactivatePost = async (req, res, next) => {
 const solveReport = async (req, res, next) => {
     logger.log('Received solveReport request', 1);
     try {
-        const { status, infoMessage } = await solveReportService(
-            req.params.reportId
-        );
-        res.status(status).json(infoMessage);
+        await solveReportService(req.params.reportId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -75,8 +72,8 @@ const solveReport = async (req, res, next) => {
 const banUser = async (req, res, next) => {
     logger.log('Received banUser request', 1);
     try {
-        const { status, infoMessage } = await banUserService(req.params.userId);
-        res.status(status).json(infoMessage);
+        await banUserService(req.params.userId);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
