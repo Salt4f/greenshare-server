@@ -13,7 +13,6 @@ const { Op } = require('sequelize');
 const createOfferService = async (userId, requestBody) => {
     const { name, description, terminateAt, location, icon, photos, tags } =
         requestBody;
-    let status, infoMessage;
 
     logger.log('Starting data validation...', 1);
     const { passed, message } = validate.offer(
@@ -52,8 +51,8 @@ const createOfferService = async (userId, requestBody) => {
         icon: compressedIcon,
         ownerId: userId,
     });
-    logger.log('Created offer, setting up photos...', 1);
 
+    logger.log('Created offer, setting up photos...', 1);
     for (let photo of photos) {
         logger.log('Parsing photo...', 1);
         const buff = Buffer.from(photo, 'base64');
@@ -81,7 +80,6 @@ const createOfferService = async (userId, requestBody) => {
                 color: element.color != undefined ? element.color : null,
             },
         });
-
         logger.log(
             `Current tag's id: ${tag.id}, name: ${tag.name}, isOfficial: ${tag.isOfficial}, color: ${tag.color}`,
             1
@@ -95,18 +93,13 @@ const createOfferService = async (userId, requestBody) => {
     }
 
     logger.log('Successfully created offer, sending back response...', 1);
-    status = StatusCodes.CREATED;
-    infoMessage = {
-        id: offer.id,
-        createdAt: offer.createdAt,
-    };
-    return { status, infoMessage };
+    return offer;
 };
 
 const editOfferService = async (requestBody, offerId) => {
     const { name, description, terminateAt, location, tags, icon, photos } =
         requestBody;
-    let status, infoMessage;
+
     logger.log('Starting data validation of offerId...', 1);
 
     if (!validate.id(offerId)) {
@@ -120,8 +113,7 @@ const editOfferService = async (requestBody, offerId) => {
             active: true,
         },
     });
-
-    if (offer == undefined) {
+    if (!offer) {
         logger.log(
             `offer with id: ${offerId} not found, sending response...`,
             1
@@ -229,15 +221,11 @@ const editOfferService = async (requestBody, offerId) => {
     }
     offer.save();
     logger.log('Offer updated, sending response...', 1);
-    infoMessage = 'Offer updated';
-    status = StatusCodes.OK;
-    return { status, infoMessage };
+    return;
 };
 
 const getOfferByIdService = async (offerId) => {
     logger.log(`The offerId is: ${offerId}`, 1);
-    let status, infoMessage;
-
     logger.log(`Looking for offer in db...`, 1);
     const offer = await db.offers.findOne({
         where: { id: offerId },
@@ -288,9 +276,7 @@ const getOfferByIdService = async (offerId) => {
     delete offer.dataValues.Photos;
     logger.log(`Sending back offer with id: ${offerId}...`, 1);
 
-    status = StatusCodes.OK;
-    infoMessage = offer;
-    return { status, infoMessage };
+    return offer;
 };
 
 const getOffersByQueryService = async (requestQuery, userId) => {
@@ -301,8 +287,6 @@ const getOffersByQueryService = async (requestQuery, userId) => {
     let whereObject = {
         active: true,
     };
-    let status, infoMessage;
-
     if (tags !== undefined) {
         tagsArray = tags.split(';');
     }
@@ -324,7 +308,6 @@ const getOffersByQueryService = async (requestQuery, userId) => {
     );
 
     logger.log(`Selecting query...`, 1);
-
     const offersFinal = [];
 
     const offers = await db.offers.findAll({
@@ -429,18 +412,15 @@ const getOffersByQueryService = async (requestQuery, userId) => {
         logger.log(`Got offer(s), sending back response...`, 1);
     }
 
-    status = StatusCodes.OK;
-    infoMessage = offersSlice;
-    return { status, infoMessage };
+    return offersSlice;
 };
 
 const offerRequestService = async (requestId, offerId) => {
-    let status, infoMessage;
     logger.log(`Starting postsValidation...`, 1);
     const { statusValidation, messageValidation, request, offer } =
         await postsValidation(offerId, requestId);
 
-    if (statusValidation == false) {
+    if (statusValidation === false) {
         throw new BadRequestError(messageValidation);
     }
     logger.log(messageValidation, 1);
@@ -472,13 +452,10 @@ const offerRequestService = async (requestId, offerId) => {
         `Added offer with id: ${offerId} to request with id: ${requestId}`,
         1
     );
-    status = StatusCodes.OK;
-    infoMessage = `Added offer with id: ${offerId} to request with id: ${requestId}`;
-    return { status, infoMessage };
+    return;
 };
 
 const acceptRequestService = async (offerId, requestId) => {
-    let status, infoMessage;
     logger.log(`Starting postsValidation...`, 1);
     const { statusValidation, messageValidation, offer } =
         await postsValidation(offerId, requestId);
@@ -525,13 +502,10 @@ const acceptRequestService = async (offerId, requestId) => {
     offer.save();
     logger.log('Offer deactivated...', 1);
 
-    status = StatusCodes.OK;
-    infoMessage = `Offer with id: ${offerId} accepted Request with id: ${requestId}`;
-    return { status, infoMessage };
+    return;
 };
 
 const rejectRequestService = async (offerId, requestId) => {
-    let status, infoMessage;
     logger.log(`Starting postsValidation...`, 1);
     const { statusValidation, messageValidation, offer } =
         await postsValidation(offerId, requestId);
@@ -558,7 +532,6 @@ const rejectRequestService = async (offerId, requestId) => {
             newPendingRequests.push(req);
         }
     }
-
     if (!found) {
         throw new BadRequestError(
             `Offer with id: ${offerId} doesn't have Request with id: ${requestId} as pending`
@@ -567,27 +540,25 @@ const rejectRequestService = async (offerId, requestId) => {
 
     offer.setRequests(newPendingRequests);
     logger.log(`Updated Offers' pending requests, sending response...`, 1);
-
-    status = StatusCodes.OK;
-    infoMessage = `Offer with id: ${offerId} rejected Request with id: ${requestId}`;
-    return { status, infoMessage };
+    logger.log(
+        `Offer with id: ${offerId} rejected Request with id: ${requestId}`,
+        1
+    );
+    return;
 };
 
 const completeRequestService = async (requestId, offerId, valoration) => {
-    let status, infoMessage;
-
     if (!valoration) {
         logger.log(`Valoration missing`, 1);
         throw new BadRequestError(`Valoration missing`);
     }
-
     const acceptedPost = await db.acceptedPosts.findOne({
         where: {
             offerId: offerId,
         },
     });
     logger.log(`Checking if AcceptedPost is valid...`, 1);
-    if (acceptedPost === null) {
+    if (!acceptedPost) {
         throw new BadRequestError(`Not accepted yet`);
     }
     const [completedPost, created] = await db.completedPosts.findOrCreate({
@@ -606,11 +577,9 @@ const completeRequestService = async (requestId, offerId, valoration) => {
     await completedPost.update({ valoration: valoration });
     completedPost.save();
     logger.log(`Added valoration to completedPost`, 1);
-
     logger.log('Created completedPost', 1);
-    status = StatusCodes.OK;
-    infoMessage = `Request with id: ${requestId} confirmed transaction`;
-    return { status, infoMessage };
+    logger.log(`Request with id: ${requestId} confirmed transaction`, 1);
+    return;
 };
 
 module.exports = {

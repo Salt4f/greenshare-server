@@ -119,11 +119,12 @@ const getUserValorationsService = async (userId) => {
         }
     }
     let sum;
-
     if (valorationsArray.length === 0) {
         sum = 0;
     } else {
-        valorationsArray.reduce((a, b) => a + b, 0) / valorationsArray.length;
+        sum =
+            valorationsArray.reduce((a, b) => a + b, 0) /
+            valorationsArray.length;
         logger.log(`Average valoration of user ${userId} is ${sum}`, 1);
     }
 

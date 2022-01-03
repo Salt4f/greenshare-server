@@ -10,7 +10,6 @@ const { Op } = require('sequelize');
 
 const createRequestService = async (userId, requestBody) => {
     const { name, description, terminateAt, location, tags } = requestBody;
-    let status, infoMessage;
 
     logger.log('Starting data validation...', 1);
     const { passed, message } = validate.request(
@@ -66,19 +65,12 @@ const createRequestService = async (userId, requestBody) => {
             1
         );
     }
-
     logger.log('Successfully created request, sending back response...', 1);
-    status = StatusCodes.CREATED;
-    infoMessage = {
-        id: request.id,
-        createdAt: request.createdAt,
-    };
-    return { status, infoMessage };
+    return request;
 };
 
 const editRequestService = async (requestBody, requestId) => {
     const { name, description, terminateAt, location, tags } = requestBody;
-    let status, infoMessage;
 
     logger.log('Starting data validation of requestId...', 1);
     if (!validate.id(requestId)) {
@@ -92,7 +84,7 @@ const editRequestService = async (requestBody, requestId) => {
         },
     });
 
-    if (request == undefined) {
+    if (!request) {
         throw new BadRequestError(
             `Request with id: ${requestId} not found, sending response...`
         );
@@ -160,15 +152,11 @@ const editRequestService = async (requestBody, requestId) => {
     }
     request.save();
     logger.log(`Successfully edited Request`, 1);
-    infoMessage = `Successfully edited Request`;
-    status = StatusCodes.OK;
-    return { status, infoMessage };
+    return;
 };
 
 const getRequestByIdService = async (requestId) => {
     logger.log(`The requestId is: ${requestId}`, 1);
-    let status, infoMessage;
-
     logger.log(`Looking for request in db...`, 1);
     const request = await db.requests.findOne({
         where: { id: requestId },
@@ -185,7 +173,7 @@ const getRequestByIdService = async (requestId) => {
         ],
     });
 
-    if (request == null) {
+    if (!request) {
         throw new NotFoundError(`Request with id: ${requestId} not found`);
     }
     logger.log('Cleaning up tags...', 1);
@@ -193,9 +181,7 @@ const getRequestByIdService = async (requestId) => {
         delete t.dataValues.RequestTag;
     }
     logger.log(`Got request with id: ${requestId}, sending back...`, 1);
-    status = StatusCodes.OK;
-    infoMessage = request;
-    return { status, infoMessage };
+    return request;
 };
 
 const getRequestsByQueryService = async (requestQuery, userId) => {
@@ -316,12 +302,11 @@ const getRequestsByQueryService = async (requestQuery, userId) => {
 };
 
 const requestOfferService = async (requestId, offerId) => {
-    let status, infoMessage;
     logger.log(`Starting postsValidation...`, 1);
     const { statusValidation, messageValidation, request, offer } =
         await postsValidation(offerId, requestId);
 
-    if (statusValidation == false) {
+    if (statusValidation === false) {
         throw new BadRequestError(messageValidation);
     }
     logger.log(messageValidation, 1);
@@ -353,18 +338,15 @@ const requestOfferService = async (requestId, offerId) => {
         `Added request with id: ${requestId} to offer with id: ${offerId}`,
         1
     );
-    status = StatusCodes.OK;
-    infoMessage = `Added Request with id: ${requestId} to Offer with id: ${offerId}`;
-    return { status, infoMessage };
+    return;
 };
 
 const acceptOfferService = async (requestId, offerId) => {
-    let status, infoMessage;
     logger.log(`Starting postsValidation...`, 1);
     const { statusValidation, messageValidation, request } =
         await postsValidation(offerId, requestId);
 
-    if (statusValidation == false) {
+    if (statusValidation === false) {
         throw new BadRequestError(messageValidation);
     }
     logger.log(messageValidation, 1);
@@ -406,13 +388,10 @@ const acceptOfferService = async (requestId, offerId) => {
     request.save();
     logger.log('Request deactivated...', 1);
 
-    status = StatusCodes.OK;
-    infoMessage = `Request with id: ${requestId} accepted Offer with id: ${offerId}`;
-    return { status, infoMessage };
+    return;
 };
 
 const rejectOfferService = async (requestId, offerId) => {
-    let status, infoMessage;
     logger.log(`Starting postsValidation...`, 1);
     const { statusValidation, messageValidation, request } =
         await postsValidation(offerId, requestId);
@@ -449,10 +428,11 @@ const rejectOfferService = async (requestId, offerId) => {
 
     request.setOffers(newPendingOffers);
     logger.log(`Updated Request's pending Offers, sending response...`, 1);
-
-    status = StatusCodes.OK;
-    infoMessage = `Request with id: ${requestId} rejected Offer with id: ${offerId}`;
-    return { status, infoMessage };
+    logger.log(
+        `Request with id: ${requestId} rejected Offer with id: ${offerId}`,
+        1
+    );
+    return;
 };
 
 module.exports = {
