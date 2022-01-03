@@ -1,7 +1,7 @@
 const nodeCron = require('node-cron');
 const db = require('../db/connect');
 
-const job = nodeCron.schedule('0 0 * * 0', async () => {
+const job = nodeCron.schedule('*/30 * * * *', async () => {
     const offers = await db.offers.findAll({ where: { active: true } });
     for (const offer of offers) {
         const offerTerminateAt = new Date(offer.terminateAt);
