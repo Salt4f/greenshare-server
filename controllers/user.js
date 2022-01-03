@@ -9,9 +9,11 @@ const {
     getOutgoingPendingPosts,
     getIncomingAcceptedPosts,
     getOutgoingAcceptedPosts,
+    updateUserEcoScoreService,
 } = require('../services/user');
 const { tokenValidationService } = require('../services/auth');
 const { BadRequestError, UnauthenticatedError } = require('../errors');
+const { default: axios } = require('axios');
 
 const getUser = async (req, res, next) => {
     logger.log(`Received getUser request`, 1);
@@ -26,9 +28,9 @@ const getUser = async (req, res, next) => {
             const nickname = await getUserNickname(req.params.userId);
             res.status(StatusCodes.OK).json(nickname);
         }
-    } catch (e) {
-        logger.log(e.message, 0);
-        next(e);
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
     }
 };
 
@@ -43,6 +45,42 @@ const getUserPosts = async (req, res, next) => {
             const requests = await getUserRequests(req.params.userId);
             res.status(StatusCodes.OK).json(requests);
         }
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+const getEcoScoreForm = async (req, res, next) => {
+    logger.log(`Received getEcoScoreForm request`, 1);
+    try {
+        logger.log(`Sending request to raul's endpoint...`, 1);
+        const form = await axios.get(
+            'http://raulplesa.online:12345/api/ecoquiz/preguntes-i-respostes/es'
+        );
+        logger.log(`Got eco-score form, sending back...`, 1);
+        res.status(StatusCodes.OK).json(form.data);
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+const updateEcoScore = async (req, res, next) => {
+    logger.log(`Received updateEcoScore request`, 1);
+    try {
+        logger.log(`Sending request to raul's endpoint...`, 1);
+        const form = req.body;
+        const response = await axios.post(
+            'http://raulplesa.online:12345/api/ecoquiz/es',
+            form
+        );
+        logger.log(`Got ecoScore`, 1);
+        await updateUserEcoScoreService(
+            req.params.userId,
+            response.data.EcoPunts
+        );
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -106,4 +144,11 @@ const getAcceptedPosts = async (req, res, next) => {
     }
 };
 
-module.exports = { getUser, getUserPosts, getPendingPosts, getAcceptedPosts };
+module.exports = {
+    getUser,
+    getUserPosts,
+    getPendingPosts,
+    getAcceptedPosts,
+    getEcoScoreForm,
+    updateEcoScore,
+};

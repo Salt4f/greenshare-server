@@ -32,6 +32,10 @@ module.exports = (sequelize, DataTypes) => {
             aboutMe: {
                 type: DataTypes.STRING,
             },
+            ecoScore: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
+            },
             currentEcoPoints: {
                 type: DataTypes.INTEGER,
                 defaultValue: 0,

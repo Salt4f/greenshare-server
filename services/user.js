@@ -15,6 +15,10 @@ const getUserAllInfo = async (requestUserId, paramsUserId) => {
                 id: paramsUserId,
             },
         });
+        if (!user)
+            throw new NotFoundError(
+                `User with id ${paramsUserId} does not exist`
+            );
     } else {
         throw new UnauthenticatedError(
             `User with id ${requestUserId} is trying to get someone else's info`
@@ -129,6 +133,17 @@ const getUserValorationsService = async (userId) => {
     }
 
     return sum;
+};
+
+const updateUserEcoScoreService = async (userId, ecoScore) => {
+    const user = await db.users.findOne({ where: { id: userId } });
+    if (!user)
+        throw new NotFoundError(
+            `User with id ${userId} does not exist in backend db`
+        );
+    await user.update({ ecoScore: ecoScore });
+    logger.log(`Successfully udpated user's ecoScore`, 1);
+    return;
 };
 
 const getIncomingPendingPosts = async (userId) => {
@@ -349,4 +364,5 @@ module.exports = {
     getOutgoingPendingPosts,
     getIncomingAcceptedPosts,
     getOutgoingAcceptedPosts,
+    updateUserEcoScoreService,
 };
