@@ -3,7 +3,7 @@ const {
     registerRequest,
     loginRequest,
     tokenValidationRequest,
-} = require('../requests/user-service');
+} = require('../requests/stubs/user-service');
 const db = require('../db/connect');
 const validate = require('../utils/data-validation');
 const logger = require('../utils/logger');
