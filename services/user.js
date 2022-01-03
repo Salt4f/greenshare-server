@@ -142,6 +142,7 @@ const updateUserEcoScoreService = async (userId, ecoScore) => {
             `User with id ${userId} does not exist in backend db`
         );
     await user.update({ ecoScore: ecoScore });
+    user.save();
     logger.log(`Successfully udpated user's ecoScore`, 1);
     return;
 };

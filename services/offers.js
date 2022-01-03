@@ -577,6 +577,33 @@ const completeRequestService = async (requestId, offerId, valoration) => {
     await completedPost.update({ valoration: valoration });
     completedPost.save();
     logger.log(`Added valoration to completedPost`, 1);
+
+    logger.log(`Calculating ecoPoints...`, 1);
+    const offer = await db.offers.findOne({
+        where: { id: offerId },
+        include: [
+            {
+                association: 'tags',
+                model: db.tags,
+                attributes: ['name', 'isOfficial', 'color'],
+            },
+        ],
+    });
+    const user = await db.users.findOne({ where: { id: offer.ownerId } });
+    var ecoPoints = 0;
+    for (const tag of offer.tags) {
+        ecoPoints += Math.floor(Math.random() * 100) + 10;
+    }
+    ecoPoints += 100;
+    ecoPoints *= user.ecoScore;
+
+    const newCurrentEcoPoints = user.currentEcoPoints + ecoPoints;
+    const newTotalEcoPoints = user.totalEcoPoints + ecoPoints;
+    await user.update({
+        currentEcoPoints: newCurrentEcoPoints,
+        totalEcoPoints: newTotalEcoPoints,
+    });
+    user.save();
     logger.log('Created completedPost', 1);
     logger.log(`Request with id: ${requestId} confirmed transaction`, 1);
     return;

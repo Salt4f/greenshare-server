@@ -111,6 +111,7 @@ const solveReportService = async (reportId) => {
     const report = await db.reports.findOne({ where: { id: reportId } });
     logger.log(`Updating Report with id: ${report.id} as solved...`, 1);
     await report.update({ solved: true });
+    report.save();
     logger.log(`Report with id: ${report.id} solved`, 1);
     return report;
 };
@@ -142,6 +143,7 @@ const banUserService = async (userId) => {
             await request.setOffers(newPendingOffers);
         }
         await offer.update({ active: false });
+        offer.save();
     }
     logger.log(`Offers deactivated...`, 1);
     logger.log(`Deactivating Requests...`, 1);
@@ -163,11 +165,13 @@ const banUserService = async (userId) => {
             await offer.setRequests(newPendingRequests);
         }
         await request.update({ active: false });
+        request.save();
     }
     logger.log(`Requests deactivated...`, 1);
 
     logger.log(`Banning user...`, 1);
     await user.update({ banned: true });
+    user.save();
     logger.log(`Successfully banned user with id: ${userId}`, 1);
 
     return user;
