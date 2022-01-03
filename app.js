@@ -8,6 +8,7 @@ const user = require('./routes/user');
 const admin = require('./routes/admin');
 
 const logger = require('./utils/logger');
+const job = require('./utils/cron');
 
 const {
     bannedCheck,
@@ -43,7 +44,7 @@ const start = async () => {
                     nickname: 'admin',
                 },
             });
-
+            job.start();
             console.log(`Server is listening on port ${port}...`);
         });
     } catch (error) {
