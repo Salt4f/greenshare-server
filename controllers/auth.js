@@ -5,43 +5,41 @@ const {
     loginService,
     tokenValidationService,
 } = require('../services/auth');
+const { StatusCodes } = require('http-status-codes');
 
 const register = async (req, res, next) => {
     logger.log('Received register request', 1);
-
     try {
-        const { status, infoMessage } = await registerService(req.body);
-        res.status(status).json(infoMessage);
-    } catch (e) {
-        logger.log(e.message, 0);
-        next(e);
+        const register = await registerService(req.body);
+        res.status(StatusCodes.CREATED).json({
+            id: register.id,
+            token: register.token,
+        });
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
     }
 };
 
 const login = async (req, res, next) => {
     logger.log('Received login request', 1);
-
     try {
-        const { status, infoMessage } = await loginService(req.body);
-        res.status(status).json(infoMessage);
-    } catch (e) {
-        logger.log(e.message, 0);
-        next(e);
+        const credentials = await loginService(req.body);
+        res.status(StatusCodes.OK).json(credentials);
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
     }
 };
 
 const tokenValidation = async (req, res, next) => {
     logger.log('Received tokenValidation request', 1);
-
     try {
-        const { status, infoMessage } = await tokenValidationService(
-            req.get('id'),
-            req.get('token')
-        );
-        res.status(status).json(infoMessage);
-    } catch (e) {
-        logger.log(e.message, 0);
-        next(e);
+        await tokenValidationService(req.get('id'), req.get('token'));
+        res.status(StatusCodes.OK).send();
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
     }
 };
 
