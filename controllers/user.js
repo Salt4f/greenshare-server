@@ -11,7 +11,7 @@ const {
     getOutgoingAcceptedPosts,
 } = require('../services/user');
 const { tokenValidationService } = require('../services/auth');
-const { BadRequestError } = require('../errors');
+const { BadRequestError, UnauthenticatedError } = require('../errors');
 
 const getUser = async (req, res, next) => {
     logger.log(`Received getUser request`, 1);
@@ -61,6 +61,13 @@ const getUserPosts = async (req, res, next) => {
 const getPendingPosts = async (req, res, next) => {
     logger.log('Received getPendingPosts request...', 1);
     try {
+        if (req.get('id') !== req.params.userId)
+            throw new UnauthenticatedError(
+                `User with id ${req.get(
+                    'id'
+                )} is trying to get someone else' pendingPosts`
+            );
+
         const type = req.query.type;
         if (type === 'incoming') {
             const { status, infoMessage } = await getIncomingPendingPosts(
@@ -83,6 +90,13 @@ const getPendingPosts = async (req, res, next) => {
 const getAcceptedPosts = async (req, res, next) => {
     logger.log('Received getAcceptedPosts request...', 1);
     try {
+        if (req.get('id') !== req.params.userId)
+            throw new UnauthenticatedError(
+                `User with id ${req.get(
+                    'id'
+                )} is trying to get someone else' acceptedPosts`
+            );
+
         const type = req.query.type;
         if (type === 'incoming') {
             const { status, infoMessage } = await getIncomingAcceptedPosts(
