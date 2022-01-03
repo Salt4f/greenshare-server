@@ -155,7 +155,7 @@ const getIncomingPendingPosts = async (userId) => {
         include: [
             {
                 model: db.requests,
-                attributes: ['ownerId'],
+                attributes: ['id', 'ownerId'],
             },
         ],
     });
