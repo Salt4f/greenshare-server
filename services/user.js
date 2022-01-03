@@ -141,23 +141,32 @@ const getIncomingPendingPosts = async (userId) => {
         include: [
             {
                 model: db.requests,
-                attributes: ['id', 'ownerId'],
+                attributes: ['id', 'name', 'ownerId'],
             },
         ],
     });
     logger.log(`Checking Offers...`, 1);
     for (const offer of offers) {
         if (offer.dataValues.Requests.length > 0) {
+            let post = {};
+            post.ownPostId = offer.id;
+            post.postName = offer.name;
+            post.posts = [];
             const requests = offer.dataValues.Requests;
             for (let request of requests) {
+                let pendingRequest = {};
                 const user = await db.users.findOne({
                     where: { id: request.ownerId },
                     attributes: ['nickname'],
                 });
-                request.dataValues.nickname = user.nickname;
+                pendingRequest.postId = request.id;
+                pendingRequest.postName = request.name;
+                pendingRequest.postType = 'request';
+                pendingRequest.nickname = user.nickname;
+                pendingRequest.userId = request.ownerId;
+                post.posts.push(pendingRequest);
             }
-            offer.dataValues.type = 'offer';
-            pendingPosts.push(offer);
+            pendingPosts.push(post);
         }
     }
     logger.log(`Getting Requests...`, 1);
@@ -167,23 +176,32 @@ const getIncomingPendingPosts = async (userId) => {
         include: [
             {
                 model: db.offers,
-                attributes: ['id', 'ownerId'],
+                attributes: ['id', 'name', 'ownerId'],
             },
         ],
     });
     logger.log(`Checking Requests...`, 1);
     for (const request of requests) {
         if (request.dataValues.Offers.length > 0) {
+            let post = {};
+            post.ownPostId = request.id;
+            post.postName = request.name;
+            post.posts = [];
             const offers = request.dataValues.Offers;
             for (let offer of offers) {
+                let pendingOffer = {};
                 const user = await db.users.findOne({
                     where: { id: offer.ownerId },
                     attributes: ['nickname'],
                 });
-                offer.dataValues.nickname = user.nickname;
+                pendingOffer.postId = offer.id;
+                pendingOffer.postName = offer.name;
+                pendingOffer.postType = 'offer';
+                pendingOffer.nickname = user.nickname;
+                pendingOffer.userId = offer.ownerId;
+                post.posts.push(pendingOffer);
             }
-            request.dataValues.type = 'request';
-            pendingPosts.push(request);
+            pendingPosts.push(post);
         }
     }
     logger.log(
@@ -199,41 +217,53 @@ const getOutgoingPendingPosts = async (userId) => {
     logger.log(`Getting Offers...`, 1);
     const offers = await db.offers.findAll({
         where: { active: true, status: 'pending', ownerId: userId },
-        attributes: ['RequestId'],
+        attributes: ['id', 'name', 'RequestId'],
     });
     logger.log(`Checking Offers...`, 1);
     for (const offer of offers) {
+        let pendingPost = {};
         const request = await db.requests.findOne({
             where: { id: offer.RequestId },
-            attributes: ['name', 'ownerId'],
+            attributes: ['id', 'name', 'ownerId'],
         });
         const user = await db.users.findOne({
             where: { id: request.ownerId },
             attributes: ['nickname'],
         });
-        request.dataValues.nickname = user.nickname;
-        request.dataValues.type = 'request';
-        pendingPosts.push(request);
+        pendingPost.ownPostId = offer.id;
+        pendingPost.ownPostName = offer.name;
+        pendingPost.postId = request.id;
+        pendingPost.postName = request.name;
+        pendingPost.postType = 'request';
+        pendingPost.userId = request.ownerId;
+        pendingPost.nickname = user.nickname;
+        pendingPosts.push(pendingPost);
     }
 
     logger.log(`Getting Requests...`, 1);
     const requests = await db.requests.findAll({
         where: { active: true, status: 'pending', ownerId: userId },
-        attributes: ['OfferId'],
+        attributes: ['id', 'name', 'OfferId'],
     });
     logger.log(`Checking Requests...`, 1);
     for (const request of requests) {
+        let pendingPost = {};
         const offer = await db.offers.findOne({
             where: { id: request.OfferId },
-            attributes: ['name', 'ownerId'],
+            attributes: ['id', 'name', 'ownerId'],
         });
         const user = await db.users.findOne({
             where: { id: offer.ownerId },
             attributes: ['nickname'],
         });
-        offer.dataValues.nickname = user.nickname;
-        offer.dataValues.type = 'offer';
-        pendingPosts.push(offer);
+        pendingPost.ownPostId = request.id;
+        pendingPost.ownPostName = request.name;
+        pendingPost.postId = offer.id;
+        pendingPost.postName = offer.name;
+        pendingPost.postType = 'offer';
+        pendingPost.userId = offer.ownerId;
+        pendingPost.nickname = user.nickname;
+        pendingPosts.push(pendingPost);
     }
     logger.log(
         `Got all Outgoing Pending Posts of user: ${userId}, sending back...`,
