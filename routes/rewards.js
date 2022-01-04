@@ -3,11 +3,29 @@ const express = require('express');
 const router = express.Router();
 
 // middlewares
-const { authenticateAdmin } = require('../middlewares/authentication');
+const {
+    authenticateAdmin,
+    authenticateUser,
+} = require('../middlewares/authentication');
 
 // controller
-const { getAllRewards, createReward } = require('../controllers/rewards');
+const {
+    getAllRewards,
+    createReward,
+    editReward,
+    deactivateReward,
+    getRewardById,
+} = require('../controllers/rewards');
 
-router.route('/').get(getAllRewards).post(authenticateAdmin, createReward);
+router
+    .route('/')
+    .get(authenticateUser, getAllRewards)
+    .post(authenticateAdmin, createReward);
+
+router
+    .route('/:rewardId')
+    .get(authenticateUser, getRewardById)
+    .put(authenticateAdmin, editReward)
+    .post(authenticateAdmin, deactivateReward);
 
 module.exports = router;
