@@ -7,6 +7,7 @@ const {
     BadRequestError,
     UnauthenticatedError,
     InternalServerError,
+    NotFoundError,
 } = require('../errors');
 
 const createRewardService = async (requestBody) => {
@@ -40,4 +41,33 @@ const getAllRewardsService = async () => {
     return rewards;
 };
 
-module.exports = { createRewardService, getAllRewardsService };
+const editRewardService = async (rewardId, requestBody) => {
+    const { name, description, greenCoins } = requestBody;
+    if (greenCoins <= 0) throw new BadRequestError(`Invalid greenCoins`);
+
+    const reward = await db.rewards.findOne({ where: { id: rewardId } });
+    if (!reward)
+        throw new NotFoundError(`Reward with id: ${rewardId} not found`);
+    logger.log(`Updating Reward with id: ${rewardId}...`, 1);
+    if (name) {
+        await reward.update({ name });
+    }
+    if (description) {
+        await reward.update({ description });
+    }
+    if (greenCoins) {
+        await reward.update({ greenCoins });
+    }
+    await reward.save();
+    logger.log(`Successfully updated Reward with id: ${rewardId}`, 1);
+    return;
+};
+
+const deactivateRewardService = async (rewardId) => {};
+
+module.exports = {
+    createRewardService,
+    getAllRewardsService,
+    editRewardService,
+    deactivateRewardService,
+};
