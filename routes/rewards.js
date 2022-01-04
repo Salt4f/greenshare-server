@@ -14,6 +14,7 @@ const {
     createReward,
     editReward,
     deactivateReward,
+    getRewardById,
 } = require('../controllers/rewards');
 
 router
@@ -23,6 +24,7 @@ router
 
 router
     .route('/:rewardId')
+    .get(authenticateUser, getRewardById)
     .put(authenticateAdmin, editReward)
     .post(authenticateAdmin, deactivateReward);
 
