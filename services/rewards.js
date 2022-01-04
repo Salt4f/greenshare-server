@@ -41,6 +41,15 @@ const getAllRewardsService = async () => {
     return rewards;
 };
 
+const getRewardByIdService = async (rewardId) => {
+    logger.log(`Searching Reward...`, 1);
+    const reward = await db.rewards.findOne({ where: { id: rewardId } });
+    if (!reward)
+        throw new NotFoundError(`Reward with id: ${rewardId} not found`);
+    logger.log(`Got Reward, returning it...`, 1);
+    return reward;
+};
+
 const editRewardService = async (rewardId, requestBody) => {
     const { name, description, greenCoins } = requestBody;
     if (greenCoins <= 0) throw new BadRequestError(`Invalid greenCoins`);
@@ -63,11 +72,25 @@ const editRewardService = async (rewardId, requestBody) => {
     return;
 };
 
-const deactivateRewardService = async (rewardId) => {};
+const deactivateRewardService = async (rewardId) => {
+    const reward = await db.rewards.findOne({ where: { id: rewardId } });
+    if (!reward)
+        throw new NotFoundError(`Reward with id ${rewardId} not found`);
+    if (reward.active === false)
+        throw new BadRequestError(
+            `Reward with id ${rewardId} is already deactivated`
+        );
+    logger.log(`Deactivating Reward...`, 1);
+    await reward.update({ active: false });
+    reward.save();
+    logger.log(`Successfully deactivated Reward with id: ${rewardId}...`, 1);
+    return;
+};
 
 module.exports = {
     createRewardService,
     getAllRewardsService,
     editRewardService,
     deactivateRewardService,
+    getRewardByIdService,
 };
