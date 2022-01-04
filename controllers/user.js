@@ -10,6 +10,8 @@ const {
     getIncomingAcceptedPosts,
     getOutgoingAcceptedPosts,
     updateUserEcoScoreService,
+    exchangeEcoPoints,
+    redeemReward,
 } = require('../services/user');
 const { tokenValidationService } = require('../services/auth');
 const { BadRequestError, UnauthenticatedError } = require('../errors');
@@ -144,6 +146,36 @@ const getAcceptedPosts = async (req, res, next) => {
     }
 };
 
+const redeem = async (req, res, next) => {
+    logger.log('Received redeem request...', 1);
+    try {
+        if (req.get('id') !== req.params.userId)
+            throw new UnauthenticatedError(
+                `User with id ${req.get(
+                    'id'
+                )} is trying to redeem someone else' Rewards`
+            );
+        const action = req.query.action;
+        if (action === 'green-coins') {
+            const { greenCoins, user } = await exchangeEcoPoints(
+                req.params.userId
+            );
+            res.status(StatusCodes.OK).json({
+                greenCoins: greenCoins,
+                currentGreenCoins: user.currentGreenCoins,
+            });
+        }
+        if (action === 'rewards') {
+            const { rewardId } = req.body;
+            const code = await redeemReward(req.params.userId, rewardId);
+            res.status(StatusCodes.OK).json({ code: code });
+        }
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
 module.exports = {
     getUser,
     getUserPosts,
@@ -151,4 +183,5 @@ module.exports = {
     getAcceptedPosts,
     getEcoScoreForm,
     updateEcoScore,
+    redeem,
 };

@@ -341,6 +341,41 @@ const requestOfferService = async (requestId, offerId) => {
     return;
 };
 
+const cancelRequestService = async (requestId, offerId) => {
+    logger.log(`Starting postsValidation...`, 1);
+    const { statusValidation, messageValidation, request, offer } =
+        await postsValidation(offerId, requestId);
+
+    if (statusValidation === false) {
+        throw new BadRequestError(messageValidation);
+    }
+    logger.log(messageValidation, 1);
+    logger.log(`Checking if offer has request as 'pendingRequests'...`, 1);
+    var exists = false;
+    for (let req of offer.Requests) {
+        if (req.dataValues.id == requestId) {
+            exists = true;
+        }
+    }
+    if (!exists)
+        throw new BadRequestError(
+            `Offer ${offerId} doesn't have Request ${requestId} as pendingRequests`
+        );
+    logger.log(`Validating status...`, 1);
+    if (request.status != 'pending') {
+        throw new BadRequestError(`Invalid request.status (not pending)`);
+    }
+    logger.log(`Removing Request from Offer...`, 1);
+    await offer.removeRequest(request);
+    logger.log(`Updating Request...`, 1);
+    await request.update({ status: 'idle' });
+    logger.log(
+        `Request with id ${requestId} successfully cancelled its request to Offer with id ${offerId}`,
+        1
+    );
+    return;
+};
+
 const acceptOfferService = async (requestId, offerId) => {
     logger.log(`Starting postsValidation...`, 1);
     const { statusValidation, messageValidation, request } =
@@ -443,4 +478,5 @@ module.exports = {
     requestOfferService,
     acceptOfferService,
     rejectOfferService,
+    cancelRequestService,
 };

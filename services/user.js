@@ -2,7 +2,12 @@ require('dotenv').config();
 const { StatusCodes } = require('http-status-codes');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
-const { UnauthenticatedError, NotFoundError } = require('../errors');
+const { generateCode } = require('../utils/code-generator');
+const {
+    UnauthenticatedError,
+    NotFoundError,
+    BadRequestError,
+} = require('../errors');
 
 const getUserAllInfo = async (requestUserId, paramsUserId) => {
     let user;
@@ -356,6 +361,42 @@ const getOutgoingAcceptedPosts = async (userId) => {
     return pendingAcceptedPosts;
 };
 
+const exchangeEcoPoints = async (userId) => {
+    const user = await db.users.findOne({ where: { id: userId } });
+
+    if (user.currentEcoPoints < 10)
+        throw new BadRequestError(
+            `User does not have enough balance to exchange eco points`
+        );
+
+    const greenCoins = user.currentEcoPoints / 10;
+    const newCurrentGreenCoins = user.currentGreenCoins + greenCoins;
+    await user.update({
+        currentEcoPoints: 0,
+        currentGreenCoins: newCurrentGreenCoins,
+    });
+    user.save();
+    return { greenCoins, user };
+};
+
+const redeemReward = async (userId, rewardId) => {
+    const reward = await db.rewards.findOne({ where: { id: rewardId } });
+    if (!reward)
+        throw new NotFoundError(
+            `Reward with id ${rewardId} does not exist in db`
+        );
+    const user = await db.users.findOne({ where: { id: userId } });
+    if (user.currentGreenCoins < reward.greenCoins)
+        throw new BadRequestError(
+            `User ${userId} doesn't have enough balance to redeem reward ${rewardId}`
+        );
+    const newCurrentGreenCoins = user.currentGreenCoins - reward.greenCoins;
+    await user.update({ currentGreenCoins: newCurrentGreenCoins });
+    user.save();
+    const code = await generateCode(25);
+    return code;
+};
+
 module.exports = {
     getUserAllInfo,
     getUserNickname,
@@ -366,4 +407,6 @@ module.exports = {
     getIncomingAcceptedPosts,
     getOutgoingAcceptedPosts,
     updateUserEcoScoreService,
+    exchangeEcoPoints,
+    redeemReward,
 };

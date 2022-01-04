@@ -9,8 +9,8 @@ const {
     acceptRequestService,
     rejectRequestService,
     completeRequestService,
+    cancelOfferService,
 } = require('../services/offers');
-
 const {
     createRequestService,
     editRequestService,
@@ -19,6 +19,7 @@ const {
     requestOfferService,
     acceptOfferService,
     rejectOfferService,
+    cancelRequestService,
 } = require('../services/requests');
 const { StatusCodes } = require('http-status-codes');
 
@@ -129,6 +130,17 @@ const requestOffer = async (req, res, next) => {
     }
 };
 
+const cancelRequest = async (req, res, next) => {
+    logger.log('Received cancelRequest request...', 1);
+    try {
+        await cancelRequestService(req.params.requestId, req.params.offerId);
+        res.status(StatusCodes.OK).send();
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
 const acceptRequest = async (req, res, next) => {
     logger.log('Received acceptRequest request...', 1);
     try {
@@ -178,6 +190,17 @@ const offerRequest = async (req, res, next) => {
     }
 };
 
+const cancelOffer = async (req, res, next) => {
+    logger.log('Received cancelRequest request...', 1);
+    try {
+        await cancelOfferService(req.params.requestId, req.params.offerId);
+        res.status(StatusCodes.OK).send();
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
 const acceptOffer = async (req, res, next) => {
     logger.log('Received acceptOffer request...', 1);
     try {
@@ -216,4 +239,6 @@ module.exports = {
     offerRequest,
     acceptOffer,
     rejectOffer,
+    cancelRequest,
+    cancelOffer,
 };

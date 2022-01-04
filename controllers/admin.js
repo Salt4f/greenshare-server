@@ -7,6 +7,7 @@ const {
     solveReportService,
     banUserService,
 } = require('../services/admin');
+const { check } = require('../utils/terminate-at-check');
 const { BadRequestError } = require('../errors');
 
 const report = async (req, res, next) => {
@@ -80,10 +81,22 @@ const banUser = async (req, res, next) => {
     }
 };
 
+const terminateAtCheck = async (req, res, next) => {
+    logger.log(`Received terminateAtCheck...`, 1);
+    try {
+        await check();
+        res.status(StatusCodes.OK).send();
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
 module.exports = {
     report,
     getAllReports,
     deactivatePost,
     solveReport,
     banUser,
+    terminateAtCheck,
 };
