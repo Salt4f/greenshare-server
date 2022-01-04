@@ -356,6 +356,18 @@ const getOutgoingAcceptedPosts = async (userId) => {
     return pendingAcceptedPosts;
 };
 
+const exchangeEcoPoints = async (userId) => {
+    const user = await db.users.findOne({ where: { id: userId } });
+    const greenCoins = user.currentEcoPoints / 10;
+    const newCurrentGreenCoins = user.currentGreenCoins + greenCoins;
+    await user.update({
+        currentEcoPoints: 0,
+        currentGreenCoins: newCurrentGreenCoins,
+    });
+    user.save();
+    return { greenCoins, user };
+};
+
 module.exports = {
     getUserAllInfo,
     getUserNickname,
@@ -366,4 +378,5 @@ module.exports = {
     getIncomingAcceptedPosts,
     getOutgoingAcceptedPosts,
     updateUserEcoScoreService,
+    exchangeEcoPoints,
 };
