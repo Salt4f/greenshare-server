@@ -26,6 +26,8 @@ const {
     offerRequest,
     acceptOffer,
     rejectOffer,
+    cancelRequest,
+    cancelOffer,
 } = require('../controllers/posts');
 
 const { deactivatePost } = require('../controllers/admin');
@@ -49,7 +51,8 @@ router
 // A Request is requesting to an Offer
 router
     .route('/offers/:offerId/request/:requestId')
-    .post(authenticateUser, requestOwnerAuth, requestOffer);
+    .post(authenticateUser, requestOwnerAuth, requestOffer)
+    .put(authenticateUser, requestOwnerAuth, cancelRequest);
 
 // An Offer accepts a Request from its pendingRequests
 router
@@ -84,7 +87,8 @@ router
 // An Offer is offering to a Request
 router
     .route('/requests/:requestId/offer/:offerId')
-    .post(authenticateUser, offerOwnerAuth, offerRequest);
+    .post(authenticateUser, offerOwnerAuth, offerRequest)
+    .put(authenticateUser, offerOwnerAuth, cancelOffer);
 
 // Accept an Offer of pendingOffers from a Request
 router

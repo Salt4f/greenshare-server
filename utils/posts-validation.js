@@ -14,7 +14,7 @@ const postsValidation = async (offerId, requestId) => {
         include: { model: db.requests },
     });
     logger.log(`Checking if they exist...`, 1);
-    if (request === null || offer === null) {
+    if (!request || !offer) {
         logger.log(`Invalid requestId or offerId`, 1);
         statusValidation = false;
         messageValidation = `Invalid requestId or offerId`;
