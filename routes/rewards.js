@@ -3,11 +3,17 @@ const express = require('express');
 const router = express.Router();
 
 // middlewares
-const { authenticateAdmin } = require('../middlewares/authentication');
+const {
+    authenticateAdmin,
+    authenticateUser,
+} = require('../middlewares/authentication');
 
 // controller
 const { getAllRewards, createReward } = require('../controllers/rewards');
 
-router.route('/').get(getAllRewards).post(authenticateAdmin, createReward);
+router
+    .route('/')
+    .get(authenticateUser, getAllRewards)
+    .post(authenticateAdmin, createReward);
 
 module.exports = router;

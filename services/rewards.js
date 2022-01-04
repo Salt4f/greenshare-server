@@ -10,7 +10,6 @@ const {
 } = require('../errors');
 
 const createRewardService = async (requestBody) => {
-    console.log(requestBody);
     const { name, description, sponsorName, greenCoins } = requestBody;
     logger.log(`Validating Reward...`, 1);
     const { passed, message } = validate.reward(
@@ -32,4 +31,13 @@ const createRewardService = async (requestBody) => {
     return reward;
 };
 
-module.exports = { createRewardService };
+const getAllRewardsService = async () => {
+    logger.log(`Getting all rewards...`, 1);
+    const rewards = await db.rewards.findAll({
+        where: { active: true },
+        attributes: ['id', 'name', 'description', 'sponsorName', 'greenCoins'],
+    });
+    return rewards;
+};
+
+module.exports = { createRewardService, getAllRewardsService };
