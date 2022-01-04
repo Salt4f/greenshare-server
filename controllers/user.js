@@ -11,6 +11,7 @@ const {
     getOutgoingAcceptedPosts,
     updateUserEcoScoreService,
     exchangeEcoPoints,
+    redeemReward,
 } = require('../services/user');
 const { tokenValidationService } = require('../services/auth');
 const { BadRequestError, UnauthenticatedError } = require('../errors');
@@ -165,6 +166,9 @@ const redeem = async (req, res, next) => {
             });
         }
         if (action === 'rewards') {
+            const { rewardId } = req.body;
+            const code = await redeemReward(req.params.userId, rewardId);
+            res.status(StatusCodes.OK).json({ code: code });
         }
     } catch (error) {
         logger.log(error.message, 0);
