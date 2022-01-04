@@ -6,6 +6,7 @@ const auth = require('./routes/auth.js');
 const posts = require('./routes/posts');
 const user = require('./routes/user');
 const admin = require('./routes/admin');
+const rewards = require('./routes/rewards');
 
 const logger = require('./utils/logger');
 const job = require('./utils/cron');
@@ -27,6 +28,7 @@ app.use('/api/auth', bannedCheck, auth);
 app.use('/api/posts', bannedCheck, posts);
 app.use('/api/user', bannedCheck, user);
 app.use('/api/admin', authenticateAdmin, admin);
+app.use('/api/rewards', bannedCheck, rewards);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

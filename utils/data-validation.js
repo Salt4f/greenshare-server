@@ -180,10 +180,20 @@ function tags(_tags) {
 function icon(_icon) {
     let passed = false;
 
-    if (_icon === undefined || _icon.length == 0) {
+    if (_icon === undefined || _icon.length === 0) {
         return { passed };
     }
 
+    passed = true;
+
+    return { passed };
+}
+
+function greenCoins(_greenCoins) {
+    let passed = false;
+    if (!_greenCoins || isNaN(_greenCoins) || _greenCoins <= 0) {
+        return { passed };
+    }
     passed = true;
 
     return { passed };
@@ -349,6 +359,31 @@ function tokenValidation(_id, _token) {
     return { passed, message };
 }
 
+function reward(_name, _description, _sponsorName, _greenCoins) {
+    let passed = false;
+    let message = '';
+    if (!description(_description).passed) {
+        message = `Invalid description`;
+        return { passed, message };
+    }
+    if (!name(_name).passed) {
+        message = `Invalid name`;
+        return { passed, message };
+    }
+    if (!name(_sponsorName).passed) {
+        message = `Invalid sponsorName`;
+        return { passed, message };
+    }
+    if (!greenCoins(_greenCoins).passed) {
+        message = `Invalid greenCoins`;
+        return { passed, message };
+    }
+    passed = true;
+    message = 'Data validation passed';
+
+    return { passed, message };
+}
+
 module.exports = {
     email,
     nickname,
@@ -368,4 +403,5 @@ module.exports = {
     register,
     login,
     tokenValidation,
+    reward,
 };

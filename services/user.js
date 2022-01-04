@@ -15,6 +15,10 @@ const getUserAllInfo = async (requestUserId, paramsUserId) => {
                 id: paramsUserId,
             },
         });
+        if (!user)
+            throw new NotFoundError(
+                `User with id ${paramsUserId} does not exist`
+            );
     } else {
         throw new UnauthenticatedError(
             `User with id ${requestUserId} is trying to get someone else's info`
@@ -131,6 +135,18 @@ const getUserValorationsService = async (userId) => {
     return sum;
 };
 
+const updateUserEcoScoreService = async (userId, ecoScore) => {
+    const user = await db.users.findOne({ where: { id: userId } });
+    if (!user)
+        throw new NotFoundError(
+            `User with id ${userId} does not exist in backend db`
+        );
+    await user.update({ ecoScore: ecoScore });
+    user.save();
+    logger.log(`Successfully udpated user's ecoScore`, 1);
+    return;
+};
+
 const getIncomingPendingPosts = async (userId) => {
     let pendingPosts = [];
 
@@ -150,7 +166,7 @@ const getIncomingPendingPosts = async (userId) => {
         if (offer.dataValues.Requests.length > 0) {
             let post = {};
             post.ownPostId = offer.id;
-            post.postName = offer.name;
+            post.ownPostName = offer.name;
             post.posts = [];
             const requests = offer.dataValues.Requests;
             for (let request of requests) {
@@ -185,7 +201,7 @@ const getIncomingPendingPosts = async (userId) => {
         if (request.dataValues.Offers.length > 0) {
             let post = {};
             post.ownPostId = request.id;
-            post.postName = request.name;
+            post.ownPostName = request.name;
             post.posts = [];
             const offers = request.dataValues.Offers;
             for (let offer of offers) {
@@ -349,4 +365,5 @@ module.exports = {
     getOutgoingPendingPosts,
     getIncomingAcceptedPosts,
     getOutgoingAcceptedPosts,
+    updateUserEcoScoreService,
 };
