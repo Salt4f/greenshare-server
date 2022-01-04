@@ -166,7 +166,7 @@ const getIncomingPendingPosts = async (userId) => {
         if (offer.dataValues.Requests.length > 0) {
             let post = {};
             post.ownPostId = offer.id;
-            post.postName = offer.name;
+            post.ownPostName = offer.name;
             post.posts = [];
             const requests = offer.dataValues.Requests;
             for (let request of requests) {
@@ -201,7 +201,7 @@ const getIncomingPendingPosts = async (userId) => {
         if (request.dataValues.Offers.length > 0) {
             let post = {};
             post.ownPostId = request.id;
-            post.postName = request.name;
+            post.ownPostName = request.name;
             post.posts = [];
             const offers = request.dataValues.Offers;
             for (let offer of offers) {
