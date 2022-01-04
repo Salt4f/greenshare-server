@@ -41,6 +41,7 @@ db.tags = require('./models/Tag')(sequelize, Sequelize);
 db.photos = require('./models/Photo')(sequelize, Sequelize);
 db.posts = require('./models/Post')(sequelize, Sequelize);
 db.reports = require('./models/Report')(sequelize, Sequelize);
+db.rewards = require('./models/Reward')(sequelize, Sequelize);
 
 // Relations
 db.offers.belongsTo(db.users, { foreignKey: 'ownerId' });
