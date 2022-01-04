@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 defaultValue: 0,
             },
+            currentGreenCoins: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
+            },
             banned: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: false,

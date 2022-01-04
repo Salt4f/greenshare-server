@@ -10,6 +10,7 @@ const {
     getAcceptedPosts,
     getEcoScoreForm,
     updateEcoScore,
+    redeem,
 } = require('../controllers/user');
 const { report, banUser } = require('../controllers/admin');
 
@@ -34,9 +35,13 @@ router
 // PENDING POSTS
 router.route('/:userId/pending-posts').get(authenticateUser, getPendingPosts);
 
+// ACCEPTEDPOSTS
 router.route('/:userId/accepted-posts').get(authenticateUser, getAcceptedPosts);
 
-// ACCEPTEDPOSTS
+// BAN USER
 router.route('/:userId/ban').post(authenticateAdmin, banUser);
+
+// REDEEM
+router.route('/:userId/redeem').post(authenticateUser, redeem);
 
 module.exports = router;
