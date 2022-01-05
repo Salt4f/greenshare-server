@@ -13,44 +13,53 @@ const authenticateUser = async (req, res, next) => {
     logger.log(`Starting authenticateUser...`, 1);
     logger.log(`Validating user...`, 1);
     try {
-        if (
-            req.get('id') === process.env.ADMIN_ID &&
-            req.get('token') === process.env.ADMIN_TOKEN
-        ) {
-            logger.log(`Successfully authenticated Admin`, 1);
-            next();
-        } else {
-            logger.log(`Checking if user exists in back-end database...`, 1);
-            const user = await db.users.findOne({
-                where: { id: req.get('id') },
-            });
-            if (user != null) {
+        if (req.get('id') && req.get('token')) {
+            logger.log(`Request has id and token, authenticating...`, 1);
+            if (
+                req.get('id') === process.env.ADMIN_ID &&
+                req.get('token') === process.env.ADMIN_TOKEN
+            ) {
+                logger.log(`Successfully authenticated Admin`, 1);
+                next();
+            } else {
                 logger.log(
-                    `Got user, sending request to tokenValidation of UserService...`,
+                    `Checking if user exists in back-end database...`,
                     1
                 );
-                const response = await tokenValidationRequest(
-                    req.get('id'),
-                    req.get('token')
-                );
-                if (response.status == StatusCodes.CREATED) {
+                const user = await db.users.findOne({
+                    where: { id: req.get('id') },
+                });
+                if (user != null) {
                     logger.log(
-                        `User successfuly validated, sending response...`,
+                        `Got user, sending request to tokenValidation of UserService...`,
                         1
                     );
-
-                    next();
+                    const response = await tokenValidationRequest(
+                        req.get('id'),
+                        req.get('token')
+                    );
+                    if (response.status == StatusCodes.CREATED) {
+                        logger.log(
+                            `User successfuly validated, sending response...`,
+                            1
+                        );
+                        next();
+                    } else {
+                        throw new UnauthenticatedError(
+                            'Invalid token or id on UserService'
+                        );
+                    }
                 } else {
                     throw new UnauthenticatedError(
-                        'Invalid token or id on UserService'
+                        `No user with id: ${req.get('id')} in back-end`
                     );
                 }
-            } else {
-                throw new UnauthenticatedError(
-                    `No user with id: ${req.get('id')} in back-end`
-                );
             }
-        }
+        } else if (req.get('api-key')) {
+            logger.log(`Request has API KEY`, 1);
+            if (req.get('api-key') === process.env.API_KEY) next();
+            else throw new UnauthenticatedError(`Wrong API KEY`);
+        } else throw new UnauthenticatedError(`Missing id or token`);
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -131,22 +140,6 @@ const requestOwnerAuth = async (req, res, next) => {
     }
 };
 
-const headersCheck = async (req, res, next) => {
-    logger.log(`Checking if request has headers...`, 1);
-    try {
-        if (req.get('id')) {
-            logger.log(`Request has headers`, 1);
-            await authenticateUser(req, res, next);
-        } else {
-            logger.log(`Request doesn't have headers`, 1);
-            next();
-        }
-    } catch (error) {
-        logger.log(error.message, 0);
-        next(error);
-    }
-};
-
 const authenticateAdmin = async (req, res, next) => {
     try {
         if (
@@ -190,7 +183,6 @@ module.exports = {
     authenticateUser,
     offerOwnerAuth,
     requestOwnerAuth,
-    headersCheck,
     authenticateAdmin,
     bannedCheck,
 };

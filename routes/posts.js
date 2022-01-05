@@ -6,7 +6,6 @@ const {
     authenticateUser,
     offerOwnerAuth,
     requestOwnerAuth,
-    headersCheck,
 } = require('../middlewares/authentication');
 
 // controller
@@ -34,73 +33,65 @@ const { deactivatePost } = require('../controllers/admin');
 
 const { report } = require('../controllers/admin');
 // OFFERS
-router
-    .route('/offers')
-    .post(authenticateUser, createOffer)
-    .get(headersCheck, getOffersByQuery);
+router.route('/offers').post(createOffer).get(getOffersByQuery);
 
 router
     .route('/offers/:offerId')
-    .put(authenticateUser, offerOwnerAuth, editOffer)
+    .put(offerOwnerAuth, editOffer)
     .get(getOfferById);
 
 router
     .route('/offers/:offerId/deactivate')
-    .post(authenticateUser, offerOwnerAuth, deactivatePost);
+    .post(offerOwnerAuth, deactivatePost);
 
 // A Request is requesting to an Offer
 router
     .route('/offers/:offerId/request/:requestId')
-    .post(authenticateUser, requestOwnerAuth, requestOffer)
-    .put(authenticateUser, requestOwnerAuth, cancelRequest);
+    .post(requestOwnerAuth, requestOffer)
+    .put(requestOwnerAuth, cancelRequest);
 
 // An Offer accepts a Request from its pendingRequests
 router
     .route('/offers/:offerId/request/:requestId/accept')
-    .post(authenticateUser, offerOwnerAuth, acceptRequest);
+    .post(offerOwnerAuth, acceptRequest);
 
 // An Offer rejects a Request from its pendingRequests
-router
-    .route('/offers/:offerId/request/:requestId/reject')
-    .post(authenticateUser, offerOwnerAuth, rejectRequest);
+router.route('/offers/:offerId/request/:requestId/reject').post(rejectRequest);
 
 // A Request confirms end of transaction (completed)
 router
     .route('/offers/:offerId/request/:requestId/completed')
-    .post(authenticateUser, requestOwnerAuth, completeRequest);
+    .post(requestOwnerAuth, completeRequest);
 
 // REQUESTS
-router
-    .route('/requests')
-    .post(authenticateUser, createRequest)
-    .get(headersCheck, getRequestsByQuery);
+router.route('/requests').post(createRequest).get(getRequestsByQuery);
 
 router
     .route('/requests/:requestId')
-    .put(authenticateUser, requestOwnerAuth, editRequest)
+    .put(requestOwnerAuth, editRequest)
     .get(getRequestById);
 
 router
     .route('/requests/:requestId/deactivate')
-    .post(authenticateUser, requestOwnerAuth, deactivatePost);
+    .post(requestOwnerAuth, deactivatePost);
 
 // An Offer is offering to a Request
 router
     .route('/requests/:requestId/offer/:offerId')
-    .post(authenticateUser, offerOwnerAuth, offerRequest)
-    .put(authenticateUser, offerOwnerAuth, cancelOffer);
+    .post(offerOwnerAuth, offerRequest)
+    .put(offerOwnerAuth, cancelOffer);
 
 // Accept an Offer of pendingOffers from a Request
 router
     .route('/requests/:requestId/offer/:offerId/accept')
-    .post(authenticateUser, requestOwnerAuth, acceptOffer);
+    .post(requestOwnerAuth, acceptOffer);
 
 // A Request rejects an Offer from its pendingOffers
 router
     .route('/requests/:requestId/offer/:offerId/reject')
-    .post(authenticateUser, requestOwnerAuth, rejectOffer);
+    .post(requestOwnerAuth, rejectOffer);
 
 // REPORT
-router.route('/:postId/report').post(authenticateUser, report);
+router.route('/:postId/report').post(report);
 
 module.exports = router;
