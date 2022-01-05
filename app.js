@@ -14,6 +14,7 @@ const job = require('./utils/cron');
 const {
     bannedCheck,
     authenticateAdmin,
+    authenticateUser,
 } = require('./middlewares/authentication');
 const notFoundMiddleware = require('./middlewares/not-found');
 const errorHandlerMiddleware = require('./middlewares/error-handler');
@@ -25,7 +26,7 @@ app.use(express.json({ limit: '200MB' }));
 
 // Routes
 app.use('/api/auth', bannedCheck, auth);
-app.use('/api/posts', bannedCheck, posts);
+app.use('/api/posts', bannedCheck, authenticateUser, posts);
 app.use('/api/user', bannedCheck, user);
 app.use('/api/admin', authenticateAdmin, admin);
 app.use('/api/rewards', bannedCheck, rewards);
