@@ -306,18 +306,21 @@ const getIncomingAcceptedPosts = async (userId) => {
             where: { id: acceptedPost.requestId },
         });
         if (request.ownerId == userId) {
+            let pendingAcceptedPost = {};
             const offer = await db.offers.findOne({
                 where: { id: acceptedPost.offerId },
-                attributes: ['name', 'ownerId'],
+                attributes: ['id', 'name', 'ownerId'],
             });
             const user = await db.users.findOne({
                 where: { id: offer.ownerId },
                 attributes: ['nickname'],
             });
-            offer.dataValues.nickname = user.nickname;
-
-            acceptedPost.dataValues.offer = offer;
-            pendingAcceptedPosts.push(acceptedPost);
+            pendingAcceptedPost.offerId = offer.id;
+            pendingAcceptedPost.offerName = offer.name;
+            pendingAcceptedPost.requestId = request.id;
+            pendingAcceptedPost.userName = user.nickname;
+            pendingAcceptedPost.userId = offer.ownerId;
+            pendingAcceptedPosts.push(pendingAcceptedPost);
         }
     }
     logger.log(
@@ -338,20 +341,24 @@ const getOutgoingAcceptedPosts = async (userId) => {
     for (const acceptedPost of acceptedPosts) {
         const offer = await db.offers.findOne({
             where: { id: acceptedPost.offerId },
-            attributes: ['name', 'ownerId'],
+            attributes: ['id', 'name', 'ownerId'],
         });
         if (offer.ownerId == userId) {
+            let pendingAcceptedPost = {};
             const request = await db.requests.findOne({
                 where: { id: acceptedPost.requestId },
-                attributes: ['ownerId'],
+                attributes: ['id', 'ownerId'],
             });
             const user = await db.users.findOne({
                 where: { id: request.ownerId },
                 attributes: ['nickname'],
             });
-            acceptedPost.dataValues.name = offer.name;
-            acceptedPost.dataValues.nickname = user.nickname;
-            pendingAcceptedPosts.push(acceptedPost);
+            pendingAcceptedPost.offerId = offer.id;
+            pendingAcceptedPost.offerName = offer.name;
+            pendingAcceptedPost.requestId = request.id;
+            pendingAcceptedPost.userName = user.nickname;
+            pendingAcceptedPost.userId = request.ownerId;
+            pendingAcceptedPosts.push(pendingAcceptedPost);
         }
     }
     logger.log(

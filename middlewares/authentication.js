@@ -163,7 +163,8 @@ const bannedCheck = async (req, res, next) => {
             const user = await db.users.findOne({
                 where: { id: req.get('id') },
             });
-            if (user.banned === true) throw new ForbidenError(`User banned`);
+            if (user && user.banned === true)
+                throw new ForbidenError(`User banned`);
         }
         if (req.body.email) {
             const user = await db.users.findOne({
