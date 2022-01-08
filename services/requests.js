@@ -241,10 +241,10 @@ const getRequestsByQueryService = async (requestQuery, userId) => {
             );
             continue;
         }
-        let count = 0;
+        var count = 0;
         for (const tag of request.tags) {
             for (const tagQuery of tagsArray) {
-                if (tagQuery.name == tag.name) count++;
+                if (tagQuery == tag.name) count++;
             }
         }
         if (numTags == count) {
