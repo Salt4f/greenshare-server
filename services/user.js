@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { StatusCodes } = require('http-status-codes');
+const dataEncoding = require('../utils/data');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
 const { generateCode } = require('../utils/code-generator');
@@ -57,7 +58,7 @@ const getUserOffers = async (userId) => {
     logger.log(`Searching offers...`, 1);
     const offers = await db.offers.findAll({
         where: { ownerId: userId },
-        attributes: ['id', 'active', 'name', 'description', 'status'],
+        attributes: ['id', 'active', 'name', 'description', 'status', 'icon'],
         include: [
             {
                 association: 'tags',
@@ -71,6 +72,9 @@ const getUserOffers = async (userId) => {
     } else {
         logger.log('Cleaning up tags...', 1);
         for (const offer of offers) {
+            logger.log('Encoding icon to base64...', 1);
+            offer.icon = dataEncoding.bufferToBase64(offer.icon);
+            logger.log('Encoded icon to base64', 1);
             for (let t of offer.tags) {
                 delete t.dataValues.OfferTag;
             }
