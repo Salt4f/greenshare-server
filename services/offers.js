@@ -327,7 +327,6 @@ const getOffersByQueryService = async (requestQuery, userId) => {
     });
 
     const queryLocation = location.replace(',', '.').split(';');
-
     let numTags = tagsArray.length;
     logger.log(`Checking tags...`, 1);
     for (const offer of offers) {
@@ -338,10 +337,10 @@ const getOffersByQueryService = async (requestQuery, userId) => {
             );
             continue;
         }
-        let count = 0;
+        var count = 0;
         for (const tag of offer.tags) {
             for (const tagQuery of tagsArray) {
-                if (tagQuery.name == tag.name) count++;
+                if (tagQuery == tag.name) count++;
             }
         }
 
