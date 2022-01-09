@@ -57,7 +57,7 @@ const getUserNickname = async (userId) => {
 const getUserOffers = async (userId) => {
     logger.log(`Searching offers...`, 1);
     const offers = await db.offers.findAll({
-        where: { ownerId: userId },
+        where: { ownerId: userId, active: true },
         attributes: ['id', 'active', 'name', 'description', 'status', 'icon'],
         include: [
             {
@@ -88,7 +88,7 @@ const getUserOffers = async (userId) => {
 const getUserRequests = async (userId) => {
     logger.log(`Searching requests...`, 1);
     const requests = await db.requests.findAll({
-        where: { ownerId: userId },
+        where: { ownerId: userId, active: true },
         attributes: ['id', 'active', 'name', 'description', 'status'],
         include: [
             {
