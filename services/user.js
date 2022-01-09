@@ -302,10 +302,17 @@ const getIncomingAcceptedPosts = async (userId) => {
 
     logger.log(`Getting acceptedPosts...`, 1);
     const acceptedPosts = await db.acceptedPosts.findAll({
-        attributes: ['offerId', 'requestId'],
+        attributes: ['id', 'offerId', 'requestId'],
     });
     logger.log(`Checking acceptedPosts...`, 1);
     for (const acceptedPost of acceptedPosts) {
+        const completedPost = await db.completedPosts.findOne({
+            where: { acceptedPostId: acceptedPost.id },
+        });
+        if (completedPost) {
+            logger.log(`This post is already completed, skipping...`, 1);
+            continue;
+        }
         const request = await db.requests.findOne({
             where: { id: acceptedPost.requestId },
         });
@@ -339,10 +346,18 @@ const getOutgoingAcceptedPosts = async (userId) => {
 
     logger.log(`Getting acceptedPosts...`, 1);
     const acceptedPosts = await db.acceptedPosts.findAll({
-        attributes: ['offerId', 'requestId'],
+        attributes: ['id', 'offerId', 'requestId'],
     });
     logger.log(`Checking acceptedPosts...`, 1);
     for (const acceptedPost of acceptedPosts) {
+        const completedPost = await db.completedPosts.findOne({
+            where: { acceptedPostId: acceptedPost.id },
+        });
+        if (completedPost) {
+            logger.log(`This post is already completed, skipping...`, 1);
+            continue;
+        }
+
         const offer = await db.offers.findOne({
             where: { id: acceptedPost.offerId },
             attributes: ['id', 'name', 'ownerId'],
