@@ -45,6 +45,10 @@ const start = async () => {
                     id: process.env.ADMIN_ID,
                     email: process.env.ADMIN_EMAIL,
                     nickname: 'admin',
+                    dni: '26125342X',
+                    birthDate: '2000-11-06T00:00:00Z',
+                    fullName: 'Admin GreenShare',
+                    aboutMe: `I'm the Admin of the GreenShare mobile app!`,
                 },
             });
             job.start();
