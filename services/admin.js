@@ -14,8 +14,9 @@ const reportService = async (itemId, type, reporterId, message) => {
     if (!message) {
         throw new BadRequestError(`Message is mandatory`);
     }
-
+    let customType = '';
     if (type === 'user') {
+        customType = 'user';
         if (reporterId === itemId) {
             throw new BadRequestError(
                 `User with id ${reporterId} is reporting himself`
@@ -24,6 +25,7 @@ const reportService = async (itemId, type, reporterId, message) => {
     } else {
         const post = await db.posts.findOne({ where: { id: itemId } });
         if (post.type === 'offer') {
+            customType = 'offer';
             const offer = await db.offers.findOne({ where: { id: itemId } });
             if (offer.ownerId == reporterId) {
                 throw new BadRequestError(
@@ -31,6 +33,7 @@ const reportService = async (itemId, type, reporterId, message) => {
                 );
             }
         } else {
+            customType = 'request';
             const request = await db.requests.findOne({
                 where: { id: itemId },
             });
@@ -48,7 +51,7 @@ const reportService = async (itemId, type, reporterId, message) => {
         1
     );
     const report = await db.reports.create({
-        type,
+        type: customType,
         itemId,
         reporterId,
         message,
@@ -58,16 +61,28 @@ const reportService = async (itemId, type, reporterId, message) => {
 };
 
 const getAllReportsService = async () => {
-    let status, infoMessage;
     logger.log(`Getting all reports...`, 1);
     const reports = await db.reports.findAll({ where: { solved: false } });
+    if (reports.length === 0) logger.log(`There's no reports yet`, 1);
 
-    if (!reports) {
-        status = StatusCodes.OK;
-        infoMessage = [];
-        return { status, infoMessage };
+    for (const report of reports) {
+        if (report.type === 'user') {
+            const user = await db.users.findOne({
+                where: { id: report.itemId },
+            });
+            report.dataValues.userName = user.nickname;
+        } else if (report.type === 'offer') {
+            const offer = await db.offers.findOne({
+                where: { id: report.itemId },
+            });
+            report.dataValues.postName = offer.name;
+        } else if (report.type === 'request') {
+            const request = await db.requests.findOne({
+                where: { id: report.itemId },
+            });
+            report.dataValues.postName = request.name;
+        }
     }
-
     return reports;
 };
 
