@@ -70,17 +70,17 @@ const getAllReportsService = async () => {
             const user = await db.users.findOne({
                 where: { id: report.itemId },
             });
-            report.dataValues.userName = user.nickname;
+            report.dataValues.itemName = user.nickname;
         } else if (report.type === 'offer') {
             const offer = await db.offers.findOne({
                 where: { id: report.itemId },
             });
-            report.dataValues.postName = offer.name;
+            report.dataValues.itemName = offer.name;
         } else if (report.type === 'request') {
             const request = await db.requests.findOne({
                 where: { id: report.itemId },
             });
-            report.dataValues.postName = request.name;
+            report.dataValues.itemName = request.name;
         }
     }
     return reports;
