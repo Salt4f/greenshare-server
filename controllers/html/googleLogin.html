@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Greenshare Login</title>
+        <script src="https://accounts.google.com/gsi/client"></script>
+    </head>
+    <body>
+        <h1>Login</h1>
+        <div
+            id="g_id_onload"
+            data-client_id="187662020863-n7gv22gi7g2meiovfcf7pmi5bebibm1o.apps.googleusercontent.com"
+            data-context="signin"
+            data-ux_mode="redirect"
+            data-login_uri="http://localhost:13000/google/login?token=[UNIQUETOKEN]"
+            data-auto_prompt="false"
+        ></div>
+        <div
+            class="g_id_signin"
+            data-type="standard"
+            data-shape="pill"
+            data-theme="outline"
+            data-text="signin_with"
+            data-size="large"
+            data-logo_alignment="left"
+        ></div>
+    </body>
+</html>
