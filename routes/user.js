@@ -5,6 +5,7 @@ const router = express.Router();
 // controller
 const {
     getUser,
+    editUserInfo,
     getUserPosts,
     getPendingPosts,
     getAcceptedPosts,
@@ -20,7 +21,7 @@ const {
     authenticateAdmin,
 } = require('../middlewares/authentication');
 
-router.route('/:userId').get(getUser);
+router.route('/:userId').get(getUser).put(authenticateUser, editUserInfo);
 
 router.route('/:userId/report').post(authenticateUser, report);
 
