@@ -35,6 +35,7 @@ const login = async (req, res, next) => {
             return;
         }
         let loginHTML = fs.readFileSync(path.resolve(__dirname, './html/googleLogin.html')).toString();
+        loginHTML = loginHTML.replace('[BASEURL]', process.env.LOGIN_BASE_URL);
         loginHTML = loginHTML.replace('[UNIQUETOKEN]', token);
         res.send(loginHTML);
         return;
