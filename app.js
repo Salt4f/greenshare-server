@@ -2,12 +2,12 @@ const express = require('express');
 const app = express();
 const db = require('./db/connect');
 
+const google = require('./routes/google.js');
 const auth = require('./routes/auth.js');
 const posts = require('./routes/posts');
 const user = require('./routes/user');
 const admin = require('./routes/admin');
 const rewards = require('./routes/rewards');
-
 const logger = require('./utils/logger');
 const job = require('./utils/cron');
 
@@ -23,8 +23,10 @@ require('dotenv').config();
 
 // Middlewares
 app.use(express.json({ limit: '200MB' }));
+app.use(express.urlencoded({extended: true}));
 
 // Routes
+app.use('/google', google);
 app.use('/api/auth', bannedCheck, auth);
 app.use('/api/posts', bannedCheck, authenticateUser, posts);
 app.use('/api/user', bannedCheck, user);
