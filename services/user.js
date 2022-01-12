@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { StatusCodes } = require('http-status-codes');
 const dataEncoding = require('../utils/data');
+const validate = require('../utils/data-validation');
 const db = require('../db/connect');
 const logger = require('../utils/logger');
 const { generateCode } = require('../utils/code-generator');
@@ -52,6 +53,33 @@ const getUserNickname = async (userId) => {
     }
     logger.log(`Got user with id: ${userId}, sending response...`, 1);
     return user;
+};
+
+const editUserInfoService = async (userId, { nickname, aboutMe }) => {
+    logger.log(`Finding user...`, 1);
+    const user = await db.users.findOne({ where: { id: userId } });
+    if (!user)
+        throw new NotFoundError(`User ${userId} does not exist in backend db`);
+    if (nickname || aboutMe) {
+        if (nickname) {
+            const dataValidation = validate.nickname(nickname);
+            console.log(nickname);
+            console.log(dataValidation);
+            if (dataValidation) {
+                logger.log(`Updating nickname...`, 1);
+                await user.update({ nickname });
+            } else throw new BadRequestError(`Invalid nickname`);
+        }
+        if (aboutMe) {
+            const dataValidation = validate.description(aboutMe);
+            if (dataValidation) {
+                logger.log(`Updating description...`, 1);
+                await user.update({ aboutMe });
+            } else throw new BadRequestError(`Invalid description`);
+        }
+        await user.save();
+        logger.log(`Successfully updated user ${userId}'s info`, 1);
+    } else throw new BadRequestError(`Invalid Request Body`);
 };
 
 const getUserOffers = async (userId) => {
@@ -426,6 +454,7 @@ const redeemReward = async (userId, rewardId) => {
 module.exports = {
     getUserAllInfo,
     getUserNickname,
+    editUserInfoService,
     getUserOffers,
     getUserRequests,
     getIncomingPendingPosts,

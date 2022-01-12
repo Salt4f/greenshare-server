@@ -2,6 +2,7 @@ const { StatusCodes } = require('http-status-codes');
 const logger = require('../utils/logger');
 const {
     getUserAllInfo,
+    editUserInfoService,
     getUserNickname,
     getUserOffers,
     getUserRequests,
@@ -14,7 +15,11 @@ const {
     redeemReward,
 } = require('../services/user');
 const { tokenValidationService } = require('../services/auth');
-const { BadRequestError, UnauthenticatedError } = require('../errors');
+const {
+    BadRequestError,
+    UnauthenticatedError,
+    ForbidenError,
+} = require('../errors');
 const { default: axios } = require('axios');
 
 const getUser = async (req, res, next) => {
@@ -30,6 +35,21 @@ const getUser = async (req, res, next) => {
             const nickname = await getUserNickname(req.params.userId);
             res.status(StatusCodes.OK).json(nickname);
         }
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
+const editUserInfo = async (req, res, next) => {
+    logger.log(`Received editUserInfo request...`, 1);
+    try {
+        if (req.get('id') !== req.params.userId)
+            throw new ForbidenError(
+                `User ${req.get('id')} is trying to edit someone else info`
+            );
+        await editUserInfoService(req.params.userId, req.body);
+        res.status(StatusCodes.OK).send();
     } catch (error) {
         logger.log(error.message, 0);
         next(error);
@@ -178,6 +198,7 @@ const redeem = async (req, res, next) => {
 
 module.exports = {
     getUser,
+    editUserInfo,
     getUserPosts,
     getPendingPosts,
     getAcceptedPosts,
