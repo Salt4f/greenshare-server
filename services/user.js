@@ -51,6 +51,10 @@ const getUserNickname = async (userId) => {
     if (!user) {
         throw new NotFoundError(`No user with id: ${userId} in back-end`);
     }
+    logger.log(`Calculating user average valoration..`, 1);
+    const valoration = await getUserValorationsService(userId);
+    user.dataValues.valoration = valoration;
+    logger.log(`Got user average valoration..`, 1);
     logger.log(`Got user with id: ${userId}, sending response...`, 1);
     return user;
 };
