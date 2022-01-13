@@ -311,13 +311,13 @@ const requestOfferService = async (requestId, offerId) => {
     }
     logger.log(messageValidation, 1);
     logger.log(
-        `Checking if offer already has request as 'pendingRequests'...`,
+        `Checking if user already requested to Offer with id: ${offerId}..`,
         1
     );
     for (let req of offer.Requests) {
-        if (req.dataValues.id == requestId) {
+        if (req.dataValues.ownerId == request.ownerId) {
             throw new BadRequestError(
-                `Request with id: ${requestId} already requested to Offer with id: ${offerId}`
+                `User with id: ${request.ownerId} already requested to Offer with id: ${offerId}`
             );
         }
     }
