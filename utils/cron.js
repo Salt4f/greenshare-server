@@ -1,5 +1,6 @@
 const nodeCron = require('node-cron');
 const db = require('../db/connect');
+const { exchangeEcoPointsService } = require('../services/admin');
 
 const job = nodeCron.schedule('*/30 * * * *', async () => {
     const offers = await db.offers.findAll({ where: { active: true } });
@@ -22,4 +23,12 @@ const job = nodeCron.schedule('*/30 * * * *', async () => {
     }
 });
 
-module.exports = job;
+const exchangeJobFirst = nodeCron.schedule('0 0 1 * *', async () => {
+    await exchangeEcoPointsService();
+});
+
+const exchangeJobSecond = nodeCron.schedule('0 0 15 * *', async () => {
+    await exchangeEcoPointsService();
+});
+
+module.exports = { job, exchangeJobFirst, exchangeJobSecond };

@@ -6,6 +6,7 @@ const {
     deactivatePostService,
     solveReportService,
     banUserService,
+    exchangeEcoPointsService,
 } = require('../services/admin');
 const { check } = require('../utils/terminate-at-check');
 const { BadRequestError } = require('../errors');
@@ -92,6 +93,17 @@ const terminateAtCheck = async (req, res, next) => {
     }
 };
 
+const exchangeEcoPoints = async (req, res, next) => {
+    logger.log('Received exchangeEcoPoints request', 1);
+    try {
+        await exchangeEcoPointsService();
+        res.status(StatusCodes.OK).send();
+    } catch (error) {
+        logger.log(error.message, 0);
+        next(error);
+    }
+};
+
 module.exports = {
     report,
     getAllReports,
@@ -99,4 +111,5 @@ module.exports = {
     solveReport,
     banUser,
     terminateAtCheck,
+    exchangeEcoPoints,
 };

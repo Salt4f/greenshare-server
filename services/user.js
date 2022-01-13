@@ -419,24 +419,6 @@ const getOutgoingAcceptedPosts = async (userId) => {
     return pendingAcceptedPosts;
 };
 
-const exchangeEcoPoints = async (userId) => {
-    const user = await db.users.findOne({ where: { id: userId } });
-
-    if (user.currentEcoPoints < 10)
-        throw new BadRequestError(
-            `User does not have enough balance to exchange eco points`
-        );
-
-    const greenCoins = Math.round(user.currentEcoPoints / 9);
-    const newCurrentGreenCoins = user.currentGreenCoins + greenCoins;
-    await user.update({
-        currentEcoPoints: 0,
-        currentGreenCoins: newCurrentGreenCoins,
-    });
-    user.save();
-    return { greenCoins, user };
-};
-
 const redeemReward = async (userId, rewardId) => {
     const reward = await db.rewards.findOne({ where: { id: rewardId } });
     if (!reward)
@@ -466,6 +448,5 @@ module.exports = {
     getIncomingAcceptedPosts,
     getOutgoingAcceptedPosts,
     updateUserEcoScoreService,
-    exchangeEcoPoints,
     redeemReward,
 };

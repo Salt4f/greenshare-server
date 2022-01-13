@@ -176,15 +176,6 @@ const redeem = async (req, res, next) => {
                 )} is trying to redeem someone else' Rewards`
             );
         const action = req.query.action;
-        if (action === 'green-coins') {
-            const { greenCoins, user } = await exchangeEcoPoints(
-                req.params.userId
-            );
-            res.status(StatusCodes.OK).json({
-                greenCoins: greenCoins,
-                currentGreenCoins: user.currentGreenCoins,
-            });
-        }
         if (action === 'rewards') {
             const { rewardId } = req.body;
             const code = await redeemReward(req.params.userId, rewardId);
