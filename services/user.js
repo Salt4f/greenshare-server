@@ -427,7 +427,7 @@ const exchangeEcoPoints = async (userId) => {
             `User does not have enough balance to exchange eco points`
         );
 
-    const greenCoins = user.currentEcoPoints / 10;
+    const greenCoins = Math.round(user.currentEcoPoints / 9);
     const newCurrentGreenCoins = user.currentGreenCoins + greenCoins;
     await user.update({
         currentEcoPoints: 0,
