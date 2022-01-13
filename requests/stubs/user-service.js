@@ -5,8 +5,8 @@ const registerRequest = async (email, password, nickname) => {
     const response = {
         status: StatusCodes.CREATED,
         data: {
-            id: 2,
-            token: '2',
+            id: 3,
+            token: '3',
         },
     };
     return response;
