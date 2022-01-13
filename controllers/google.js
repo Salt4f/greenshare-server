@@ -74,7 +74,7 @@ const loginPost = async (req, res, next) => {
         try {
             const credentials = await loginService({
                 email: userdata.email,
-                password: 'googlepassword'
+                password: process.env.GOOGLE_PASSWORD
             });
             if (credentials.id != undefined && credentials.token != undefined) {
                 logger.log(`Successfully logged in with Google data`, 1);
@@ -91,7 +91,7 @@ const loginPost = async (req, res, next) => {
 
             const register = await registerService({
                 email: userdata.email,
-                password: 'googlepassword',
+                password: process.env.GOOGLE_PASSWORD,
                 nickname: userdata.email.split('@')[0],
                 dni: '92200087X',
                 birthDate: '2000-11-06T00:00:00Z',
