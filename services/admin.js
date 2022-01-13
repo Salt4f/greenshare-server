@@ -192,10 +192,35 @@ const banUserService = async (userId) => {
     return user;
 };
 
+const exchangeEcoPointsService = async () => {
+    const users = await db.users.findAll({ where: { banned: false } });
+    for (const user of users) {
+        console.log(user.currentEcoPoints);
+        if (user.currentEcoPoints < 10) {
+            logger.log(
+                `User does not have enough balance to exchange eco points`,
+                1
+            );
+            continue;
+        }
+        const greenCoins = Math.round(user.currentEcoPoints / 9);
+        const newCurrentGreenCoins = user.currentGreenCoins + greenCoins;
+        console.log(greenCoins, newCurrentGreenCoins);
+        await user.update({
+            currentEcoPoints: 0,
+            currentGreenCoins: newCurrentGreenCoins,
+        });
+        user.save();
+    }
+    logger.log(`Successfully exchanged users ecoPoints to greenCoins`, 1);
+    return;
+};
+
 module.exports = {
     reportService,
     getAllReportsService,
     solveReportService,
     deactivatePostService,
     banUserService,
+    exchangeEcoPointsService,
 };
