@@ -8,6 +8,7 @@ services:
             - 'mariadb'
         ports:
             - '13000:13000'
+            - '13443:13443'
         restart: unless-stopped
     mariadb:
         container_name: 'mariadb'

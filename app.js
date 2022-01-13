@@ -10,6 +10,9 @@ const admin = require('./routes/admin');
 const rewards = require('./routes/rewards');
 const logger = require('./utils/logger');
 const job = require('./utils/cron');
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
 
 const {
     bannedCheck,
@@ -37,10 +40,11 @@ app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
 const port = process.env.PORT || 13000;
+const httpsPort = process.env.HTTPS_PORT || 13443;
 
 const start = async () => {
     try {
-        app.listen(port, async () => {
+        http.createServer(app).listen(port, async() => {
             const [admin, created] = await db.users.findOrCreate({
                 where: { id: process.env.ADMIN_ID },
                 defaults: {
@@ -54,10 +58,16 @@ const start = async () => {
                 },
             });
             job.start();
-            console.log(`Server is listening on port ${port}...`);
+            logger.log(`HTTP server is listening on port ${port}...`, 1);
+        });
+        https.createServer({
+            key: fs.readFileSync('greenshare_cert.key'),
+            cert: fs.readFileSync('greenshare_cert.crt')
+        }, app).listen(httpsPort, function() {
+            logger.log(`HTTPS server listening on ${httpsPort}`, 1);
         });
     } catch (error) {
-        logger.log(e.message, 0);
+        logger.log(error.message, 0);
     }
 };
 
